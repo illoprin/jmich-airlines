@@ -20,6 +20,19 @@ npm install
 Тут понадобится mySQL не раньше версии 5.7. Заходим в phpMyAdmin, в верхнем меню есть раздел Import. Там через Choose File загружаем jmich.sql и в самом низу страницы нажимаем Import.
 Он может высрать ошибку 502 Bad Gateway — похуй, перезаходим в phpMyAdmin.
 
+
+Создаём в директории backend файл .env.
+
+```.env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=jmich
+PORT=8001
+SALT=8
+SECRET='SECRET_KEY_RANDOM'
+```
+
 ### Запуск проекта
 
 ```bash

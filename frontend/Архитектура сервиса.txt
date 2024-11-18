@@ -1,0 +1,14 @@
+Routes:
+
+/ - поиск билета
+Выбор города из базы данных и ввод даты и количества мест
+
+home - /search
+login - /auth/login
+reg - /auth/reg
+purchase - /purchase/:flight_id
+
+account - /account/data
+order - /account/order
+controls - /account/controls
+

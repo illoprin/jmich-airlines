@@ -1,4 +1,4 @@
-# Jmich Airlines
+# ЖМЫХ Airlines
 Летаем с одним крылом
 
 

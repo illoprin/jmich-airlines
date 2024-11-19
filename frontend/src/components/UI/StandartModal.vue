@@ -11,7 +11,7 @@
 				required: false,
 				default: 'jmich-standart-modal'
 			},
-			width: {
+			type: {
 				type: String,
 				required: false,
 				default: ''
@@ -27,9 +27,9 @@
 			shown(new_val, old_val) {
 				const modal_dom = new bootstrap.Modal(`#${this.id}`);
 				if (new_val) {
-					modal_dom.show()
+					modal_dom.show();
 				}else {
-					modal_dom.hide()
+					modal_dom.hide();
 				}
 			}
 		}
@@ -39,7 +39,7 @@
 <template>
 	<!-- Standart Modal -->
 	<div class="modal fade" :id="id">
-		<div class="modal-dialog modal-dialog-centered" :class="width">
+		<div class="modal-dialog modal-dialog-centered" :class="type">
 			<div class="modal-content" v-if="shown">
 				<div class="modal-header">
 					<slot name="header"></slot>

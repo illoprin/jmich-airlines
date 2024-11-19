@@ -31,7 +31,7 @@ export default {
         check_valid() {
             for (const [key, value] of Object.entries(this.form_data)) {
                 if (key == 'password') {
-                    this.data_validness.password = (value == this.password_repeat) && (value >= 4);
+                    this.data_validness.password = (value == this.password_repeat) && (value.length >= 4);
                 }
                 else if (key == 'email') {
                     this.data_validness.email = value.includes('@') && value.length > 5;

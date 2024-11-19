@@ -1,23 +1,60 @@
 <script>
-import { get_decode_token, get_payment_data, get_user_data } from '@/utils/api';
+import { get_decode_token, get_payment_data, get_user_data, add_payment_data, delete_payment_data } from '@/utils/api';
 import { AUTH_ROUTES, SERVER_URL } from '@/utils/config';
-import { format } from '@/utils/tools';
+import { format, prepare_form_data, has_empty_fields, redirect } from '@/utils/tools';
 import SpinnerComponent from '@/components/sections/SpinnerComponent.vue';
-import CreditCardModal from '@/components/popups/CreditCardModal.vue';
 import ImageDragArea from '@/components/UI/ImageDragArea.vue';
+
+import CreditCardButton from '../blocks/CreditCardButton.vue';
+import CreditCardModal from '@/components/popups/CreditCardModal.vue';
 
 
 export default {
-	components: { SpinnerComponent, CreditCardModal, ImageDragArea },
+	components: { SpinnerComponent, ImageDragArea, CreditCardModal, CreditCardButton },
 	data() {
 		return {
 			user_data: null,
-			payment_data: null,
-			ico_mir: '/src/assets/static/png/mir_pay.png',
-			loaded: false
+			payment_data: {},
+			loaded: false,
+
+			card_modal_shown: false,
 		}
 	},
 	methods: {
+		async card_form_submit(form_data) {
+			
+			if (!has_empty_fields(form_data)) {
+				form_data = prepare_form_data(form_data, true);
+				const post_result = await add_payment_data(this, form_data);
+				if (post_result.status == 0) {
+					this.payment_data = form_data;
+					redirect(AUTH_ROUTES.USER_ROUTE + '/' + AUTH_ROUTES.USER_DATA_ROUTE);
+					this.card_modal_hide();
+				}else {
+					// error
+					alert(post_result.message);
+				}
+			}else {
+				alert('Некоторые поля не заполнены');
+			}
+		},
+		async card_delete() {
+			const delete_result = await delete_payment_data(this);
+			if (delete_result.status == 0) {
+				this.card_modal_hide();
+				redirect(AUTH_ROUTES.USER_ROUTE + '/' + AUTH_ROUTES.USER_DATA_ROUTE);
+			}
+			else {
+				// error
+				alert(post_result.message);
+			}
+		},
+		card_modal_hide() {
+			this.card_modal_shown = false;
+		},
+		card_modal_show() {
+			this.card_modal_shown = true;
+		}
 
 	},
 	computed: {
@@ -42,6 +79,14 @@ export default {
 </script>
 
 <template>
+	<credit-card-modal 
+		:payment="payment_data" 
+		:shown="card_modal_shown"
+		@submit="card_form_submit" 
+		@on_hide="card_modal_hide"
+		@delete="card_delete"
+	/>
+
 	<!-- Personal Data section -->
 	<div class="row w-100 p-4" v-if="loaded">
 		<div class="col text-center">
@@ -91,29 +136,12 @@ export default {
 			</div>
 
 			<h2 class="fw-bold mt-5">Оплата</h2>
-			<div class="row mt-3 g-3">
-				<!-- Card data or add card -->
-				<div class="col" v-if="!payment_data">
-					<h5 class="mb-1 text-secondary fw-light">Банковская карта</h5>
-					<button class="btn btn-outline-dark" data-bs-target="#credit_card" data-bs-toggle="modal">Добавить</button>
-				</div>
-
-				<div class="col" v-else>
-					<h5 class="mb-1 text-secondary fw-light">Банковская карта</h5>
-					<button class="btn btn-dark text-nowrap d-flex align-items-center gap-3 p-3" data-bs-target="#credit_card" data-bs-toggle="modal">
-						<img :src="ico_mir" width="60" alt="mir_pay">
-						<p class="m-0 fw-bolder">×××× ×××× ×××× ××××</p>
-					</button>
-				</div>
-			</div>
+			<credit-card-button :payment_data="payment_data" :card_modal_show="card_modal_show"/>
 		</div>
-		<credit-card-modal :payment="payment_data"/>
+		
 	</div>
 	<div class="w-100" v-else>
 		<SpinnerComponent />
 	</div>
-			
-
-
 </template>
 

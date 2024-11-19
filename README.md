@@ -45,4 +45,4 @@ npm run frontend
 Frontend приложение будет запущено по url `localhost:3001`.
 
 Backend часть запущена на `localhost:8001`.
-##### Можете поиграться с нею через postman 
+##### Можете поиграться с нею через postman

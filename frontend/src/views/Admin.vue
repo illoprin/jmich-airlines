@@ -27,9 +27,9 @@ export default {
 			<aside-selector :link="{name:'admin-flight'}" :ico="ico_plane" :width="22">
 				Перелёты
 			</aside-selector>
-			<aside-selector :link="{name:'admin-static'}" :ico="ico_controls">
+			<!-- <aside-selector :link="{name:'admin-static'}" :ico="ico_controls">
 				Изменить статичные данные
-			</aside-selector>
+			</aside-selector> -->
 			<aside-selector :link="{name:'search'}" :ico="ico_arrow_r" :width="10">
 				На главную
 			</aside-selector>

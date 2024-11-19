@@ -65,6 +65,9 @@ export default {
 
 		change_view(selected) {
 			this.view = selected;
+		},
+		hide_confirm() {
+			this.confirm_modal_shown = false;
 		}
 	},
 	computed: {
@@ -91,7 +94,7 @@ export default {
 	<div class="w-100 h-100" id="order">
 		<row-header>
 			<template v-slot:left>
-					Управление заказами
+					Ваши билеты
 			</template>
 			<template v-slot:right>
 				<sort-type-selector 
@@ -119,6 +122,7 @@ export default {
 				:title="'Отмена заказа'" 
 				:message="confirm_message" 
 				@confirmed="cancel_order"
+				@on_hide="hide_confirm"
 			/>
 		</div>
 		<div v-else-if="loaded && get_sorted_order_list.length == 0">

@@ -22,7 +22,7 @@ export default {
 				Личные данные
 			</aside-selector>
 			<aside-selector :link="{name:'user-order'}" :ico="ico_order">
-				Заказы
+				Билеты
 			</aside-selector>
 			<aside-selector :link="{name:'user-edit'}" :ico="ico_controls">
 				Управление аккаунтом

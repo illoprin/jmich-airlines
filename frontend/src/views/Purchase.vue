@@ -1,11 +1,11 @@
 <script>
 import { AUTH_ROUTES, SERVER_URL } from '@/utils/config';
-import { add_order, get_decode_token, get_payment_data } from '@/utils/api';
+import { add_order, get_decode_token, get_payment_data, add_payment_data } from '@/utils/api';
 import CreditCardModal from '@/components/popups/CreditCardModal.vue';
 import SpinnerBody from '@/components/sections/SpinnerBody.vue';
 import FlightInfoSnippet from '@/components/blocks/FlightInfoSnippet.vue';
 import PurchasePromo from '@/components/blocks/PurchasePromo.vue';
-import { format_price } from '@/utils/tools';
+import { format_price, has_empty_fields, prepare_form_data } from '@/utils/tools';
 import MessageToast from '@/components/popups/MessageToast.vue';
 import { ref } from 'vue';
 
@@ -30,6 +30,7 @@ export default {
 			},
 
 			payment_data: undefined,
+			card_modal_shown: false,
 
 			loaded: false,
 			view: false,
@@ -110,6 +111,25 @@ export default {
 				this.loaded = true;
 			}, 1000);
 		},
+		async card_submit(form_data) {
+			console.log(form_data);
+			if (!has_empty_fields(form_data)) {
+				form_data = prepare_form_data(form_data, true);
+				const post_result = await add_payment_data(this, form_data);
+				if (post_result.status == 0) {
+					this.payment_data = form_data;
+					this.card_modal_shown = false;
+				}else {
+					// error
+					alert(post_result.message);
+				}
+			}else {
+				alert('Некоторые поля не заполнены');
+			}
+		},
+		card_modal_on_hide() {
+			this.card_modal_shown = false;
+		},
 
 	},
 	components: { CreditCardModal, SpinnerBody, FlightInfoSnippet, MessageToast, PurchasePromo }
@@ -120,7 +140,14 @@ export default {
 	<message-toast ref="toastRef"/>
 	<div v-if="loaded">
 		<div id="purchase_process" class="d-flex flex-column align-items-center justify-content-center" v-if="!view">
-			<CreditCardModal :payment="payment_data" :can_delete="false" :route="get_url"/>
+			<CreditCardModal 
+				:payment="payment_data" 
+				:can_delete="false"
+				:route="get_url" 
+				@card_submit="card_submit"
+				@on_hide="card_modal_on_hide"
+				:shown="card_modal_shown"
+			/>
 			<div class="container w-75 p-0">
 
 				<div class="row mt-4 mb-4">
@@ -170,13 +197,21 @@ export default {
 							<h2 class="fw-semibold">Оплата</h2>
 							<div class="mt-3">
 								<div v-if="payment_data">
-									<button class="btn btn-dark text-nowrap d-flex align-items-center gap-3 p-3" data-bs-toggle="modal" data-bs-target="#credit_card">
+									<button 
+										class="btn btn-dark text-nowrap d-flex align-items-center gap-3 p-3" 
+										@click="card_modal_shown=true"
+									>
 										<img :src="img_mir" width="60" alt="mir_pay">
 										<p class="m-0 fw-bolder">×××× ×××× ×××× ××××</p>
 									</button>
 								</div>
 								<div v-else>
-									<button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#credit_card">Добавить</button>
+									<button
+										class="btn btn-outline-dark" 
+										@click="card_modal_shown=true"
+									>
+										Добавить
+									</button>
 								</div>
 							</div>
 

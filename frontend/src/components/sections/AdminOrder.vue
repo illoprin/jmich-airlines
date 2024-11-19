@@ -82,7 +82,7 @@ export default {
 	<div class="w-100" v-if="loaded">
 		<row-header>
 			<template v-slot:left>
-				Все заказы
+				Все билеты
 			</template>
 		</row-header>
 

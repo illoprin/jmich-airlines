@@ -18,6 +18,8 @@ module.exports = {
 			message: "Запрос выполнен успешно",
 		};
 	},
+
+
 	generate_access_token: (payload, key) => {
 		return jwt.sign(payload, key, { expiresIn: "24h" });
 	},
@@ -25,6 +27,8 @@ module.exports = {
 		const token = req.headers.authorization.split(' ')[1];
 		return jwt.verify(token, process.env.SECRET);
 	},
+
+
 	convert_to_sql_date: (unix_time) => {
 		const date = new Date(unix_time);
 
@@ -48,6 +52,8 @@ module.exports = {
 			day, month, year, hour, minute
 		} 
 	},
+
+	
 	// async query promise
 	query_promise: (db, sql, params) => {
 		return new Promise((resolve, reject) => {

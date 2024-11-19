@@ -22,7 +22,7 @@ export default {
 				Статистика
 			</aside-selector>
 			<aside-selector :link="{name:'admin-order'}" :ico="ico_order">
-				Заказы клиентов
+				Билеты клиентов
 			</aside-selector>
 			<aside-selector :link="{name:'admin-flight'}" :ico="ico_plane" :width="22">
 				Перелёты

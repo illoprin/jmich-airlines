@@ -52,7 +52,7 @@ export default {
 		<div class="row d-flex justify-content-between mb-3">
 			<div class="col-md-auto">
 				<h3 class="m-0 fw-bold">
-					Заказ ID{{ format_id(order.purchase_id) }}
+					Билет ID{{ format_id(order.purchase_id) }}
 				</h3>
 			</div>
 			<div class="col-5 d-flex gap-2 justify-content-end">

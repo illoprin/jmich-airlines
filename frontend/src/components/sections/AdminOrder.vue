@@ -1,7 +1,8 @@
 <script>
 import OrderItem from '@/components/items/AdminOrderItem.vue';
 import SpinnerComponent from './SpinnerComponent.vue';
-import { fetch_order, change_order_status, get_user_profile } from '@/utils/api';
+import { fetch_order, get_user_profile } from '@/http/adminAPI';
+import { change_order_status } from '@/http/purchaseAPI';
 import ConfirmDialog from '@/components/popups/ConfirmDialog.vue';
 import OrderModal from '@/components/popups/OrderModal.vue';
 import UserModal from '@/components/popups/UserModal.vue';

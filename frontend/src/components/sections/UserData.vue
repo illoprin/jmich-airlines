@@ -1,5 +1,9 @@
 <script>
-import { get_decode_token, get_payment_data, get_user_data, add_payment_data, delete_payment_data } from '@/utils/api';
+// API
+import { get_payment_data, delete_payment_data, add_payment_data } from '@/http/paymentAPI';
+import { get_decode_token } from '@/http';
+import { get_user_data, } from '@/http/userAPI';
+
 import { AUTH_ROUTES, SERVER_URL } from '@/utils/config';
 import { format, prepare_form_data, has_empty_fields, redirect } from '@/utils/tools';
 import SpinnerComponent from '@/components/sections/SpinnerComponent.vue';
@@ -22,32 +26,19 @@ export default {
 	},
 	methods: {
 		async card_form_submit(form_data) {
-			
-			if (!has_empty_fields(form_data)) {
-				form_data = prepare_form_data(form_data, true);
-				const post_result = await add_payment_data(this, form_data);
-				if (post_result.status == 0) {
-					this.payment_data = form_data;
-					redirect(AUTH_ROUTES.USER_ROUTE + '/' + AUTH_ROUTES.USER_DATA_ROUTE);
-					this.card_modal_hide();
-				}else {
-					// error
-					alert(post_result.message);
-				}
+			const post_result = await add_payment_data(this, form_data);
+			if (post_result.status == 0) {
+				this.payment_data = form_data;
+				this.card_modal_hide();
 			}else {
-				alert('Некоторые поля не заполнены');
+				// error
+				alert(post_result.message);
 			}
 		},
 		async card_delete() {
 			const delete_result = await delete_payment_data(this);
-			if (delete_result.status == 0) {
-				this.card_modal_hide();
-				redirect(AUTH_ROUTES.USER_ROUTE + '/' + AUTH_ROUTES.USER_DATA_ROUTE);
-			}
-			else {
-				// error
-				alert(post_result.message);
-			}
+			this.payment_data = {}
+			this.card_modal_hide();
 		},
 		card_modal_hide() {
 			this.card_modal_shown = false;
@@ -79,16 +70,15 @@ export default {
 </script>
 
 <template>
-	<credit-card-modal 
-		:payment="payment_data" 
-		:shown="card_modal_shown"
-		@submit="card_form_submit" 
-		@on_hide="card_modal_hide"
-		@delete="card_delete"
-	/>
-
 	<!-- Personal Data section -->
 	<div class="row w-100 p-4" v-if="loaded">
+		<credit-card-modal 
+			:payment_data="payment_data" 
+			:shown="card_modal_shown"
+			@submit="card_form_submit" 
+			@on_hide="card_modal_hide"
+			@delete="card_delete"
+		/>
 		<div class="col text-center">
 			<image-drag-area 
 				:img_src="user_data.avatar_src" 

@@ -2,7 +2,7 @@
 import OrderList from '@/components/sections/OrderList.vue';
 import SpinnerComponent from '@/components/sections/SpinnerComponent.vue';
 import ConfirmDialog from '@/components/popups/ConfirmDialog.vue';
-import { get_order_list, change_order_status } from '@/utils/api';
+import { get_order_list, change_order_status } from '@/http/purchaseAPI';
 import OrderModal from '@/components/popups/OrderModal.vue';
 import SortTypeSelector from '@/components/blocks/SortTypeSelector.vue';
 import RowHeader from '@/components/UI/RowHeader.vue';

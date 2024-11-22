@@ -2,7 +2,7 @@
 import Datepicker from '@/vendor/datepicker/src';
 import '@/vendor/datepicker/dist/css/datepicker.minimal.css';
 import '@/assets/style/datepicker_customize.css';
-import { fetch_city } from '@/utils/api';
+import { fetch_city } from '@/http/cityAPI';
 import { has_empty_fields } from '@/utils/tools';
 
 export default {
@@ -111,7 +111,7 @@ export default {
 						type="number" 
 						class="form-control p-3" 
 						min="0" max="32" 
-						placeholder="Сколько мест ❔" 
+						placeholder="Сколько мест 🍾" 
 						v-model="search_data.seats"
 						@input="on_input()"
 					>

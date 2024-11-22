@@ -1,9 +1,8 @@
 <script>
 import SpinnerComponent from '@/components/sections/SpinnerComponent.vue';
-import { get_user_data } from '@/utils/api';
+import { get_user_data, update_user_data } from '@/http/userAPI';
 import { AUTH_ROUTES } from '@/utils/config';
 import { prepare_form_data, redirect } from '@/utils/tools';
-import { update_user_data } from '@/utils/api';
 import RowHeader from '@/components/UI/RowHeader.vue';
 
 export default {
@@ -36,7 +35,7 @@ export default {
 			console.log(this.form_data);
 			this.loaded = false;
 			setTimeout(async () => {
-				const put_result = await update_user_data(this, this.form_data)
+				await update_user_data(this, this.form_data)
 				redirect(AUTH_ROUTES.USER_EDIT_ROUTE);
 			}, 500);
 		},

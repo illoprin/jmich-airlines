@@ -25,7 +25,6 @@ import AdminStatic from '@/components/sections/AdminStatic.vue';
 
 // Import config and api
 import { ADMIN_ROUTES, AUTH_ROUTES, GUEST_ROUTES } from "@/utils/config";
-import { check_auth, get_role } from "@/utils/api";
 
 
 const routes = [

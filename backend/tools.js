@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = {
-	sql_error: (err, responce) => {
-		console.error(err);
-		responce.message = `Ошибка при выполнении запроса в БД. Код ошибки: ${err.code}`;
-		responce.status = 1;
+	sql_error: (err) => {
+		return {
+			message: `Ошибка при выполнении запроса в БД. Код ошибки: ${err.code}`,
+		};
 	},
 	res_error: (message) => {
 		return {
@@ -53,9 +53,10 @@ module.exports = {
 		} 
 	},
 
-	
+	// bytes - 10mb
+	MAX_BUFFER_LENGTH: 10000000,
 	// async query promise
-	query_promise: (db, sql, params) => {
+	query_promise: (db, sql, params = []) => {
 		return new Promise((resolve, reject) => {
 			db.query(sql, params, (err, result) => {
 				if (err) {

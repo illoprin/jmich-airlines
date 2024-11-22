@@ -3,7 +3,7 @@ import SearchResult from '@/components/sections/SearchResult.vue';
 import SearchBar from '@/components/sections/Searchbar.vue';
 import HomeHeader from '@/components/blocks/HomeHeader.vue';
 import { has_empty_fields } from '@/utils/tools';
-import { get_all_flights, search_flights } from '@/utils/api';
+import { get_all_flights, search_flights } from '@/http/flightAPI';
 import { toRaw } from 'vue';
 
 export default {

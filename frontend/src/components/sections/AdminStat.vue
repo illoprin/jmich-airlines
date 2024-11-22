@@ -1,5 +1,6 @@
 <script>
-import { fetch_client, fetch_order, get_all_flights } from '@/utils/api';
+import { fetch_client, fetch_order } from '@/http/adminAPI';
+import { get_all_flights } from '@/http/flightAPI';
 import SpinnerComponent from './SpinnerComponent.vue';
 
 export default {

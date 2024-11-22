@@ -1,5 +1,5 @@
 <script>
-import { disauthorizize_user, delete_user, get_user_data, get_role } from '@/utils/api';
+import { disauthorizize_user, delete_user, get_user_data, get_role } from '@/http/userAPI';
 
 export default {
     data() {

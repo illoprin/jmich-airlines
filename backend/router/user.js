@@ -16,7 +16,6 @@ module.exports = (db) => {
 
 	// User data
 	router.post("/", async (req, res) => {
-		let responce = tools.res_standart();
 		const data = req.body;
 		try {
 			let sql = "SELECT COUNT(*) AS count FROM client WHERE login = ? AND email = ?";
@@ -25,27 +24,23 @@ module.exports = (db) => {
 				sql = 'INSERT INTO client (login, email, firstname, secondname, phone, password, role) VALUES (?, ?, ?, ?, ?, ?, ?)';
 				const password_hash = bcrypt.hashSync(data.password, salt);
 				const user = await tools.query_promise(db, sql, [data.login, data.email, data.firstname, data.secondname, data.phone, password_hash, data.role]);
-				responce.id = user.insertId;
-				res.send(responce);
+				res.send({ id: user.insertId });
 			}else {
 				res.status(400).json(tools.res_error('Пользовтели с таким логином и email уже существуют'));
 			}
 		} catch(error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
 	router.post("/verify", auth_middleware, (req, res) => {
-		let responce = tools.res_standart();
-		res.send(responce);
+		res.send({ status: 0 });
 	})
 
 	router.post("/login", async (req, res) => {
 		// Login needs "login" and "password"
-		let responce = tools.res_standart();
-		const login = req.body.login;
-		const password = req.body.password;
+		const { login, password } = req.body;
 		
 		try {
 			const sql = 'SELECT * FROM client WHERE login = ?';
@@ -65,10 +60,8 @@ module.exports = (db) => {
 						{id, role},
 						process.env.SECRET
 					);
-					responce.result = user[0];
-					responce.result.token = token;
-					responce.message = "Авторизация прошла успешно";
-					res.send(responce);
+					const result = user[0];
+					res.send({ result, token });
 				}else {
 					// Invalid password
 					res.status(403).json(tools.res_error('Введён не верный пароль'));
@@ -81,83 +74,79 @@ module.exports = (db) => {
 				res.status(400).json(tools.res_error('Такого пользователя не существует'));
 			}
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
 	router.get("/:client_id", personal_data_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const id = parseInt(req.params.client_id);
 		try {
 			let sql = 'SELECT * FROM client WHERE id = ?';
 			let user_data = (await tools.query_promise(db, sql, [id]))[0];
-			responce.result = user_data;
-			res.send(responce);
+			res.send({result: user_data});
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
 	// Admin: get all users
 	router.get("/", role_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		try {
 			let sql = 'SELECT * FROM client WHERE role = 0';
 			let user_data = await tools.query_promise(db, sql, []);
-			responce.result = user_data;
-			res.send(responce);
+			res.send({result: user_data});
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
 	router.put("/:client_id", personal_data_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const client_id = parseInt(req.params.client_id);
 		const { login, firstname, secondname, email, phone } = req.body;
 		const sql = 'UPDATE client SET login = ?, firstname = ?, secondname = ?, email = ?, phone = ? WHERE id = ?';
 		try {
 			const update_data = await tools.query_promise(db, sql, [login, firstname, secondname, email, phone, client_id]);
-			responce.affected_rows = update_data.affectedRows;
-			res.send(responce);
+			res.send({ affected_rows: update_data.affectedRows});
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
 	router.post("/avatar/:client_id", personal_data_middleware, async (req, res) => {
-		let response = tools.res_standart();
+		const { image } = req.files;
 		const client_id = parseInt(req.params.client_id);
 		const sql = 'UPDATE client SET avatar_src = ? WHERE id = ?';
 		try {
-			const image_url = file_buffer.upload_image(req);
+			const image_url = file_buffer.upload_file(image);
+			if (!image_url) 
+				return res.status(400).json(tools.res_error('Файл не может быть загружен. Размер файла не должен превышать 10 МБ и расширение должно удовлетворять формату.'));
+
 			await tools.query_promise(db, sql, [image_url, client_id]);
-			res.send(response);
+			res.send({ status: 1 });
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, response));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
-	router.delete("/:client_id", personal_data_middleware, (req, res) => {
-		let responce = tools.res_standart();
-		const id = req.params.client_id;
+	router.delete("/:client_id", personal_data_middleware, async (req, res) => {
+		const id = Number(req.params.client_id);
 		const sql = "DELETE FROM client WHERE id = ?";
-		db.query(sql, [id], (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce));
-			else responce.affected_rows = rsl.affectedRows;
-		});
-		res.send(responce);
+		try {
+			const delete_result = await tools.query_promise(db, sql, id);
+			res.send({ affected_rows: delete_result.affectedRows });
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 	// end
 
 	// Payment data
 	router.post('/payment/:client_id', personal_data_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const client_id = parseInt(req.params.client_id);
 		try {
 			let sql = 'SELECT COUNT(*) AS count FROM payment WHERE client_id = ?';
@@ -165,19 +154,17 @@ module.exports = (db) => {
 			if (payment.count == 0) {
 				sql = 'INSERT INTO payment (client_id, card_number, card_date, card_cvv) VALUES (?, ?, ?, ?)';
 				const add_payment = await tools.query_promise(db, sql, [client_id, req.body.card_number, req.body.card_date, req.body.card_cvv]);
-				responce.affected_rows = add_payment.affectedRows;
-				res.send(responce);
+				res.send({ status: 0, affected_rows: add_payment.affectedRows });
 			}else {
 				res.status(409).json(tools.res_error(`Данные банковской карты для пользователя c id = ${client_id} уже введены`));
 			}
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
 	router.put('/payment/:client_id', personal_data_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const client_id = parseInt(req.params.client_id);
 		try {
 			let sql = 'SELECT COUNT(*) AS count FROM payment WHERE client_id = ?';
@@ -185,45 +172,42 @@ module.exports = (db) => {
 			if (payment.count > 0) {
 				sql = 'UPDATE payment SET card_number = ?, card_date = ?, card_cvv = ? WHERE client_id = ?';
 				const payment_update = await tools.query_promise(db, sql, [req.body.card_number, req.body.card_date, req.body.card_cvv, client_id]);
-				responce.affected_rows = payment_update.affectedRows;
-				res.send(responce);
+				res.send({ affected_rows: payment_update.affectedRows });
 			} else {
 				res.status(409).json(tools.res_error(`Записей о банковской карте для пользователя c id = ${client_id} не существует. Обновление не возможно`));
 			}
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
 	router.get("/payment/:client_id", personal_data_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const client_id = parseInt(req.params.client_id);
 		try {
 			const sql = 'SELECT id, card_number, card_date, card_cvv FROM payment WHERE client_id = ?';
 			const payment = await tools.query_promise(db, sql, [client_id]);
 			if (payment.length >= 1) {
 				// Если хочешь добавить возможность для клиента добавлять несколько банковских карт, то просто удали [0]
-				responce.result = payment[0];
-				res.send(responce);
+				res.send({ status: 0, result: payment[0] });
 			} else {
 				res.send(tools.res_error(`Записей о банковской карте для пользователя c id = ${client_id} не существует.`));
 			}
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 			throw error;
 		}
 	});
 
-	router.delete("/payment/:client_id", personal_data_middleware, (req, res) => {
-		let responce = tools.res_standart();
-		const id = req.params.client_id;
+	router.delete("/payment/:client_id", personal_data_middleware, async (req, res) => {
+		const id = Number(req.params.client_id);
 		const sql = "DELETE FROM payment WHERE client_id = ?";
-		db.query(sql, [id], (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce));
-			else responce.affected_rows = rsl.affectedRows;
-		});
-		res.send(responce);
+		try {
+			const delete_result = await tools.query_promise(db, sql, [id]);
+			res.send({affected_rows: delete_result.affectedRows});
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 	// end
 

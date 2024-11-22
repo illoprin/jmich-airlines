@@ -15,21 +15,26 @@
 				type: String,
 				required: false,
 				default: ''
+			},
+		},
+		data() {
+			return {
+				modal_dom: undefined,
 			}
 		},
 		mounted() {
-			const modal_dom = document.getElementById(this.id);
-			modal_dom.addEventListener('hidden.bs.modal', event => {
+			this.modal_dom = document.getElementById(this.id);
+			this.modal_dom.addEventListener('hidden.bs.modal', () => {
 				this.$emit('on_hide');
 			});
 		},
 		watch: {
 			shown(new_val, old_val) {
-				const modal_dom = new bootstrap.Modal(`#${this.id}`);
+				const modal_bs = bootstrap.Modal.getOrCreateInstance(this.modal_dom);
 				if (new_val) {
-					modal_dom.show();
+					modal_bs.show();
 				}else {
-					modal_dom.hide();
+					modal_bs.hide();
 				}
 			}
 		}
@@ -40,16 +45,18 @@
 	<!-- Standart Modal -->
 	<div class="modal fade" :id="id">
 		<div class="modal-dialog modal-dialog-centered" :class="type">
-			<div class="modal-content" v-if="shown">
-				<div class="modal-header">
-					<slot name="header"></slot>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<slot name="body"></slot>
-				</div>
-				<div class="modal-footer">
-					<slot name="footer"></slot>
+			<div class="modal-content" >
+				<div v-if="shown">
+					<div class="modal-header">
+						<slot name="header"></slot>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<slot name="body"></slot>
+					</div>
+					<div class="modal-footer">
+						<slot name="footer"></slot>
+					</div>
 				</div>
 			</div>
 		</div>

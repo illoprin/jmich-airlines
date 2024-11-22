@@ -22,6 +22,7 @@ function flight_parse_result(rsl, limit) {
 			}
 		}
 	}
+
 }
 
 module.exports = (db) => {
@@ -42,8 +43,7 @@ module.exports = (db) => {
 	
 
 	// Admin
-	router.post('/', role_middleware, (req, res) => {
-		let responce = tools.res_standart();
+	router.post('/', role_middleware, async (req, res) => {
 		/*
 		Format:
 		{
@@ -65,15 +65,17 @@ module.exports = (db) => {
 				(company_id, departure_id, arrival_id, departure_datetime, arrival_datetime, seats_available, price, route_code)
 			VALUES
 				(?, ?, ?, ?, ?, ?, ?, ?)`;
-		db.query(sql, data, (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce));
-			else responce.result = rsl.affectedRows;
-			res.send(responce);
-		});
+
+
+		try {
+			const insert_result = await tools.query_promise(db, sql, [data]);
+			res.send({ insert_id: insert_result.affectedRows });
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 
-	router.get('/all/:limit', (req, res) => {
-		let responce = tools.res_standart();
+	router.get('/all/:limit', async (req, res) => {
 		const { limit } = req.params;
 		const sql = `
 			SELECT
@@ -103,19 +105,17 @@ module.exports = (db) => {
 			ORDER BY f.departure_datetime;
 		`;
 
-		db.query(sql, (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce))
-			else {
-				flight_parse_result(rsl, limit);
-				responce.result = rsl;
-			} 
-			res.send(responce);
-		});
+		try {
+			const rsl = await tools.query_promise(db, sql);
+			flight_parse_result(rsl, Number(limit));
+			res.send(rsl);
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 
 	// Admin ALL REGARDLESS
-	router.get('/all_reg/:limit', role_middleware, (req, res) => {
-		let responce = tools.res_standart();
+	router.get('/all_reg/:limit', role_middleware, async (req, res) => {
 		const { limit } = req.params;
 		const sql = `
 			SELECT
@@ -143,19 +143,17 @@ module.exports = (db) => {
 			ORDER BY f.departure_datetime
 		`;
 
-		db.query(sql, (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce))
-			else {
-				flight_parse_result(rsl, limit);
-				responce = rsl;
-			} 
-			res.send(responce);
-		});
+		try {
+			const rsl = await tools.query_promise(db, sql);
+			flight_parse_result(rsl, Number(limit));
+			res.send(rsl);
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 
-	router.get('/:flight_id', auth_middleware, (req, res) => {
-		let responce = tools.res_standart();
-		const flight_id = parseInt(req.params.flight_id);
+	router.get('/:flight_id', auth_middleware, async (req, res) => {
+		const flight_id = Number(req.params.flight_id);
 		const sql = `
 			SELECT
 				f.id,
@@ -182,20 +180,17 @@ module.exports = (db) => {
 			WHERE
 				f.id = ?
 		`;
-		db.query(sql, [flight_id], (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce));
-			else {
-				flight_parse_result(rsl, 0);
-				responce.result = rsl;
-			} 
-			res.send(responce);
-		});
+		try {
+			const rsl = await tools.query_promise(db, sql, [flight_id]);
+			flight_parse_result(rsl, 0);
+			res.send(rsl[0]);
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 	
-	router.post('/search', (req, res) => {
-		let responce = tools.res_standart();
-		console.log(req.body);
-		const {departure_city, arrival_city, date, seats} = req.body;
+	router.post('/search', async (req, res) => {
+		const { departure_city, arrival_city, date, seats } = req.body;
 		const sql = `
 		SELECT
 			f.id,
@@ -226,22 +221,20 @@ module.exports = (db) => {
 			AND ((f.seats_available - ?) >= 0)
 			AND f.status = 1`;
 
-		console.log(db.query(sql, [departure_city, arrival_city, date, seats], (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce))
-			else {
-				flight_parse_result(rsl);
-				for (ticket of rsl)
-					ticket.price *= seats;
-				responce.result = rsl;
-			}
-			res.send(responce);
-		}).sql);
+		try {
+			const rsl = await tools.query_promise(db, sql, [
+				departure_city, arrival_city, date, seats
+			]);
+			flight_parse_result(rsl);
+			res.send(rsl);
+		} catch (error) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 	
 
 	// Admin - add random fields
 	router.post('/random', role_middleware, async (req, res) => {
-		let response = tools.res_standart();
 		// Создание случайных перелётов для тестирования сервиса
 		// Принцип работы рандомайзера:
 		// Сначала берём все города и создаём связи между ними
@@ -295,37 +288,35 @@ module.exports = (db) => {
 				const insert_result = await tools.query_promise(db, sql, data);
 			}
 			res.send({ count: flights.length, flights });
-			
-
 		} catch (err) {
-			if (err) return res.status(500).json(tools.sql_error(err, response))
+			if (err) return res.status(500).json(tools.sql_error(err))
 		}
 
 	});
 
 	// Admin
-	router.put('/status/:id', role_middleware, (req, res) => {
-		let responce = tools.res_standart();
+	router.put('/status/:id', role_middleware, async (req, res) => {
 		const status = parseInt(req.body.status);
 		const flight_id = parseInt(req.params.id);
 		const sql = `UPDATE flight SET status = ? WHERE id = ?`;
-		db.query(sql, [status, flight_id], (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce));
-			else responce.affected_rows = rsl.affectedRows;
-			res.send(responce);
-		});
+		try {
+			const put_result = await tools.query_promise(db, sql, [status, flight_id]);
+			res.send({affected_rows: put_result.affectedRows});
+		} catch (error) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 
 	// Admin
-	router.delete('/:id', role_middleware, (req, res) => {
-		let responce = tools.res_standart();
+	router.delete('/:id', role_middleware, async (req, res) => {
 		const flight_id = Number(req.params.id);
 		const sql = "DELETE FROM flight WHERE id = ?";
-		db.query(sql, [flight_id], (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce));
-			else responce.affected_rows = rsl.affectedRows;
-		});
-		res.send(responce);
+		try {
+			const delete_result = await tools.query_promise(db, sql, [flight_id]);
+			res.send({affected_rows: delete_result.affectedRows});
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 	return {flight: router, update_flights};
 }

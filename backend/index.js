@@ -38,12 +38,14 @@ const purchase = require('./router/purchase.js')(db);
 const {flight, update_flights} = require('./router/flight.js')(db);
 const city = require('./router/city.js')(db);
 const promo = require('./router/promo.js')(db);
+const company = require('./router/company.js')(db);
 
 app.use('/user', user);
 app.use('/purchase', purchase);
 app.use('/flight', flight);
 app.use('/city', city);
 app.use('/promo', promo);
+app.use('/company', company);
 
 update_flights(db);
 

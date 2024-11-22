@@ -12,7 +12,6 @@ module.exports = (db) => {
 	const router = new Router();
 
 	router.post('/add/:client_id', personal_data_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const {flight_id, seats, total_cost} = req.body;
 		const client_id = parseInt(req.params.client_id);
 
@@ -48,19 +47,15 @@ module.exports = (db) => {
 			sql = 'UPDATE flight SET seats_available = seats_available - ? WHERE id = ?';
 			const flight = await tools.query_promise(db, sql, [seats, flight_id]);
 			const affected_rows = flight.affectedRows;
-			responce.purchase_id = purchase_id;
-			responce.qr = qr_url;
-			responce.affected_rows = affected_rows;
-			res.send(responce);
+			res.send({ qr: qr_url, insert_id: purchase.insertId });
 		} catch (error) {
-			res.send(500).json(tools.sql_error(error, responce));
+			res.send(500).json(tools.sql_error(error));
 			throw error;
 		}		
 	});
 
 	// Admin: GET ALL PURCHASES
 	router.get('/', role_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const sql = `
 		SELECT
 			user.id AS user_id,
@@ -106,17 +101,15 @@ module.exports = (db) => {
 			}
 			res.send(result);
 		} catch (error) {
-			res.status(500).json(tools.sql_error(error, responce));
+			res.status(500).json(tools.sql_error(error));
 		}
 		
 
 	});
 
 	// Get order list
-	router.get('/:client_id', personal_data_middleware, (req, res) => {
-		let responce = tools.res_standart();
-
-		const client_id = req.params.client_id;
+	router.get('/:client_id', personal_data_middleware, async (req, res) => {
+		const client_id = Number(req.params.client_id);
 		const sql = `
 		SELECT
 			p.id AS purchase_id,
@@ -147,21 +140,23 @@ module.exports = (db) => {
 		WHERE
 			p.client_id = ?;
 		`
-		db.query(sql, [client_id], (err, rsl) => {
-			if (err) res.status(500).json(tools.sql_error(err, responce))
-			else {
-				for (purchase of rsl) {
+		try {
+			const result = await tools.query_promise(db, sql, [client_id]);
+			if (result.length > 0) {
+				for (purchase of result) {
 					purchase.departure_datetime = tools.parse_date(purchase.departure_datetime);
 					purchase.arrival_datetime = tools.parse_date(purchase.arrival_datetime);
 				}
-				responce.purchase = rsl;
+				res.send({ purchase: result })
+			} else {
+				res.send({ purchase: [] })
 			}
-			res.send(responce);
-		});	
+		} catch (err) {
+			return res.status(500).json(tools.sql_error(err));
+		}
 	});
 
 	router.put('/cancel/:id', auth_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const purchase_id = parseInt(req.params.id);
 		try {
 			let sql = 'SELECT * FROM purchase WHERE id = ?';
@@ -175,15 +170,14 @@ module.exports = (db) => {
 				const seats_restore = await tools.query_promise(db, sql, [purchase_data.seats_purchased, purchase_data.flight_id]);
 				sql = 'UPDATE purchase SET status = ? WHERE id = ?';
 				const cancel_result = await tools.query_promise(db, sql, [0, purchase_id]);
-				res.send(responce);
+				res.send({ affected_rows: cancel_result.affectedRows });
 			}
 		} catch (err) {
-			return res.status(500).json(tools.sql_error(err, responce));
+			return res.status(500).json(tools.sql_error(err));
 		}
 	});
 
 	router.delete('/:id', auth_middleware, async (req, res) => {
-		let responce = tools.res_standart();
 		const purchase_id = parseInt(req.params.id);
 		try {
 			let sql = 'SELECT * FROM purchase WHERE id = ?';
@@ -197,10 +191,10 @@ module.exports = (db) => {
 				const seats_restore = await tools.query_promise(db, sql, [purchase_data.seats_purchased, purchase_data.flight_id]);
 				sql = 'DELETE FROM purchase WHERE id = ?';
 				const delete_result = await tools.query_promise(db, sql, [purchase_id]);
-				res.send(responce);
+				res.send({ affected_rows: delete_result.affectedRows });
 			}
 		} catch (err) {
-			return res.status(500).json(tools.sql_error(err, responce));
+			return res.status(500).json(tools.sql_error(err));
 		}
 	});
 

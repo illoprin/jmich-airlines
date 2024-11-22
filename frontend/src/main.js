@@ -11,11 +11,7 @@ import VueAxios from 'vue-axios';
 
 // Import custom CSS
 import './assets/style/main.css';
-import { check_auth, get_role } from './utils/api';
-
-// Import datepicker module
-// import './vendor/datepicker/dist/datepicker.js';
-// import './vendor/datepicker/dist/css/datepicker.minimal.css';
+import { get_role } from '@/http/userAPI';
 
 const app = createApp(App);
 

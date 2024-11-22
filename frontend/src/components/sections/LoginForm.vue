@@ -1,6 +1,6 @@
 <script>
 import { has_empty_fields } from '@/utils/tools';
-import { authorizize_user } from '@/utils/api';
+import { authorizize_user } from '@/http/userAPI';
 import MessageToast from '@/components/popups/MessageToast.vue';
 import { SERVER_URL } from '@/utils/config';
 import { ref } from 'vue';
@@ -21,7 +21,7 @@ export default {
 				const url = SERVER_URL + '/user/login'
 				this.axios.post(url, this.form_data)
 				.then(res => {
-					authorizize_user(res.data.result);
+					authorizize_user(res.data);
                 	this.$router.push({ name: 'user-data' });
 				})
 				.catch(error => {

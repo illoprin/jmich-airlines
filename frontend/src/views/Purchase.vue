@@ -1,11 +1,16 @@
 <script>
 import { AUTH_ROUTES, SERVER_URL } from '@/utils/config';
-import { add_order, get_decode_token, get_payment_data, add_payment_data } from '@/utils/api';
+
+// API
+import { get_decode_token } from '@/http';
+import { get_payment_data, add_payment_data} from '@/http/paymentAPI';
+import { add_order } from '@/http/purchaseAPI';
+
 import CreditCardModal from '@/components/popups/CreditCardModal.vue';
 import SpinnerBody from '@/components/sections/SpinnerBody.vue';
 import FlightInfoSnippet from '@/components/blocks/FlightInfoSnippet.vue';
 import PurchasePromo from '@/components/blocks/PurchasePromo.vue';
-import { format_price, has_empty_fields, prepare_form_data } from '@/utils/tools';
+import { format_price } from '@/utils/tools';
 import MessageToast from '@/components/popups/MessageToast.vue';
 import { ref } from 'vue';
 import CreditCardButton from '@/components/blocks/CreditCardButton.vue';
@@ -65,8 +70,7 @@ export default {
 			}
 		})
 		.then(response => {
-			const { result } = response.data;
-			this.flight_data = result[0];
+			this.flight_data = response.data;
 		})
 		.catch(err => {
 			this.show_toast('Ошибка на стороне сервера', err);
@@ -114,18 +118,13 @@ export default {
 			}, 1000);
 		},
 		async card_form_submit(form_data) {
-			if (!has_empty_fields(form_data)) {
-				form_data = prepare_form_data(form_data, true);
-				const post_result = await add_payment_data(this, form_data);
-				if (post_result.status == 0) {
-					this.payment_data = form_data;
-					this.card_modal_hide();
-				}else {
-					// error
-					alert(post_result.message);
-				}
+			const post_result = await add_payment_data(this, form_data);
+			if (post_result.status == 0) {
+				this.payment_data = form_data;
+				this.card_modal_hide();
 			}else {
-				alert('Некоторые поля не заполнены');
+				// error
+				alert(post_result.message);
 			}
 		},
 		card_modal_hide() {
@@ -144,9 +143,9 @@ export default {
 	<message-toast ref="toastRef"/>
 	<div v-if="loaded">
 		<div id="purchase_process" class="d-flex flex-column align-items-center justify-content-center" v-if="!view">
-			<CreditCardModal
+			<credit-card-modal
 				:shown="card_modal_shown"
-				:payment="payment_data" 
+				:payment_data="payment_data" 
 				:can_delete="false"
 				@submit="card_form_submit"
 				@on_hide="card_modal_hide"
@@ -226,7 +225,7 @@ export default {
 							<button
 								class="btn btn-primary shadow-sm w-100"
 								@click="submit()"
-								:disabled="payment_data == undefined"
+								:disabled="!payment_data.card_number"
 							>
 								Купить
 							</button>

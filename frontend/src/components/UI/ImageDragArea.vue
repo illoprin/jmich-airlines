@@ -1,6 +1,7 @@
 <script>
 import { SERVER_URL } from '@/utils/config';
-import { axios_post_proxy, get_decode_token, user_upload_avatar } from '@/utils/api';
+import { axios_post_proxy, get_decode_token } from '@/http';
+import { user_upload_avatar } from '@/http/userAPI';
 import { redirect } from '@/utils/tools';
 
 

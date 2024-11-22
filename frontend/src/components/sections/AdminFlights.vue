@@ -1,5 +1,5 @@
 <script>
-import { get_all_flights_regardless, change_flight_status, delete_flight } from '@/utils/api';
+import { fetch_flight, change_flight_status, delete_flight } from '@/http/adminAPI';
 import SpinnerComponent from './SpinnerComponent.vue';
 import RowHeader from '@/components/UI/RowHeader.vue';
 import AdminFlightItem from '@/components/items/AdminFlightItem.vue';
@@ -22,7 +22,7 @@ export default {
 		};
 	},
 	async mounted() {
-		this.flights = await get_all_flights_regardless(this, 6);
+		this.flights = await fetch_flight(this, 6);
 		this.loaded = true;
 	},
 	computed: {
@@ -68,7 +68,7 @@ export default {
 						break;
 				}
 			}
-			this.flights = await get_all_flights_regardless(this, 6);
+			this.flights = await fetch_flight(this, 6);
 		},
 	},
 	components: { SpinnerComponent, RowHeader, AdminFlightItem, AddFlightModal }

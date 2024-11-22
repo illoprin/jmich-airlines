@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
+const tools = require('../tools');
 
 dotenv.config();
 
@@ -21,18 +22,26 @@ const save_buffer_to_file = (buffer) => {
 	}
 };
 
-const upload_image = (req, path = 'upload/user') => {
-	const { image } = req.files;
-	if (!image) return res.send(400).json(tools.res_error('Файл не может быть загружен'));
-	const file_name_splitted = image.name.split('.');
+const upload_file = (file, path = 'upload/user', allowed = ['jpg', 'png', 'jpeg', 'gif', 'tiff']) => {
+	if (!file)
+		return false;
+	
+	if (Buffer.byteLength(file.data) > tools.MAX_BUFFER_LENGTH) 
+		return false;
+
+	const file_name_splitted = file.name.split('.');
 	const file_extension = file_name_splitted[file_name_splitted.length - 1];
+
+	if (!allowed.includes(file_extension)) 
+		return false;
+
 	const file_name = `${uuidv4()}.${file_extension}`;
-	image.mv(__dirname + `/../${path}/` + file_name);
+	file.mv(__dirname + `/../${path}/` + file_name);
 	return `http://localhost:${process.env.PORT}/${path}/${file_name}`;
 };
 
 module.exports = {
 	save_buffer_to_file,
-	upload_image
+	upload_file
 }
 

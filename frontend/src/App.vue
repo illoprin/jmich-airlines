@@ -1,6 +1,6 @@
 <script>
 import SpinnerBody from '@/components/sections/SpinnerBody.vue';
-import { check_auth } from './utils/api';
+import { check_auth } from './http/userAPI';
 
 
 export default {

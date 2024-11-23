@@ -221,3 +221,14 @@ body  {
 }
 
 
+/* ==== Hover Effect ==== */
+.hover_effect {
+	transition: transform 300ms;
+	cursor: default;
+}
+.hover_effect:hover {
+	transform: scale(1.05);
+	cursor: pointer;
+}
+
+

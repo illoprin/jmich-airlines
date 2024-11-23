@@ -13,7 +13,7 @@ module.exports = (db) => {
 		const { logo } = req.files;
 
 		try {
-			const logo_url = file_buffer.upload_file(logo);
+			const logo_url = file_buffer.upload_file(logo, 'upload');
 			if (!logo_url) 
 				return res.status(400).json(tools.res_error('Файл не может быть загружен. Размер файла не должен превышать 10 МБ и расширение должно удовлетворять формату.'));
 			const sql = 'INSERT INTO company(name, logo_src) VALUES (?, ?)';
@@ -27,15 +27,12 @@ module.exports = (db) => {
 
 	// Admin: get all companies
 	router.get('/', async (req, res) => {
-		
 		try {
 			const company = await tools.query_promise(db, 'SELECT * FROM company');
 			res.send(company);
 		} catch (err) {
 			return res.send(500).json(tools.sql_error(err));
 		}
-
-
 	});
 
 	// Admin: delete company

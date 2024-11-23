@@ -17,10 +17,10 @@ module.exports = (db) => {
 
 	// Admin: Add city
 	router.post('/', role_middleware, async (req, res) => {
-		const city = req.body;
+		const { name, airport_code } = req.body;
 		const sql = 'INSERT INTO city (name, airport_code) VALUES (?, ?)';
 		try {
-			const insert = await tools.query_promise(db, sql, [city.name, city.airport_code]);
+			const insert = await tools.query_promise(db, sql, [name, airport_code]);
 			res.send({ insert_id: insert.insertId });
 		} catch (error) {
 			res.status(500).json(tools.sql_error(error));

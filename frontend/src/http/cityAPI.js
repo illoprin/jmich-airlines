@@ -1,4 +1,5 @@
 import { SERVER_URL } from "@/utils/config";
+import { get_decode_token, axios_delete_proxy, axios_post_proxy } from ".";
 
 export const fetch_city = (app) => {
 	return new Promise((resolve, reject) => {
@@ -11,4 +12,16 @@ export const fetch_city = (app) => {
 				}
 			});
 	});
+}
+
+export const add_city = (app, data) => {
+	const token = localStorage.getItem('token');
+	const url = SERVER_URL + '/city/';
+	return axios_post_proxy(app, url, token, data);
+}
+
+export const delete_city = (app, id) => {
+	const token = localStorage.getItem('token');
+	const url = SERVER_URL + '/city/' + id;
+	return axios_delete_proxy(app, url, token);
 }

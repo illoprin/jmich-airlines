@@ -19,8 +19,34 @@ module.exports = (db) => {
 			res.status(500).json(tools.sql_error(e));
 			throw e;
 		}
-
 	});
+
+	// Admin: get all promo codes
+	router.get('/', role_middleware, async (req, res) => {
+		try {
+			const sql = 'SELECT * FROM promo_code';
+			const select_result = await tools.query_promise(db, sql);
+			res.send(select_result);
+		} catch (error) {
+			return res.status(500).json(tools.sql_error(e));
+		}
+	});
+
+	// Admin: delete promo code
+	router.delete('/:id', role_middleware, async (req, res) => {
+		try {
+			const id = Number(req.params.id);
+
+			const sql = 'DELETE FROM promo_code WHERE id = ?';
+			const delete_result = await tools.query_promise(db, sql, [id]);
+
+			res.send({ affected_rows: delete_result.affectedRows });
+		} catch (e) {
+			res.status(500).json(tools.sql_error(e));
+			throw e;
+		}
+	});
+
 
 	router.post('/verify', auth_middleware, async (req, res) => {
 		const { code } = req.body;

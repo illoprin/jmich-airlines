@@ -50,7 +50,7 @@ export default {
 								<router-link class="dropdown-item" :to="{name: 'user-data'}">Личный кабинет</router-link>
 							</li>
 							<li>
-								<router-link class="dropdown-item" :to="{name: 'user-order'}">Заказы</router-link>
+								<router-link class="dropdown-item" :to="{name: 'user-order'}">Билеты</router-link>
 							</li>
 							<li v-show="role == 1">
 								<router-link class="dropdown-item" :to="{name: 'admin-stat'}">Админ панель</router-link>

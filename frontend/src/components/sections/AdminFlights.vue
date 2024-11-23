@@ -22,7 +22,7 @@ export default {
 		};
 	},
 	async mounted() {
-		this.flights = await fetch_flight(this, 6);
+		this.update_state();
 		this.loaded = true;
 	},
 	computed: {
@@ -37,15 +37,11 @@ export default {
 		},
 		hide_new_flight_modal() {
 			this.new_flight_modal_shown = false;
-
 		},
 
-		async add_new_flight() {
-			if (!has_empty_fields(this.new_flight_form_data)) {
-				this.new_flight_modal_shown = false;
-			} else {
-				alert('Присутствуют пустые поля');
-			}
+		async flight_added() {
+			this.new_flight_modal_shown = false;
+			this.update_state();
 		},
 		async change_flights(action_type) {
 			console.log(action_type, this.checked);
@@ -68,8 +64,11 @@ export default {
 						break;
 				}
 			}
-			this.flights = await fetch_flight(this, 6);
+			await this.update_state();
 		},
+		async update_state() {
+			this.flights = await fetch_flight(this, 6);
+		}
 	},
 	components: { SpinnerComponent, RowHeader, AdminFlightItem, AddFlightModal }
 }
@@ -128,7 +127,7 @@ export default {
 			:shown="new_flight_modal_shown" 
 			:form_data="new_flight_form_data" 
 			@on_hide="hide_new_flight_modal" 
-			@add_flight_request="add_new_flight" 
+			@flight_added="flight_added" 
 		/>
 
 	</div>

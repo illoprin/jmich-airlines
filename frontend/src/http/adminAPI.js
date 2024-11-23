@@ -1,5 +1,5 @@
 import { SERVER_URL } from "@/utils/config";
-import { axios_get_proxy, axios_put_proxy, get_decode_token } from "@/http";
+import { axios_get_proxy, axios_put_proxy, get_decode_token, axios_delete_proxy } from "@/http";
 
 /* ================== ADMIN ================== */
 export const fetch_order = (app) => {

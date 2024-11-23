@@ -68,7 +68,7 @@ module.exports = (db) => {
 
 
 		try {
-			const insert_result = await tools.query_promise(db, sql, [data]);
+			const insert_result = await tools.query_promise(db, sql, data);
 			res.send({ insert_id: insert_result.affectedRows });
 		} catch (err) {
 			return res.status(500).json(tools.sql_error(err));

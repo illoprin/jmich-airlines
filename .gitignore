@@ -1,0 +1,9 @@
+html
+sketches
+backend/node_modules
+frontend/node_modules
+backend/.env
+backend/db.sql
+backend/db.js
+backend/upload/codes/*
+jmich.sql

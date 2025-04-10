@@ -1,0 +1,35 @@
+.datepicker.custom {
+	display: block;
+}
+
+.datepicker.custom table th {
+	color: #888;
+}
+
+.datepicker.custom .datepicker__wrapper {
+	padding: 20px;
+	border-radius: 20px;
+}
+
+.datepicker__prev {
+	text-decoration: none;
+	font-size: 2em;
+}
+
+.datepicker__next {
+	text-decoration: none;
+	font-size: 2em;
+}
+
+.datepicker.custom .datepicker__day div:hover,
+.datepicker.custom .datepicker__day.is-highlighted:not(.is-selected) div {
+	background: #333;
+	color: #fff;
+	border-radius: 10px;
+}
+
+.datepicker.custom .datepicker__day.is-selected div {
+	background: #2196F3;
+	color: #fff;
+	border-radius: 10px;
+}

@@ -1,0 +1,234 @@
+@font-face {
+	font-family: 'sf';
+	src: url(../font/sf_heavy.otf);
+	font-weight: 800;
+}
+
+@font-face {
+	font-family: 'sf';
+	src: url(../font/sf_bold.otf);
+	font-weight: 700;
+}
+
+@font-face {
+	font-family: 'sf';
+	src: url(../font/sf_med.otf);
+	font-weight: 500;
+}
+
+@font-face {
+	font-family: 'sf';
+	src: url(../font/sf_reg.otf);
+	font-weight: 400;
+}
+
+@font-face {
+	font-family: 'sf';
+	src: url(../font/sf_light.otf);
+	font-weight: 300;
+}
+
+/* USE SF-Pro-Display Font */
+body  {
+	font-family: 'sf';
+	overflow-x: hidden;
+}
+.strong-header {
+	font-size: 11em;
+	font-weight: 700;
+}
+
+
+
+.dropdown-item:hover {
+	background-color: #dadada;
+}
+
+.text-secondary {
+	color: #dadada;
+}
+
+.bg-secondary {
+	background-color: #dadada;
+}
+
+.search_page {
+	background: linear-gradient(
+		145deg,
+		rgba(79, 77, 193, 1) 0%,
+		rgba(73, 149, 255, 1) 100%
+	);
+	background-size: cover;
+	background-repeat: no-repeat;
+	color: white;
+
+	min-width: 100vw;
+	min-height: 100vh;
+
+}
+
+.aside {
+	background: linear-gradient(
+		145deg,
+		rgba(79, 77, 193, 1) 0%,
+		rgba(73, 149, 255, 1) 100%
+	);
+	background-size: cover;
+	background-repeat: no-repeat;
+	color: white;
+	/* box-shadow: -5px 0px 100px 0 rgba(0, 0, 0, .3); */
+}
+
+/* Ticket */
+#ticket {
+	transition: transform 300ms;
+	background-color: #fff;
+}
+#ticket:hover {
+	transform: scale(1.015);
+	cursor: default;
+}
+
+/* Order */
+.order {
+	transition: all 300ms;
+	background-color: #fff;
+	box-shadow: 0 0 100px 0 rgba(0, 0, 0, 0.03);
+}
+.order.delay {
+	background-color: #ffeabf;
+}
+.order.cancelled {
+	background-color: #ffc4c4;
+}
+.order.complete {
+	background-color: #7BE8A3;
+}
+
+.order:hover {
+	transform: scale(1.015);
+	box-shadow: 20px 0 100px 0 rgba(0, 0, 0, 0.2);
+	cursor: default;
+}
+
+.logo {
+	display: block;
+	font-size: 9em;
+}
+
+/* Buttons */
+.btn-search {
+	background-color: #ff9f00;
+	box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.1);
+	padding: 12px 25px;
+	transition: all 300ms;
+}
+.btn-search:hover {
+	background-color: #ffb133;
+	transform: scale(1.1);
+}
+
+.btn-dark {
+	transition: all 300ms;
+}
+.btn-dark:hover {
+	transform: scale(1.1);
+	background: none;
+	color: #000;
+}
+
+/* Mode Selector */
+.btn-mode-selector {
+	background-color: rgba(255, 255, 255, 0.1);
+	color: #fff;
+	transition: all 150ms;
+	border: 0;
+	padding: 14px 28px;
+}
+.btn-mode-selector:hover {
+	background-color: rgba(255, 255, 255, 0.5);
+	transform: scale(1.01);
+	border: 0;
+	cursor: pointer;
+}
+.btn-mode-selector:active {
+	transform: scale(1.02);
+	background: #fff;
+	color: #111;
+	border: 0;
+}
+.btn-mode-selector.checked {
+	background-color: #fff;
+	color: #111;
+	border: 0;
+}
+/* Mode Selector End */
+
+/* Badge */
+#ticket_badge {
+	top: 0;
+	left: 0;
+	transform: translateX(-20px);
+	transform: translateY(-10px);
+}
+
+
+/* ==== Modal ==== */
+
+/* Focus animation */
+.modal.fade .modal-dialog {
+	transform: translate(0);
+	transform: scale(0.7);
+	transition: all 300ms;
+}
+.modal.show .modal-dialog {
+	transform: none;
+}
+
+/* Misclick animation */
+.modal-content {
+	transition: all 300ms;
+}
+.modal.show.modal-static {
+	transform: scale(1.05);
+}
+.modal.show.modal-static .modal-dialog .modal-content {
+	filter: brightness(1.2);
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+	transition: all 300ms;
+}
+.modal-backdrop.show {
+	opacity: 1;
+	backdrop-filter: blur(7px);
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.order_qr {
+	transition: transform 300ms;
+	box-shadow: 0 5px 50px 0 rgba(0, 0, 0, 0.02);
+}
+.order_qr:hover {
+	box-shadow: 0 10px 100px 0 rgba(0, 0, 0, 0.1);
+	transform: scale(1.05);
+	cursor: pointer;
+}
+
+.user_select:hover {
+	cursor: pointer;
+}
+
+
+/* ==== Hover Effect ==== */
+.hover_effect {
+	transition: transform 300ms;
+	cursor: default;
+}
+.hover_effect:hover {
+	transform: scale(1.05);
+	cursor: pointer;
+}
+
+

@@ -1,0 +1,8 @@
+env: "local"
+storage_path: "./storage/storage.db"
+http_server:
+  host: "localhost"
+  port: 8000
+allow_origin:
+  host: "localhost"
+  port: 5000

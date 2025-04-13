@@ -12,6 +12,8 @@ console.log("config loaded: ", cfg);
 const storage: Storage = new Storage(cfg.storage_path);
 console.log("storage loaded from path: ", cfg.storage_path);
 
+// TODO: create redis server connection
+
 const app = express();
 
 function startServer() {

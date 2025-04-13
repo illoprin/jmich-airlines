@@ -1,5 +1,8 @@
 env: "local"
 storage_path: "./storage/storage.db"
+redis_server:
+  host: "localhost"
+  port: 9500
 http_server:
   host: "localhost"
   port: 8000

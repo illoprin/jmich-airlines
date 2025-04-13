@@ -14,8 +14,8 @@ export class Storage {
 	public get(sql: string, params: any[]): Object | unknown {
 		try {
 			const stmt: sqlite.Statement = this.db.prepare(sql);
-			const runResult: sqlite.RunResult | unknown = stmt.get(params);
-			return runResult;
+			const runResult: any = stmt.get(params);
+			return runResult as Object;
 		} catch (err) {
 			// WARN: naitive methods to process sqlite errors is not found
 			throw err;
@@ -25,8 +25,8 @@ export class Storage {
 	public all(sql: string, params: any[]): Object[] | unknown {
 		try {
 			const stmt: sqlite.Statement = this.db.prepare(sql);
-			const runResult: sqlite.RunResult | unknown = stmt.all(params);
-			return runResult;
+			const runResult: any = stmt.all(params);
+			return runResult as Object[];
 		} catch (err) {
 			// WARN: naitive methods to process sqlite errors is not found
 			throw err;

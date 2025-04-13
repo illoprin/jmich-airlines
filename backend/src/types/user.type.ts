@@ -1,18 +1,26 @@
 
 export enum Roles {
-	Customer = 0,
-	Moderator = 1,
-	Admin = 2,
+	Customer = "CUSTOMER",
+	Moderator = "MODERATOR",
+	Admin = "ADMIN",
 }
 
 export interface UserEntry {
-	id : number;
-	login : string;
-	firstname : string;
-	secondname : string;
-	phone : string;
-	email : string;
-	password_hash : string;
-	avatarpath : string;
-	role : Roles;
+	id?: number;
+	login: string;
+	firstname: string;
+	secondname: string;
+	phone: string;
+	email: string;
+	password_hash: string;
+	avatarpath: string;
+	role: Roles;
+}
+
+export interface UserEntryPublic {
+	id?: number;
+	firstname: string;
+	secondname:	string;
+	email: string;
+	avatarpath: string;
 }

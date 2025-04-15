@@ -1,18 +1,49 @@
 import { Storage } from "./storage";
 
 export abstract class BaseRepository<T> {
-	constructor(protected storage : Storage) {
+	constructor(protected storage: Storage) {
 		this.create();
 	}
-	protected abstract create(): void;
 	public abstract getTableName(): string;
-	
-	public getByID(id : number) : T | undefined {
-		try {
-			const entry = this.storage.get(`SELECT * FROM ${this.getTableName()} WHERE id = ?`, [id]);
-			return entry ? entry as T : undefined;
-		} catch (err) {
-			throw err;
-		}
+
+	/**
+	 * Create table in database
+	 */
+	protected abstract create(): void;
+
+	/**
+	 * Delete database entry
+	 * @param id - id of entry
+	 * @returns rows affected
+	 */
+	public removeByID(id: number): number {
+		const { changes } = this.storage.run(
+			`
+				DELETE FROM ${this.getTableName()} WHERE id = ?
+			`,
+			[id]
+		);
+		return changes;
+	}
+
+	/**
+	 *
+	 * @param id - id of entry
+	 * @returns template object or null, if nothing is found
+	 */
+	public getByID(id: number): T | null {
+		const entry = this.storage.get<T>(
+			`SELECT * FROM ${this.getTableName()} WHERE id = ?`,
+			[id]
+		);
+		return entry ? entry : null;
+	}
+
+	public getAll(): T[] | null {
+		const entries = this.storage.all<T>(
+			`SELECT * FROM ${this.getTableName()}`,
+			[]
+		);
+		return entries ? entries : null;
 	}
 }

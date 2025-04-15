@@ -12,7 +12,7 @@ export interface UserEntry {
 	secondname: string;
 	phone: string;
 	email: string;
-	password_hash: string;
+	password: string;
 	avatarpath: string;
 	role: Roles;
 }

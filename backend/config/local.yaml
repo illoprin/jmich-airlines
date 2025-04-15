@@ -1,5 +1,7 @@
 env: "local"
 storage_path: "./storage/storage.db"
+salt: 4
+secret: "34jfQ"
 redis_server:
   host: "localhost"
   port: 9500

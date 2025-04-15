@@ -1,36 +1,65 @@
-import sqlite from "better-sqlite3"
-import type { RunResult } from "better-sqlite3"
+import sqlite from "better-sqlite3";
+import type { RunResult } from "better-sqlite3";
+
+export enum StorageErrorType {
+	UNIQUE = "unique",
+	CHECK = "check",
+}
+
+export interface StorageError {
+	message: string;
+	field: string;
+	type: StorageErrorType;
+}
+
+function processStorageError(_err: unknown): StorageError | unknown {
+	if (!(_err instanceof Error)) return _err;
+
+	const err = _err as Error;
+	const unique_match = err.message.match(/UNIQUE constraint failed: (\w+)/);
+	const check_match = err.message.match(/CHECK constraint failed: (\w+)/);
+
+	if (unique_match) {
+		return {
+			message: "not unique",
+			field: unique_match[1],
+			type: StorageErrorType.UNIQUE,
+		} as StorageError;
+	} else if (check_match) {
+		return {
+			message: "invalid field",
+			field: check_match[1],
+			type: StorageErrorType.CHECK,
+		} as StorageError;
+	}
+
+	return _err;
+}
 
 export class Storage {
 	private db: sqlite.Database;
 	constructor(storagePath: string) {
-		try {
-			this.db = sqlite(storagePath);
-		} catch (err) {
-			throw err;
-		}
-	}
-	
-	public get(sql: string, params: any[]): Object | unknown {
-		try {
-			const stmt: sqlite.Statement = this.db.prepare(sql);
-			const runResult: any = stmt.get(params);
-			return runResult as Object;
-		} catch (err) {
-			// WARN: naitive methods to process sqlite errors is not found
-			throw err;
-		}
+		this.db = sqlite(storagePath);
+		this.db.pragma("foreign_keys = ON");
+		this.db.pragma("journal_mode = WAL");
 	}
 
-	public all(sql: string, params: any[]): Object[] | unknown {
-		try {
-			const stmt: sqlite.Statement = this.db.prepare(sql);
-			const runResult: any = stmt.all(params);
-			return runResult as Object[];
-		} catch (err) {
-			// WARN: naitive methods to process sqlite errors is not found
-			throw err;
+	public get<T = any>(sql: string, params: any[]): T | null {
+		const stmt: sqlite.Statement = this.db.prepare(sql);
+		const runResult: any = stmt.get(params);
+		if (runResult) {
+			return runResult as T;
 		}
+		return null;
+	}
+
+	public all<T = any>(sql: string, params: any[]): T[] | null {
+		const stmt: sqlite.Statement = this.db.prepare(sql);
+		const runResult: any = stmt.all(params);
+		if (runResult) {
+			return runResult as T[];
+		}
+		return null;
 	}
 
 	public run(
@@ -42,8 +71,7 @@ export class Storage {
 			const { lastInsertRowid, changes }: RunResult = stmt.run(params);
 			return { lastID: lastInsertRowid, changes };
 		} catch (err) {
-			// WARN: naitive methods to process sqlite errors is not found
-			throw err;
+			throw processStorageError(err);
 		}
 	}
 

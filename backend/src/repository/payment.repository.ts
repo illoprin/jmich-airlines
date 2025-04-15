@@ -1,4 +1,4 @@
-import type { PaymentEntry } from "../types/payment.types";
+import type { PaymentEntry } from "../types/payment.type";
 import { BaseRepository } from "./base.repository";
 
 export class PaymentRepository extends BaseRepository<PaymentEntry> {
@@ -27,45 +27,26 @@ export class PaymentRepository extends BaseRepository<PaymentEntry> {
 		);
 	}
 
-	public add({user_id, number, expires, cvv} : PaymentEntry) : bigint {
-		try {
-			const { lastID } = this.storage.run(`
+	public add({ user_id, number, expires, cvv }: PaymentEntry): bigint {
+		const { lastID } = this.storage.run(
+			`
 				INSERT INTO payment
 					(user_id, number, expires, cvv)
 				VALUES
 					(?, ?, ?, ?)
-			`, [user_id, number, expires, cvv]);
-			return lastID as bigint;
-		} catch(err) {
-			throw err;
-		}
+			`,
+			[user_id, number, expires, cvv]
+		);
+		return lastID as bigint;
 	}
 
-	/**
-	 * This function deletes entry about payment
-	 * @param id - id of entry
-	 * @returns rows affected
-	 */
-	public remove(id: number) : number {
-		try {
-			const { changes } = this.storage.run(`
-				DELETE FROM payment WHERE id = ?
-			`, [id]);
-			return changes;
-		} catch (err) {
-			throw err;
-		}
-	}
-
-	public getByUserID(user_id: number) : PaymentEntry[] | undefined {
-		try {
-			const entry = this.storage.all(`
+	public getByUserID(user_id: number): PaymentEntry[] | null {
+		const entry = this.storage.all<PaymentEntry>(
+			`
 				SELECT * FROM payment WHERE user_id = ?
-			`, [user_id]);
-			return entry ? entry as PaymentEntry[] : undefined;
-		} catch(err) {
-			throw err;
-		}
+			`,
+			[user_id]
+		);
+		return entry ? entry : null;
 	}
-
 }

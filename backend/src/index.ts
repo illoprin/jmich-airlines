@@ -6,11 +6,27 @@ import { createCorsOptions } from "./config/cors";
 import { loggerMiddleware } from "./middleware/logger.middleware";
 import type { Config } from "./types/config.type";
 import { authorizationMiddleware } from "./middleware/authorization.middleware";
+import { UserRepository } from "./repository/user.repository";
+import { PaymentRepository } from "./repository/payment.repository";
+import { dependencyInjectionMiddleware } from "./middleware/deps_injection.middleware";
+import { UserService } from "./service/user.service";
+import { UserHandler } from "./handlers/user.handler";
+import { PaymentHandeler } from "./handlers/payment.handler";
 
+// Load config
 const cfg: Config = readConfig("./config/local.yaml");
 console.log("config loaded: ", cfg);
+
+// Connect to storage
 const storage: Storage = new Storage(cfg.storage_path);
 console.log("storage loaded from path: ", cfg.storage_path);
+
+// Create storage repositories
+const userRepo: UserRepository = new UserRepository(storage);
+const paymentRepo: PaymentRepository = new PaymentRepository(storage);
+
+// Create services
+const userService: UserService = new UserService(userRepo, paymentRepo, cfg);
 
 // TODO: create redis server connection
 
@@ -30,9 +46,18 @@ function startServer() {
 app.use(express.json());
 // Add logger for request and response
 app.use(loggerMiddleware)
-// Add possability to view uploaded images
+// Add possability to view static
 app.use("/upload", express.static("./upload"));
 app.use("/upload/user", authorizationMiddleware, express.static("./upload/protected"));
+
+app.use("/user", UserHandler.router());
+app.use("/user/payment", PaymentHandeler.router());
+
+// Add repositories to Express App dependencies
+const dependencies = {
+	user: userService,
+}
+app.use(dependencyInjectionMiddleware(dependencies));
 
 // TODO: init router
 

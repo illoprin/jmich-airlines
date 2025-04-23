@@ -1,11 +1,8 @@
+frontend/node_modules
+backend/node_modules
+backend/dist
+backend_old
 html
 sketches
-backend/node_modules
-backend_old
-frontend/node_modules
-backend/.env
-backend/db.sql
-backend/db.js
-backend/upload/codes/*
 jmich.sql
 workspace.code-workspace

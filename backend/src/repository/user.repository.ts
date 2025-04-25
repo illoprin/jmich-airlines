@@ -7,7 +7,8 @@ export class UserRepository extends BaseRepository<UserEntry> {
 	}
 	public create() {
 		// Create table
-		this.storage.run(`
+		this.storage.run(
+			`
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
 				login TEXT NOT NULL UNIQUE,
@@ -17,13 +18,18 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				email TEXT NOT NULL UNIQUE,
 				password TEXT NOT NULL,
 				avatarpath TEXT DEFAULT '/upload/protected/avatar_default.jpg',
-				role TEXT NOT NULL CHECK(role IN ( 'CUSTOMER', 'MODERATOR', 'ADMIN' ))
+				role INTEGER DEFAULT 1
 			);
-		`, []);
+		`,
+			[]
+		);
 		// Create index
-		this.storage.run(`
-			CREATE UNIQUE INDEX IF NOT EXISTS idx_${this.getTableName()} BY ${this.getTableName()}(login)
-		`, []);
+		this.storage.run(
+			`
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_${this.getTableName()} ON ${this.getTableName()}(login)
+		`,
+			[]
+		);
 	}
 	public add({
 		login,
@@ -42,22 +48,13 @@ export class UserRepository extends BaseRepository<UserEntry> {
 			VALUES
 				(?, ?, ?, ?, ?, ?, ?, ?)
 		`,
-			[
-				login,
-				firstname,
-				secondname,
-				email,
-				avatarpath,
-				password,
-				phone,
-				role,
-			]
+			[login, firstname, secondname, email, avatarpath, password, phone, role]
 		);
 		return lastID as bigint;
 	}
 	public getPublicDataByID(id: number): UserEntryPublic | null {
-			const entry = this.storage.get<UserEntryPublic>(
-				`
+		const entry = this.storage.get<UserEntryPublic>(
+			`
 				SELECT
 					firstname, secondname, email, avatarpath
 				FROM
@@ -65,9 +62,9 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				WHERE
 					id = ?
 			`,
-				[id]
-			);
-			return entry ? entry : null;
+			[id]
+		);
+		return entry ? entry : null;
 	}
 	public update({
 		id,
@@ -80,7 +77,8 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		phone,
 		role,
 	}: UserEntry): number {
-			const { changes } = this.storage.run(`
+		const { changes } = this.storage.run(
+			`
 				UPDATE ${this.getTableName()} SET
 					login = ?,
 					firstname = ?,
@@ -93,19 +91,19 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				WHERE
 					id = ?
 			`,
-				[
-					login,
-					firstname,
-					secondname,
-					email,
-					avatarpath,
-					password,
-					phone,
-					role,
-					id,
-				]
-			);
-			return changes;
+			[
+				login,
+				firstname,
+				secondname,
+				email,
+				avatarpath,
+				password,
+				phone,
+				role,
+				id,
+			]
+		);
+		return changes;
 	}
 	public getByLogin(login: string): UserEntry | null {
 		const res = this.storage.get<UserEntry>(

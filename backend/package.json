@@ -1,7 +1,7 @@
 {
 	"name": "backend",
-	"version": "1.0.0",
-	"description": "",
+	"version": "1.9.0",
+	"description": "Jmich.Airlines server app",
 	"main": "./dist/index.js",
 	"scripts": {
 		"build": "tsc",

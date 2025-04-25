@@ -11,7 +11,8 @@ import { PaymentRepository } from "./repository/payment.repository";
 import { dependencyInjectionMiddleware } from "./middleware/deps_injection.middleware";
 import { UserService } from "./service/user.service";
 import { UserHandler } from "./handlers/user.handler";
-import { PaymentHandeler } from "./handlers/payment.handler";
+import { PaymentHandler } from "./handlers/payment.handler";
+import { Dependencies } from "./types/middlewaree.type";
 
 // Load config
 const cfg: Config = readConfig("./config/local.yaml");
@@ -45,25 +46,26 @@ function startServer() {
 // Allow to parse json from request body
 app.use(express.json());
 // Add logger for request and response
-app.use(loggerMiddleware)
+app.use(loggerMiddleware);
 // Add possability to view static
 app.use("/upload", express.static("./upload"));
-app.use("/upload/user", authorizationMiddleware, express.static("./upload/protected"));
-
-app.use("/user", UserHandler.router());
-app.use("/user/payment", PaymentHandeler.router());
+app.use(
+	"/upload/user",
+	authorizationMiddleware,
+	express.static("./upload/protected")
+);
 
 // Add repositories to Express App dependencies
-const dependencies = {
-	user: userService,
-}
+const dependencies: Dependencies = {
+	userService,
+	cfg,
+};
 app.use(dependencyInjectionMiddleware(dependencies));
 
-// TODO: init router
+app.use("/user", UserHandler.router());
+app.use("/user/payment", PaymentHandler.router());
 
 const corsOptions = createCorsOptions(cfg);
-app.use(
-	cors(corsOptions)
-);
+app.use(cors(corsOptions));
 
 startServer();

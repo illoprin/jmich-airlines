@@ -1,10 +1,17 @@
-import type { BaseRepository } from "../repository/base.repository";
+import { NextFunction, Request, Response } from "express";
+import type { Dependencies, MiddlewareFunc } from "../types/middlewaree.type";
 
-export function dependencyInjectionMiddleware<T>(services: T): any {
-	return (req: any, res: any, next: any) => {
-		req.services = {
-			...services
+declare global {
+	namespace Express {
+		interface Request {
+			dependencies: Dependencies;
 		}
-		next();
 	}
+}
+
+export function dependencyInjectionMiddleware(deps: Dependencies): MiddlewareFunc {
+	return (req: Request, res: Response, next: NextFunction) => {
+		req.dependencies = deps;
+		next();
+	};
 }

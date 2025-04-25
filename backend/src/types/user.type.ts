@@ -1,26 +1,26 @@
+import type { Entry } from "./repository.type";
 
 export enum Roles {
-	Customer = "CUSTOMER",
-	Moderator = "MODERATOR",
-	Admin = "ADMIN",
+	Customer = 1,
+	Moderator = 2,
+	Admin = 3,
 }
 
-export interface UserEntry {
-	id?: number;
+export interface UserEntry extends Entry {
 	login: string;
 	firstname: string;
 	secondname: string;
 	phone: string;
 	email: string;
 	password: string;
-	avatarpath: string;
-	role: Roles;
+
+	avatarpath?: string;
+	role?: Roles;
 }
 
-export interface UserEntryPublic {
-	id?: number;
+export interface UserEntryPublic extends Entry {
 	firstname: string;
-	secondname:	string;
+	secondname: string;
 	email: string;
 	avatarpath: string;
 }

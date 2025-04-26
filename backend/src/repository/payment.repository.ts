@@ -1,12 +1,12 @@
 import type { PaymentEntry } from "../types/payment.type";
-import { BaseRepository } from "./base.repository";
+import { BaseRepository } from "../lib/repository/base.repository";
 
 export class PaymentRepository extends BaseRepository<PaymentEntry> {
 	public getTableName(): string {
 		return "payment";
 	}
 
-	public create() {
+	protected create() {
 		this.storage.run(
 			`
 			CREATE TABLE IF NOT EXISTS payment (

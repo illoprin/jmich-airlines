@@ -5,7 +5,7 @@ import type { Config } from "../types/config.type";
 import { createToken } from "../lib/api/token";
 import { PaymentRepository } from "../repository/payment.repository";
 import type { PaymentEntry } from "../types/payment.type";
-import { StorageError, StorageErrorType } from "../repository/storage";
+import { StorageError, StorageErrorType } from "../lib/repository/storage";
 import {
 	ForbiddenError,
 	InvalidFieldError,
@@ -21,8 +21,7 @@ export class UserService {
 	) {}
 
 	public register(user: UserEntry): bigint {
-		// HACK: !!! everyone can reg user with admin role
-		// FIX: create reg payload data
+		// FIX: integrate UserRegPayload data
 		const password_hash = bcrypt.hashSync(user.password, this.cfg.salt);
 		user.password = password_hash;
 		try {
@@ -96,15 +95,16 @@ export class UserService {
 		}
 
 		// WARN: hardcoded fields
+		// FIX: use validation before repository query
 		let updated: UserEntry = {
 			id: candidate.id,
-			login: newFields.login || candidate.login,
-			firstname: newFields.firstname || candidate.firstname,
-			secondname: newFields.secondname || candidate.secondname,
-			email: newFields.email || candidate.email,
-			phone: newFields.phone || candidate.phone,
-			avatarpath: newFields.avatarpath || candidate.avatarpath,
-			password: password_hash || candidate.password,
+			login: newFields.login ?? candidate.login,
+			firstname: newFields.firstname ?? candidate.firstname,
+			secondname: newFields.secondname ?? candidate.secondname,
+			email: newFields.email ?? candidate.email,
+			phone: newFields.phone ?? candidate.phone,
+			avatarpath: newFields.avatarpath ?? candidate.avatarpath,
+			password: password_hash ?? candidate.password,
 			role: roleChangingAllowed ? newFields.role : candidate.role,
 		};
 

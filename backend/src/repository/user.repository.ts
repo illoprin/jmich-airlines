@@ -1,14 +1,13 @@
 import type { UserEntry, UserEntryPublic } from "../types/user.type";
-import { BaseRepository } from "./base.repository";
+import { BaseRepository } from "../lib/repository/base.repository";
 
 export class UserRepository extends BaseRepository<UserEntry> {
 	public getTableName(): string {
 		return "user";
 	}
-	public create() {
+	protected create() {
 		// Create table
-		this.storage.run(
-			`
+		this.storage.run(`
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
 				login TEXT NOT NULL UNIQUE,
@@ -17,17 +16,17 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				phone TEXT NOT NULL CHECK(length(phone) == 10),
 				email TEXT NOT NULL UNIQUE,
 				password TEXT NOT NULL,
-				avatarpath TEXT DEFAULT '/upload/protected/avatar_default.jpg',
+				avatarpath TEXT DEFAULT '/upload/protected/user/avatar_default.jpg',
 				role INTEGER DEFAULT 1
 			);
 		`,
 			[]
 		);
-		// Create index
-		this.storage.run(
-			`
+
+		// Create indexes for search optimization
+		this.storage.run(`
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_${this.getTableName()} ON ${this.getTableName()}(login)
-		`,
+			`,
 			[]
 		);
 	}

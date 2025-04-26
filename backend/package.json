@@ -1,12 +1,14 @@
 {
-	"name": "backend",
+	"name": "jmich-airlines-backend",
 	"version": "1.9.0",
 	"description": "Jmich.Airlines server app",
 	"main": "./dist/index.js",
 	"scripts": {
 		"build": "tsc",
-		"start": "node .",
-		"run": "ts-node ./src/index.ts"
+		"build:run": "node .",
+		"start": "ts-node ./src/index.ts",
+		"test": "jest",
+		"test:coverage": "jest --coverage"
 	},
 	"keywords": [],
 	"author": "",
@@ -19,12 +21,18 @@
 		"@types/express": "^5.0.1",
 		"@types/jsonwebtoken": "^9.0.9",
 		"@types/node": "^22.14.1",
+		"@types/qrcode": "^1.5.5",
 		"bcrypt": "^5.1.1",
 		"better-sqlite3": "^11.9.1",
 		"cors": "^2.8.5",
 		"express": "^5.1.0",
 		"jsonwebtoken": "^9.0.2",
+		"qrcode": "^1.5.4",
 		"typescript": "^5.8.3",
 		"yaml": "^2.7.1"
+	},
+	"devDependencies": {
+		"@types/jest": "^29.5.14",
+		"jest": "^29.7.0"
 	}
 }

@@ -6,6 +6,15 @@ export enum Roles {
 	Admin = 3,
 }
 
+export interface UserRegDTO {
+	login: string;
+	firstname: string;
+	secondname: string;
+	phone: string;
+	email: string;
+	password: string;
+}
+
 export interface UserEntry extends Entry {
 	login: string;
 	firstname: string;

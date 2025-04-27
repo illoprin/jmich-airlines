@@ -16,21 +16,21 @@ export class AirportRepository extends BaseRepository<AirportEntry> {
 				city_id INTEGER NOT NULL,
 				FOREIGN KEY(city_id) REFERENCES city(id) ON DELETE CASCADE
 			);
-		`,
+			`,
 			[]
 		);
 
 		this.storage.run(
 			`
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_airport_code ON ${this.getTableName()}(code)
-		`,
+			`,
 			[]
 		);
 
 		this.storage.run(
 			`
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_airport_name ON ${this.getTableName()}(name)
-		`,
+			`,
 			[]
 		);
 	}
@@ -40,7 +40,7 @@ export class AirportRepository extends BaseRepository<AirportEntry> {
 			`
 			INSERT INTO ${this.getTableName()}(name, code, city_id) VALUES
 				name = ?, code = ?, city_id = ?
-		`,
+			`,
 			[name, code, city_id]
 		);
 		return lastID as bigint;
@@ -55,7 +55,7 @@ export class AirportRepository extends BaseRepository<AirportEntry> {
 				code = ?,
 			WHERE
 				id = ?
-		`,
+			`,
 			[name, city_id, code, id]
 		);
 		return changes;
@@ -65,7 +65,7 @@ export class AirportRepository extends BaseRepository<AirportEntry> {
 		const entries = this.storage.all<AirportEntry>(
 			`
 			SELECT * FROM ${this.getTableName()} WHERE city_id = ?
-		`,
+			`,
 			[city_id]
 		);
 		return entries;

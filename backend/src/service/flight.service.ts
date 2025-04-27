@@ -1,6 +1,7 @@
 import type { FlightRepository } from "../repository/flight.repository";
 import { StorageError, StorageErrorType } from "../lib/repository/storage";
 import type {
+	FlightDTO,
 	FlightEntry,
 	FlightSearchPayload,
 	FlightStatus,
@@ -64,16 +65,32 @@ export class FlightService {
 		this.flightRepo.update(flight);
 	}
 
-	public search(payload: FlightSearchPayload): FlightEntry[] {
+	public search(payload: FlightSearchPayload): FlightDTO[] {
 		if (payload.departure_date.getMilliseconds() <= Date.now()) {
 			throw new InvalidFieldError("invalid departure date in search request");
 		}
 
-		const flights: FlightEntry[] = this.flightRepo.searchActiveFlights(
-			payload.departure_city_id,
-			payload.arrival_city_id,
+		const flights = this.flightRepo.searchActiveFlights(
+			payload.departure_airport_id,
+			payload.arrival_airport_id,
 			payload.departure_date,
-			payload.seats_required
+			payload.seats,
+			payload.max,
+			payload.page,
+		)
+		if (!flights) {
+			throw new NotFoundError(
+				"there are no active flights matching your request"
+			);
+		}
+		return flights;
+	}
+
+	public getNearest(payload: {from_date: Date, max : number, page : number}) : FlightDTO[] {
+		const flights = this.flightRepo.searchNearest(
+			payload.from_date,
+			payload.max,
+			payload.page,
 		);
 		if (!flights) {
 			throw new NotFoundError(
@@ -96,11 +113,19 @@ export class FlightService {
 		return [];
 	}
 
-	public getByID(id: number): FlightEntry {
-		const flight = this.flightRepo.getByID(id);
+	public getByID(id: number): FlightDTO {
+		const flight = this.flightRepo.getDTOByID(id);
 		if (!flight) {
 			throw new NotFoundError("flight not found");
 		}
 		return flight;
 	}
+
+	public removeByID(id: number) {
+		const changes = this.flightRepo.removeByID(id);
+		if (!changes) {
+			throw new NotFoundError("flight not found");
+		}
+	}
+	
 }

@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Router } from "express";
 import { readConfig } from "./config/config";
 import { Storage } from "./lib/repository/storage";
 import cors from "cors";
@@ -22,30 +22,40 @@ import { BaggageRuleRepository } from "./repository/baggare-rule.repository";
 import { FlightHandler } from "./handlers/flight.handler";
 import { BookingRepository } from "./repository/booking.repository";
 import { DiscountRepository } from "./repository/discount.repository";
+import { createClient, RedisClientType } from 'redis';
 
 // Load config
 const cfg: Config = readConfig("./config/local.yaml");
-console.log("config loaded: ", cfg);
+console.log("config loaded");
 
 // Connect to storage
 const storage: Storage = new Storage(cfg.storage_path);
-console.log("storage loaded from path: ", cfg.storage_path);
+console.log("storage loaded from path:", cfg.storage_path);
+
+// Connect to Redis server
+const redisClient = createClient({
+	url: `redis://${cfg.redis_server.host}:${cfg.redis_server.port}`,
+})
+	.on("error", (err: Error) => console.error("redis connection error", err))
+	.connect();
+console.log("redis cache connected");
 
 // Create storage repositories
 const userRepo: UserRepository = new UserRepository(storage);
 const paymentRepo: PaymentRepository = new PaymentRepository(storage);
 const cityRepo: CityRepository = new CityRepository(storage);
 const airportRepo: AirportRepository = new AirportRepository(storage);
-const baggageRuleRepo : BaggageRuleRepository = new BaggageRuleRepository(storage);
-const companyRepo : CompanyRepository = new CompanyRepository(storage);
+const baggageRuleRepo: BaggageRuleRepository = new BaggageRuleRepository(
+	storage
+);
+const companyRepo: CompanyRepository = new CompanyRepository(storage);
 const flightRepo: FlightRepository = new FlightRepository(storage);
 const dicountRepo: DiscountRepository = new DiscountRepository(storage);
+const bookingRepo: BookingRepository = new BookingRepository(storage);
 
 // Create services
 const userService: UserService = new UserService(userRepo, paymentRepo, cfg);
 const flightService: FlightService = new FlightService(flightRepo);
-
-// TODO: create redis server connection
 
 const app = express();
 
@@ -84,9 +94,12 @@ const dependencies: Dependencies = {
 };
 app.use(dependencyInjectionMiddleware(dependencies));
 
-app.use("/user", UserHandler.router());
-app.use("/user/payment", PaymentHandler.router());
-app.use("/flight", FlightHandler.router());
+const masterRouter = Router();
+masterRouter.use("/user", UserHandler.router());
+masterRouter.use("/user/payment", PaymentHandler.router());
+masterRouter.use("/flight", FlightHandler.router());
+
+app.use("/api", masterRouter);
 
 const corsOptions = createCorsOptions(cfg);
 app.use(cors(corsOptions));

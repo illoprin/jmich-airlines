@@ -1,4 +1,4 @@
-import type { Entry } from "./repository.type";
+import type { Entry } from "../lib/repository/base.repository";
 
 export interface DiscountEntry extends Entry {
 	code: string;

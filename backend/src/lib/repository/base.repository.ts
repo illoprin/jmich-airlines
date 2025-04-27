@@ -1,10 +1,15 @@
 import { Storage } from "./storage";
 
+export interface Entry {
+	id?: number;
+}
+
 export abstract class BaseRepository<T> {
 	constructor(protected storage: Storage) {
 		this.create();
 	}
 	public abstract getTableName(): string;
+
 
 	/**
 	 * Create table in database

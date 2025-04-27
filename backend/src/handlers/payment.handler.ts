@@ -54,7 +54,6 @@ export class PaymentHandler {
 			);
 			res.json(ResponseTypes.ok<PaymentEntry>(payment));
 		} catch (err) {
-			console.log(err);
 			if (err instanceof NotFoundError) {
 				res.status(404).json(ResponseTypes.error(err.message));
 			} else if (err instanceof ForbiddenError) {
@@ -77,7 +76,6 @@ export class PaymentHandler {
 			req.dependencies.userService.deletePayment(id);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			console.log(err);
 			if (err instanceof NotFoundError) {
 				res.status(404).json(ResponseTypes.error("not found"));
 			} else if (err instanceof ForbiddenError) {

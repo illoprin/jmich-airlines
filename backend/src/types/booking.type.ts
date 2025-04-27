@@ -1,4 +1,5 @@
-import type { Entry } from "./repository.type";
+import type { FlightDTO } from "./flight.type";
+import type { Entry } from "../lib/repository/base.repository";
 
 export interface BookingEntry extends Entry {
 	flight_id: number;
@@ -6,5 +7,14 @@ export interface BookingEntry extends Entry {
 	baggage_weight: number;
 	created?: Date;
 	qr_code: string;
+	cost: number;
+}
+
+export interface BookingDTO extends Entry {
+	created: Date;
+	flight: FlightDTO;
+	user_id: number;
+	qr_code: string;
+	baggage_weight: number;
 	cost: number;
 }

@@ -1,4 +1,4 @@
-import type { UserEntry, UserEntryPublic } from "../types/user.type";
+import type { UserEntry, UserPublicDTO } from "../types/user.type";
 import { BaseRepository } from "../lib/repository/base.repository";
 
 export class UserRepository extends BaseRepository<UserEntry> {
@@ -51,8 +51,8 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		);
 		return lastID as bigint;
 	}
-	public getPublicDataByID(id: number): UserEntryPublic | null {
-		const entry = this.storage.get<UserEntryPublic>(
+	public getPublicDataByID(id: number): UserPublicDTO | null {
+		const entry = this.storage.get<UserPublicDTO>(
 			`
 				SELECT
 					firstname, secondname, email, avatarpath

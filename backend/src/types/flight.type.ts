@@ -1,4 +1,4 @@
-import type { Entry } from "./repository.type";
+import type { Entry } from "../lib/repository/base.repository";
 
 export enum FlightStatus {
 	ACTIVE = "ACTIVE",
@@ -7,18 +7,23 @@ export enum FlightStatus {
 	CANCELLED = "CANCELLED",
 }
 
-export interface FlightDTO {
-	id: number;
+export interface FlightDTO extends Entry {
 	route_code: string;
 	departure_city: {
 		name: string;
-		airport: string; // Airport code
-		img: string; // City image
+		airport: {
+			code: string;
+			name: string;
+		}
+		image: string; // City image
 	};
 	arrival_city: {
 		name: string;
-		airport: string; // Airport code
-		img: string; // City image
+		airport: {
+			code: string;
+			name: string;
+		}
+		image: string; // City image
 	};
 	departure_date: Date;
 	arrival_date: Date;
@@ -36,10 +41,12 @@ export interface FlightDTO {
 }
 
 export interface FlightSearchPayload {
-	departure_city_id: number;
-	arrival_city_id: number;
+	departure_airport_id: number;
+	arrival_airport_id: number;
 	departure_date: Date;
-	seats_required: number;
+	seats: number;
+	max: number;
+	page: number;
 }
 
 export interface FlightEntry extends Entry {

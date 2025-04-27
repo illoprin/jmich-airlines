@@ -1,4 +1,4 @@
-import type { Entry } from "./repository.type";
+import type { Entry } from "../lib/repository/base.repository";
 
 export interface CompanyEntry extends Entry {
 	name: string;

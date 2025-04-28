@@ -1,39 +1,6 @@
 import sqlite from "better-sqlite3";
-import type { RunResult } from "better-sqlite3";
-import { extractFieldFromLengthError, extractFieldFromUniqueError } from "./extract-error";
-
-export enum StorageErrorType {
-	UNIQUE = "unique",
-	CHECK = "check",
-}
-
-export class StorageError extends Error {
-	constructor(
-		message: string,
-		public field: string,
-		public type: StorageErrorType
-	) {
-		super(message);
-	}
-}
-
-function processStorageError(_err: unknown): StorageError | unknown {
-	if (!(_err instanceof Error)) return _err;
-
-	const err = _err as Error;
-	const unique_match = err.message.match(/UNIQUE constraint failed: (\w+)/);
-	const check_match = err.message.match(/CHECK constraint failed: (\w+)/);
-
-	if (unique_match) {
-		const field = extractFieldFromUniqueError(err.message);
-		return new StorageError("not unique", field ?? "?", StorageErrorType.UNIQUE);
-	} else if (check_match) {
-		const field = extractFieldFromLengthError(err.message);
-		return new StorageError("invalid field", field ?? "?", StorageErrorType.CHECK);
-	}
-
-	return _err;
-}
+import type { RunResult, SqliteError } from "better-sqlite3";
+import { processStorageError } from "./storage-error";
 
 export class Storage {
 	private db: sqlite.Database;
@@ -70,7 +37,7 @@ export class Storage {
 			const { lastInsertRowid, changes }: RunResult = stmt.run(params);
 			return { lastID: lastInsertRowid, changes };
 		} catch (err) {
-			console.log(err);
+			console.log((err as Error).message);
 			throw processStorageError(err);
 		}
 	}

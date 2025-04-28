@@ -25,7 +25,7 @@ export class BaggageRuleRepository extends BaseRepository<BaggageRuleEntry> {
 			INSERT INTO ${this.getTableName()}
 				(max_free_weight, price_per_kg)
 			VALUES
-				max_free_weight = ?, price_per_kg = ?
+				(?, ?)
 		`,
 			[max_free_weight, price_per_kg]
 		);

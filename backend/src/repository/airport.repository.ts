@@ -38,8 +38,10 @@ export class AirportRepository extends BaseRepository<AirportEntry> {
 	public add({ name, code, city_id }: AirportEntry): bigint {
 		const { lastID } = this.storage.run(
 			`
-			INSERT INTO ${this.getTableName()}(name, code, city_id) VALUES
-				name = ?, code = ?, city_id = ?
+			INSERT INTO ${this.getTableName()}
+				(name, code, city_id)
+			VALUES
+				(?, ?, ?)
 			`,
 			[name, code, city_id]
 		);

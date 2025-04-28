@@ -1,7 +1,10 @@
 frontend/node_modules
 backend/node_modules
+backend/docs/*_PROMT.md
+backend/docs/PROMTS.md
 backend/start-dev.cmd
 backend/dist
+backend/coverage
 backend_old
 html
 sketches

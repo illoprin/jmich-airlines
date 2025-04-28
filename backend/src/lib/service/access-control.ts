@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { Roles } from "../../types/user.type";
-import type { Entry } from "../../types/repository.type";
+import type { Entry } from "../repository/base.repository";
 import {
 	AuthorizationError,
 	ForbiddenError,

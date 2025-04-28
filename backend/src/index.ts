@@ -18,11 +18,12 @@ import { FlightService } from "./service/flight.service";
 import { CityRepository } from "./repository/city.repository";
 import { CompanyRepository } from "./repository/company.repository";
 import { AirportRepository } from "./repository/airport.repository";
-import { BaggageRuleRepository } from "./repository/baggare-rule.repository";
+import { BaggageRuleRepository } from "./repository/baggage-rule.repository";
 import { FlightHandler } from "./handlers/flight.handler";
 import { BookingRepository } from "./repository/booking.repository";
 import { DiscountRepository } from "./repository/discount.repository";
-import { createClient, RedisClientType } from 'redis';
+import { createClient, RedisClientType } from "redis";
+import { BookingService } from "./service/booking.service";
 
 // Load config
 const cfg: Config = readConfig("./config/local.yaml");
@@ -41,21 +42,20 @@ const redisClient = createClient({
 console.log("redis cache connected");
 
 // Create storage repositories
-const userRepo: UserRepository = new UserRepository(storage);
-const paymentRepo: PaymentRepository = new PaymentRepository(storage);
-const cityRepo: CityRepository = new CityRepository(storage);
-const airportRepo: AirportRepository = new AirportRepository(storage);
-const baggageRuleRepo: BaggageRuleRepository = new BaggageRuleRepository(
-	storage
-);
-const companyRepo: CompanyRepository = new CompanyRepository(storage);
-const flightRepo: FlightRepository = new FlightRepository(storage);
-const dicountRepo: DiscountRepository = new DiscountRepository(storage);
-const bookingRepo: BookingRepository = new BookingRepository(storage);
+const userRepo = new UserRepository(storage);
+const paymentRepo = new PaymentRepository(storage);
+const cityRepo = new CityRepository(storage);
+const airportRepo = new AirportRepository(storage);
+const baggageRuleRepo = new BaggageRuleRepository(storage);
+const companyRepo = new CompanyRepository(storage);
+const flightRepo = new FlightRepository(storage);
+const discountRepo = new DiscountRepository(storage);
+const bookingRepo = new BookingRepository(storage);
 
 // Create services
-const userService: UserService = new UserService(userRepo, paymentRepo, cfg);
-const flightService: FlightService = new FlightService(flightRepo);
+const userService = new UserService(userRepo, paymentRepo, cfg);
+const flightService = new FlightService(flightRepo);
+const bookingService = new BookingService(bookingRepo, discountRepo, flightRepo, userRepo);
 
 const app = express();
 
@@ -90,6 +90,7 @@ app.use(
 const dependencies: Dependencies = {
 	userService,
 	flightService,
+	bookingService,
 	cfg,
 };
 app.use(dependencyInjectionMiddleware(dependencies));

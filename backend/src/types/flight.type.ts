@@ -38,13 +38,14 @@ export interface FlightDTO extends Entry {
 	seats_available: number;
 	price: number;
 	status: FlightStatus;
+	cheapest?: boolean
 }
 
 export interface FlightSearchPayload {
-	departure_airport_id: number;
-	arrival_airport_id: number;
-	departure_date: Date;
-	seats: number;
+	departure_airport_id?: number;
+	arrival_airport_id?: number;
+	departure_date?: Date;
+	seats?: number;
 	max: number;
 	page: number;
 }
@@ -59,5 +60,4 @@ export interface FlightEntry extends Entry {
 	seats_available?: number;
 	price: number;
 	status?: FlightStatus;
-	cheapest?: boolean;
 }

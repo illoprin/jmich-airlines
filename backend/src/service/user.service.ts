@@ -5,7 +5,7 @@ import type { Config } from "../types/config.type";
 import { createToken } from "../lib/api/token";
 import type { PaymentRepository } from "../repository/payment.repository";
 import type { PaymentEntry } from "../types/payment.type";
-import { StorageError, StorageErrorType } from "../lib/repository/storage";
+import { StorageError, StorageErrorType } from "../lib/repository/storage-error";
 import {
 	ForbiddenError,
 	InvalidFieldError,

@@ -10,30 +10,30 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 		return "flight_";
 	}
 
-	private getDTOQuery(whereClause: string) : string {
+	private getDTOQuery(whereClause: string, usePagination: boolean = false) : string {
 		return `
 			SELECT
-				f.id AS flight_id
-				f.route_code AS flight_route_code
-				f.departure_date AS flight_departure_date
-				f.arrival_date AS flight_arrival_date
-				f.seats_available AS flight_seats
-				f.price AS flight_price
-				f.status AS flight_status
+				f.id AS flight_id,
+				f.route_code AS flight_route_code,
+				f.departure_date AS flight_departure_date,
+				f.arrival_date AS flight_arrival_date,
+				f.seats_available AS flight_seats,
+				f.price AS flight_price,
+				f.status AS flight_status,
 				
-				dep_city.name AS departure_city_name
-				dep_city.image AS departure_city_image
-				dep_airport.code AS departure_airport_code
-				dep_airport.name AS departure_airport_name
+				dep_city.name AS departure_city_name,
+				dep_city.image AS departure_city_image,
+				dep_airport.code AS departure_airport_code,
+				dep_airport.name AS departure_airport_name,
 				
-				arr_city.name AS arrival_city_name
-				arr_city.image AS arrival_city_image
-				arr_airport.code AS arrival_airport_code
-				arr_airport.name AS arrival_airport_name
+				arr_city.name AS arrival_city_name,
+				arr_city.image AS arrival_city_image,
+				arr_airport.code AS arrival_airport_code,
+				arr_airport.name AS arrival_airport_name,
 
-				c.name AS company_name
-				c.logo AS company_logo
-				b.max_free_weight AS company_max_free_weight
+				c.name AS company_name,
+				c.logo AS company_logo,
+				b.max_free_weight AS company_max_free_weight,
 				b.price_per_kg AS company_price_per_kg
 			FROM
 				${this.getTableName()} f
@@ -54,9 +54,11 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				baggage_rule b ON c.baggage_rule_id = b.id
 			
 			${whereClause}
+
 			ORDER BY
-				f.departure_date ASC
-			LIMIT ?, ?
+				f.departure_date DESC
+
+			${usePagination ? "LIMIT ? OFFSET ?" : ""}
 		`;
 	}
 
@@ -80,8 +82,8 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				},
 				image: row.arrival_city_image,
 			},
-			departure_date: row.departure_date,
-			arrival_date: row.arrival_date,
+			departure_date: new Date(row.flight_departure_date),
+			arrival_date: new Date(row.flight_arrival_date),
 			company: {
 				name: row.company_name,
 				logo: row.company_logo,
@@ -102,15 +104,15 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			`
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
-				route_code TEXT NOT NULL CHECK(route_code GLOB '[A-Z][0-9][0-9][0-9]'),
+				route_code TEXT NOT NULL UNIQUE CHECK(route_code GLOB '[A-Z][0-9][0-9][0-9]'),
 				departure_airport_id INTEGER NOT NULL,
 				arrival_airport_id INTEGER NOT NULL,
 				departure_date DATETIME NOT NULL CHECK(departure_date > CURRENT_TIMESTAMP),
 				arrival_date DATETIME NOT NULL,
 				company_id INTEGER NOT NULL,
 				seats_available INTEGER NOT NULL CHECK(seats_available BETWEEN 0 AND 512),
-				price REAL NOT NULL,
-				status TEXT NOT NULL CHECK(status IN ('ACTIVE', 'COMPLETED', 'DELAYED', 'CANCELLED')),
+				price INTEGER NOT NULL CHECK (price > 0),
+				status TEXT NOT NULL CHECK(status IN ('ACTIVE', 'COMPLETED', 'DELAYED', 'CANCELLED')) DEFAULT 'ACTIVE',
 				
 				FOREIGN KEY(departure_airport_id) REFERENCES airport(id) ON DELETE SET NULL,
 				FOREIGN KEY(arrival_airport_id) REFERENCES airport(id) ON DELETE SET NULL,
@@ -140,9 +142,9 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			`
 			INSERT INTO ${this.getTableName()}
 				(route_code, departure_airport_id, arrival_airport_id, departure_date, 
-				arrival_date, company_id, seats_available, price, status)
+				arrival_date, company_id, seats_available, price)
 			VALUES
-				(?, ?, ?, ?, ?, ?, ?, ?, ?)
+				(?, ?, ?, ?, ?, ?, ?, ?)
 			`,
 			[
 				flight.route_code,
@@ -153,7 +155,6 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				flight.company_id,
 				flight.seats_available,
 				flight.price,
-				flight.status,
 			]
 		);
 		return lastID as bigint;
@@ -200,8 +201,8 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 		arrivalAirportId?: number,
 		departureDate?: Date,
 		minSeatsAvailable: number = 1,
-		maxEntries: number = 10,
-		page: number = 1
+		max?: number,
+		page?: number,
 	): FlightDTO[] | null {
 		// Build WHERE conditions dynamically based on provided parameters
 		const conditions: string[] = ["status = 'ACTIVE'"];
@@ -219,37 +220,24 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 
 		if (departureDate !== undefined) {
 			const dateStr = departureDate.toISOString().split("T")[0];
-			conditions.push("date(f.departure_date) > date(?)");
+			conditions.push("date(f.departure_date) >= date(?)");
 			params.push(dateStr);
 		}
 
-		conditions.push("seats_available >= ?");
+		conditions.push("f.seats_available >= ?");
 		params.push(minSeatsAvailable);
-		params.push(maxEntries, page * maxEntries);
 
 		const whereClause =
 			conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+		
+		let pagination = false;
+		if (max && page) {
+			pagination = true;
+			params.push(max, max * page);
+		}
 
-		const rows = this.storage.all<any>(this.getDTOQuery(whereClause), params);
-		return rows ? rows.map(row => this.getDTORow(row) as FlightDTO) : null;
-	}
-
-	/**
-	 * Search for nearest flights from current date
-	 */
-	public searchNearest(
-		fromDate: Date,
-		maxOnPage: number,
-		page: number
-	): FlightDTO[] | null {
-		const whereClause = `
-			WHERE departure_date > date(?)
-		`;
-		const nowDate = fromDate.toISOString().split("T")[0];
-		const params = [nowDate, maxOnPage, maxOnPage * page]
-		const rows = this.storage.all<any>(
-			this.getDTOQuery(whereClause), params
-		);
+		const query = this.getDTOQuery(whereClause, pagination);
+		const rows = this.storage.all<any>(query, params);
 		return rows ? rows.map(row => this.getDTORow(row) as FlightDTO) : null;
 	}
 
@@ -260,6 +248,11 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			this.getDTOQuery(whereClause), params
 		);
 		return this.getDTORow(row);
+	}
+
+	public getDTOAll(max: number, page: number): FlightDTO[] | null {
+		const rows = this.storage.all<any>(this.getDTOQuery(""), [max, page]);
+		return rows ? rows.map(row => this.getDTORow(row) as FlightDTO) : null;
 	}
 
 	/**

@@ -5,6 +5,13 @@ export class InvalidFieldError extends Error {
 	}
 }
 
+export class RelatedDataError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "HasRelatedDataError";
+	}
+}
+
 export class NotUniqueError extends Error {
 	constructor(message: string) {
 		super(message);

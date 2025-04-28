@@ -10,7 +10,7 @@ export class CityRepository extends BaseRepository<CityEntry> {
 		this.storage.run(
 			`
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
-				id NUMBER PRIMARY KEY,
+				id INTEGER PRIMARY KEY,
 				name TEXT NOT NULL UNIQUE,
 				image TEXT NOT NULL DEFAULT '/upload/city_default.jpg'
 			)

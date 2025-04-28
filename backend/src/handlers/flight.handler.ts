@@ -5,7 +5,7 @@ import type {
 	FlightSearchPayload,
 	FlightStatus,
 } from "../types/flight.type";
-import { InvalidFieldError, NotFoundError } from "../types/service.type";
+import { RelatedDataError, InvalidFieldError, NotFoundError } from "../types/service.type";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/user.type";
@@ -50,6 +50,8 @@ export class FlightHandler {
 		} catch (err) {
 			if (err instanceof NotFoundError) {
 				res.status(404).json(ResponseTypes.error(err.message));
+			} else if (err instanceof RelatedDataError) {
+				res.status(405).json(ResponseTypes.error(err.message));
 			} else {
 				res.status(500).json(ResponseTypes.internalError());
 			}
@@ -60,21 +62,6 @@ export class FlightHandler {
 		try {
 			const query: FlightSearchPayload = req.body;
 			const flights = req.dependencies.flightService.search(query);
-			res.json(ResponseTypes.ok({ flights }));
-		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
-		}
-	}
-
-	private static searchNearestFlights(req: Request, res: Response): void {
-		try {
-			const query: { max: number; page: number; from_date: Date } = req.body;
-			query.from_date = new Date();
-			const flights = req.dependencies.flightService.getNearest(query);
 			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
 			if (err instanceof NotFoundError) {
@@ -118,7 +105,6 @@ export class FlightHandler {
 
 		// Guest routes
 		router.get("/search", this.searchFlights);
-		router.get("/search/nearest", this.searchNearestFlights);
 		router.get("/:id", this.getFlightByID);
 
 		// Moderator routes

@@ -12,6 +12,7 @@ export class DiscountRepository extends BaseRepository<DiscountEntry> {
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
 				code TEXT NOT NULL UNIQUE CHECK(length(code) < 64),
+				amount REAL NOT NULL CHECK(amount BETWEEN 0 AND 1),
 				valid_until DATE NOT NULL DEFAULT (date('now', '+20 days'))
 			)
 		`,

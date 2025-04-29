@@ -13,9 +13,10 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 				id INTEGER PRIMARY KEY,
 				flight_id INTEGER NOT NULL,
 				user_id INTEGER NOT NULL,
-				baggage_weight INTEGER NOT NULL,
+				baggage_weight INTEGER NOT NULL CHECK(baggage_weight >= 0),
 				created DATETIME DEFAULT CURRENT_TIMESTAMP,
 				qr_code TEXT NOT NULL,
+				seats INTEGER NOT NULL CHECK(seats > 0),
 				cost INTEGER CHECK(cost >= 0),
 				status TEXT NOT NULL CHECK(status IN ('ACTIVE', 'CANCELLED', 'COMPLETED')) DEFAULT 'ACTIVE',
 
@@ -46,16 +47,18 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 		user_id,
 		baggage_weight,
 		qr_code,
+		created,
+		seats,
 		cost,
 	}: BookingEntry): bigint {
 		const { lastID } = this.storage.run(
 			`
 			INSERT INTO ${this.getTableName()}
-				(flight_id, user_id, baggage_weight, qr_code, cost)
+				(flight_id, user_id, baggage_weight, qr_code, seats, created, cost)
 			VALUES
-				(?, ?, ?, ?, ?)
+				(?, ?, ?, ?, ?, ?, ?)
 		`,
-			[flight_id, user_id, baggage_weight, qr_code, cost]
+			[flight_id, user_id, baggage_weight, qr_code, seats, created.toISOString(), cost]
 		);
 		return lastID as bigint;
 	}
@@ -91,6 +94,7 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 				b.baggage_weight AS booking_baggage_weight,
 				b.qr_code AS booking_qr_code,
 				b.created AS booking_created,
+				b.seats AS booking_seats,
 				b.cost AS booking_cost,
 				b.status AS booking_status
 			FROM
@@ -142,8 +146,8 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 						code: row.flight_arrival_airport_code,
 					},
 				},
-				departure_date: row.flight_departure_date,
-				arrival_date: row.flight_arrival_date,
+				departure_date: new Date(row.flight_departure_date),
+				arrival_date: new Date(row.flight_arrival_date),
 				price: row.flight_price,
 				status: row.flight_status,
 				company: {
@@ -157,8 +161,9 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 				seats_available: row.flight_seats,
 			},
 			baggage_weight: row.booking_baggage_weight,
-			created: row.booking_created,
+			created: new Date(row.booking_created),
 			qr_code: row.booking_qr_code,
+			seats: row.booking_seats,
 			cost: row.booking_cost,
 			user_id: row.booking_user_id,
 			status: row.booking_status,
@@ -207,12 +212,12 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 		let params: any[] = [];
 
 		let pagination = false;
-		if (max && page) {
+		if (max != undefined && page != undefined) {
 			pagination = true;
 			params.push(max, page * max);
 		}
 
-		const bookings = this.storage.all<any>(this.getDTOQuery("", false), params);
+		const bookings = this.storage.all<any>(this.getDTOQuery("", pagination), params);
 
 		return bookings ? bookings.map((booking) => this.getDTORow(booking)) : null;
 	}

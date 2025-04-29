@@ -20,19 +20,30 @@ export class FlightService {
 	constructor(private flightRepo: FlightRepository) {}
 
 	/**
+	 * Create new flight
 	 * @throws {InvalidFieldError}
 	 * @throws {NotUniqueError}
 	 */
 	public add(entry: FlightEntry): bigint {
+		if (entry.departure_date < new Date()) {
+			throw new InvalidFieldError("departure date cannot be in past")
+		} else if (entry.arrival_date < entry.departure_date) {
+			throw new InvalidFieldError("arrival date cannot be less than departure date")
+		}
+
 		try {
 			return this.flightRepo.add(entry);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
-					throw new InvalidFieldError(`${err.message}: invalid field '${err.field}'`);
+					throw new InvalidFieldError(
+						`${err.message}: invalid field '${err.field}'`
+					);
 				} else if (err.type == StorageErrorType.UNIQUE) {
 					throw new NotUniqueError(
-						`${err.message}: invalid field'${err.field != "?" ? " " + err.field : ""}'`
+						`${err.message}: invalid field'${
+							err.field != "?" ? " " + err.field : ""
+						}'`
 					);
 				} else if (err.type == StorageErrorType.FOREIGN_KEY) {
 					throw new InvalidFieldError(err.message);
@@ -43,6 +54,7 @@ export class FlightService {
 	}
 
 	/**
+	 * Update flight data excluding status
 	 * @throws {NotFoundError}
 	 * @throws {InvalidFieldError}
 	 * @throws {NotUniqueError}
@@ -56,13 +68,12 @@ export class FlightService {
 		// FIX: use validation before repository query
 		// WARN: hardcoded fields
 		const edited: FlightEntry = {
+			id,
 			route_code: payload.route_code ?? flight.route_code,
-			departure_airport_id:
-				payload.departure_airport_id ?? flight.departure_airport_id,
-			arrival_airport_id:
-				payload.arrival_airport_id ?? flight.arrival_airport_id,
-			departure_date: payload.departure_date ?? flight.departure_date,
-			arrival_date: payload.arrival_date ?? flight.arrival_date,
+			departure_airport_id: payload.departure_airport_id ?? flight.departure_airport_id,
+			arrival_airport_id: payload.arrival_airport_id ?? flight.arrival_airport_id,
+			departure_date: payload.departure_date ?? new Date(flight.departure_date),
+			arrival_date: payload.arrival_date ?? new Date(flight.arrival_date),
 			company_id: payload.company_id ?? flight.company_id,
 			price: payload.price ?? flight.price,
 			seats_available: flight.seats_available,
@@ -75,9 +86,7 @@ export class FlightService {
 				if (err.type == StorageErrorType.CHECK) {
 					throw new InvalidFieldError(`invalid field '${err.field}'`);
 				} else if (err.type == StorageErrorType.UNIQUE) {
-					throw new NotUniqueError(
-						`invalid field'${err.field != "?" ? err.field : ""}'`
-					);
+					throw new NotUniqueError( `invalid field'${err.field != "?" ? err.field : ""}'`);
 				} else if (err.type == StorageErrorType.FOREIGN_KEY) {
 					throw new InvalidFieldError(err.message);
 				}
@@ -88,6 +97,7 @@ export class FlightService {
 	}
 
 	/**
+	 * Update status of flight
 	 * @throws {NotFoundError}
 	 * @throws {InvalidFieldError}
 	 */
@@ -96,8 +106,21 @@ export class FlightService {
 		if (!flight) {
 			throw new NotFoundError("flight not found");
 		}
+		flight.departure_date = new Date(flight.departure_date);
+		flight.arrival_date = new Date(flight.arrival_date);
 		flight.status = status;
-		this.flightRepo.update(flight);
+
+		try {
+			this.flightRepo.update(flight);
+		} catch (err) {
+			if (err instanceof StorageError) {
+				if (err.type == StorageErrorType.CHECK) {
+					throw new InvalidFieldError(`invalid field ${err.field}`);
+				}
+			} else {
+				throw err;
+			}
+		}
 	}
 
 	private findCheapest(flights: FlightDTO[]): FlightDTO[] {
@@ -118,13 +141,14 @@ export class FlightService {
 	}
 
 	/**
+	 * Search active flights by query
 	 * @throws {InvalidFieldError}
 	 * @throws {NotFoundError}
 	 */
 	public search(payload: FlightSearchPayload): FlightDTO[] {
 		if (payload.departure_date) {
 			if (payload.departure_date.getMilliseconds() <= Date.now()) {
-				throw new InvalidFieldError("invalid departure date in search request");
+				throw new InvalidFieldError("departure date cannot be in past");
 			}
 		}
 
@@ -138,15 +162,14 @@ export class FlightService {
 		);
 
 		if (!flights) {
-			throw new NotFoundError(
-				"there are no active flights matching your request"
-			);
+			return [];
 		}
 		flights = this.findCheapest(flights);
 		return flights;
 	}
 
 	/**
+	 * Update seats count
 	 * @throws {NotFoundError}
 	 */
 	public deltaSeats(id: number, delta: number): number {
@@ -163,6 +186,7 @@ export class FlightService {
 	}
 
 	/**
+	 * Get fight DTO by ID
 	 * @throws {NotFoundError}
 	 */
 	public getByID(id: number): FlightDTO {
@@ -180,6 +204,7 @@ export class FlightService {
 	}
 
 	/**
+	 * Remove flight entry by id
 	 * @throws {NotFoundError}
 	 * @throws {RelatedDataError}
 	 */

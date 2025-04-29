@@ -8,14 +8,13 @@ import { FlightRepository } from "../repository/flight.repository";
 import { UserRepository } from "../repository/user.repository";
 import { BookingEntry, BookingStatus } from "../types/booking.type";
 import {
-	getMockBooking,
-	getMockUsers,
+	getMockFlight,
+	getMockUser,
 	mockAirports,
 	mockBaggageRules,
 	mockCities,
 	mockCompanies,
-	mockFlights,
-} from "./mocks.data";
+} from "./mock/mock.data";
 import { BookingRepository } from "../repository/booking.repository";
 import {
 	StorageError,
@@ -54,12 +53,12 @@ describe("booking.repository", () => {
 		mockCompanies.map((company) => {
 			companyRepo.add(company);
 		});
-		mockFlights.map((flight) => {
-			flightRepo.add(flight);
-		});
-		getMockUsers(USERS_COUNT).map((user) => {
-			userRepo.add(user);
-		});
+		for (let i = 0; i < 5; i++) {
+			flightRepo.add(getMockFlight(5));
+		}
+		for (let i = 0; i < 5; i++) {
+			userRepo.add(getMockUser());
+		}
 	});
 
 	afterAll(() => {
@@ -77,6 +76,8 @@ describe("booking.repository", () => {
 			user_id: userId,
 			flight_id: flightId,
 			baggage_weight: baggageWeight,
+			seats: 1,
+			created: new Date(),
 			cost: cost,
 			qr_code: qrCode,
 		});
@@ -115,7 +116,6 @@ describe("booking.repository", () => {
 		const dto = bookingRepo.getDTOByID(bookingId);
 
 		expect(dto).toBeDefined();
-		console.log(dto);
 		if (dto) {
 			// Check basic fields
 			expect(dto.id).toBe(bookingId);
@@ -206,6 +206,8 @@ describe("booking.repository", () => {
 		const booking: BookingEntry = {
 			user_id: 1,
 			baggage_weight: 10,
+			seats: 1,
+			created: new Date(),
 			cost: 5000,
 			qr_code: "test-null-flight",
 		};
@@ -223,6 +225,8 @@ describe("booking.repository", () => {
 		const booking: BookingEntry = {
 			flight_id: 3,
 			user_id: 1,
+			seats: 1,
+			created: new Date(),
 			baggage_weight: 10,
 			cost: 5000,
 			qr_code: "test-null-flight",

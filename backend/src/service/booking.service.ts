@@ -1,27 +1,41 @@
-import { generateQRCode } from "../lib/qr-code/generate-qr";
+import {
+	generateQRCodeImageBuffer,
+	getPayloadString,
+} from "../lib/service/generate-qr";
 import {
 	StorageError,
 	StorageErrorType,
 } from "../lib/repository/storage-error";
+import { AccessControl } from "../lib/service/access-control";
 import type { BookingRepository } from "../repository/booking.repository";
 import type { DiscountRepository } from "../repository/discount.repository";
 import type { FlightRepository } from "../repository/flight.repository";
 import type { UserRepository } from "../repository/user.repository";
-import { type BookingDTO, BookingStatus } from "../types/booking.type";
+import {
+	type BookingDTO,
+	type BookingEntry,
+	BookingQRPayload,
+	BookingStatus,
+} from "../types/booking.type";
 import {
 	InvalidFieldError,
 	RelatedDataError,
 	NotFoundError,
-	AuthorizationError,
-	ForbiddenError,
 } from "../types/service.type";
+import { Roles } from "../types/user.type";
+import { generateRandomGate } from "../lib/service/random";
+import { saveBufferToFile } from "../lib/service/save-file";
+import { Config } from "../types/config.type";
+import { CompanyRepository } from "../repository/company.repository";
 
 export class BookingService {
 	constructor(
 		private bookingRepo: BookingRepository,
 		private discountRepo: DiscountRepository,
 		private flightRepo: FlightRepository,
-		private userRepo: UserRepository
+		private userRepo: UserRepository,
+		private companyRepo: CompanyRepository,
+		private cfg: Config
 	) {}
 
 	/**
@@ -33,24 +47,40 @@ export class BookingService {
 	 * @returns Created booking DTO
 	 * @throws {InvalidFieldError}
 	 * @throws {NotFoundError}
+	 * @throws {QRCodeGenerationError}
+	 * @throws {FileSaveError}
 	 * @throws {RelatedDataError}
 	 */
-	public createBooking(
+	public async createBooking(
 		userID: number,
 		flightID: number,
+		seats: number,
 		baggageWeight: number,
 		discountCode?: string
-	): BookingDTO {
+	): Promise<bigint> {
+		// 0. Validate baggage & seats
+		if (seats <= 0) {
+			throw new InvalidFieldError(
+				"seats reservation cannot be 0 or less then 0"
+			);
+		}
+		if (baggageWeight < 0) {
+			throw new InvalidFieldError(
+				"baggage weight cannot be less then 0"
+			);
+		}
+
 		// 1. Validate flight exists
 		const flight = this.flightRepo.getDTOByID(flightID);
 		if (!flight) {
-			throw new NotFoundError("flight not found");
+			throw new RelatedDataError("flight not found");
 		}
+		console.log("Booking flight price: ", flight.price);
 
 		// 2. Get user public dto by id
 		const user = this.userRepo.getPublicDataByID(userID);
 		if (!user) {
-			throw new NotFoundError("user not found");
+			throw new RelatedDataError("user not found");
 		}
 
 		// 3. Apply discount if provided
@@ -61,68 +91,117 @@ export class BookingService {
 				throw new InvalidFieldError("invalid or expired discount code");
 			}
 			finalCost = Math.max(0, finalCost * (1 - discount.amount));
+			console.log(
+				"Booking flight price after code: ",
+				finalCost,
+				"\nAmount is: ",
+				discount.amount * 100,
+				"%"
+			);
 		}
 
 		// 4. Apply baggage price, if booking.baggage_weight > company.min_free_weight
-		if (flight.company.baggage_rule) {
-			finalCost +=
-				baggageWeight > flight.company.baggage_rule.max_free_weight
-					? (baggageWeight - flight.company.baggage_rule.max_free_weight) *
-					  flight.company.baggage_rule.price_per_kg
-					: 0;
-		} else {
-			// NOTE: we can get company baggage rule from company repo
-			throw new RelatedDataError("cannot get company baggage rule");
+		const company = this.companyRepo.getDTOByName(flight.company.name);
+		if (!company) {
+			throw new RelatedDataError("could not find company");
 		}
+		finalCost +=
+			baggageWeight > company.baggage_rule.max_free_weight
+				? (baggageWeight - company.baggage_rule.max_free_weight) *
+				  company.baggage_rule.price_per_kg
+				: 0;
+		finalCost = Math.ceil(finalCost);
 
-		// 4. Generate unique QR code
-		const qrCode = generateQRCode(user, flight, new Date());
+		console.log(
+			"Booking flight price after baggage price applied:",
+			finalCost,
+			"\nBaggage weight is:",
+			baggageWeight,
+			"\nBaggage policy of company is:",
+			company.baggage_rule
+		);
 
-		// 5. Create booking entry
+		// 5. Collect other data
+		const bookingCreated = new Date();
+
+		// 5. Generate unique QR code
+		const qrPayload: BookingQRPayload = {
+			user_firstname: user.firstname,
+			user_secondname: user.secondname,
+			booking_cost: finalCost,
+			booking_seats: seats,
+			created: bookingCreated,
+			route_code: flight.route_code,
+			terminal_gate: generateRandomGate(),
+		};
+		const qrBuffer = await generateQRCodeImageBuffer(
+			getPayloadString(qrPayload),
+			16
+		);
+
+		// 5.1 Save QR Code buffer to file
+		const fileName = saveBufferToFile(
+			qrBuffer,
+			this.cfg.booking_files_path,
+			"png"
+		);
+		const qrCodeURL = `http://${this.cfg.http_server.host}:${this.cfg.http_server.port}/upload/booking/${fileName}`;
+
+		// 6. Create booking entry
 		try {
 			const bookingId = this.bookingRepo.add({
 				user_id: userID,
 				flight_id: flightID,
 				baggage_weight: baggageWeight,
-				qr_code: qrCode,
+				qr_code: qrCodeURL,
+				created: bookingCreated,
+				seats,
 				cost: finalCost,
-				status: BookingStatus.ACTIVE,
 			});
 
-			// 6. Return complete DTO
-			const bookingDTO = this.bookingRepo.getDTOByID(Number(bookingId));
-			if (!bookingDTO) {
-				throw new Error("failed to retrieve created booking");
-			}
-			return bookingDTO;
+			// 7. Update flight.seats_available count
+			this.flightRepo.updateSeats(flightID, -seats);
+			return bookingId;
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type === StorageErrorType.FOREIGN_KEY) {
-					throw new NotFoundError(err.message);
+					throw new NotFoundError("invalid foreign key");
 				} else if (err.type === StorageErrorType.CHECK) {
-					throw new InvalidFieldError(err.message);
+					if (err.field.includes("BETWEEN")) {
+						throw new InvalidFieldError(
+							"there are not enough seats on the flight to make a reservation"
+						);
+					} else {
+						throw new InvalidFieldError(err.message);
+					}
 				}
 			}
+			console.log(err);
 			throw err;
 		}
 	}
 
 	/**
 	 * Gets booking by ID with access control
-	 * @param bookingId - ID of the booking to retrieve
 	 * @param userId - ID of the requesting user
 	 * @param userRole - Role of the requesting user
+	 * @param bookingID - ID of the booking to retrieve
 	 * @returns Booking DTO if access granted
 	 * @throws {NotFoundError}
 	 * @throws {ForbiddenError}
 	 */
-	public getBookingById(bookingId: number): BookingDTO {
-		// NOTE: think about access control integration
-		const booking = this.bookingRepo.getDTOByID(bookingId);
-		if (!booking) {
-			throw new NotFoundError("Booking not found");
-		}
-		return booking;
+	public getBookingById(
+		userID: number,
+		userRole: Roles,
+		bookingID: number
+	): BookingDTO {
+		return AccessControl.checkAccess<BookingDTO>(
+			userID,
+			userRole,
+			this.cfg.min_required_role,
+			bookingID,
+			(id) => this.bookingRepo.getDTOByID(id)
+		);
 	}
 
 	/**
@@ -130,9 +209,8 @@ export class BookingService {
 	 * @param userId - ID of the user whose bookings to retrieve
 	 * @returns Array of booking DTOs
 	 */
-	public getUserBookings(userId: number): BookingDTO[] {
-		// NOTE: think about access control integration
-		return this.bookingRepo.getDTOByUserID(userId) || [];
+	public getUserBookings(userID: number): BookingDTO[] {
+		return this.bookingRepo.getDTOByUserID(userID) || [];
 	}
 
 	/**
@@ -147,40 +225,37 @@ export class BookingService {
 
 	/**
 	 * Updates booking status
-	 * @param bookingId - ID of the booking to update
-	 * @param status - New status
 	 * @param userId - ID of the requesting user
 	 * @param userRole - Role of the requesting user
+	 * @param bookingId - ID of the booking to update
+	 * @param status - New status
 	 * @throws {NotFoundError}
 	 * @throws {ForbiddenError}
 	 * @throws {InvalidFieldError}
 	 */
 	public updateBookingStatus(
-		bookingId: number,
-		status: BookingStatus,
 		userId: number,
-		userRole: string
+		userRole: Roles,
+		bookingId: number,
+		status: BookingStatus
 	): void {
-		// NOTE: think about access control integration
-		const booking = this.bookingRepo.getByID(bookingId);
-		if (!booking) {
-			throw new NotFoundError("Booking not found");
-		}
-
-		// Only admin or booking owner can update status
-		if (userRole !== "ADMIN" && booking.user_id !== userId) {
-			throw new ForbiddenError("Cannot update booking status");
-		}
-
 		try {
-			this.bookingRepo.updateStatus(bookingId, status);
+			AccessControl.checkAccess<BookingEntry>(
+				userId,
+				userRole,
+				this.cfg.min_required_role,
+				bookingId,
+				(id) => this.bookingRepo.getByID(id)
+			);
+			const changes = this.bookingRepo.updateStatus(bookingId, status);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type === StorageErrorType.CHECK) {
-					throw new InvalidFieldError("Invalid status value");
+					throw new InvalidFieldError("invalid status value");
 				}
+			} else {
+				throw err;
 			}
-			throw err;
 		}
 	}
 
@@ -195,17 +270,15 @@ export class BookingService {
 	public deleteBooking(
 		bookingId: number,
 		userId: number,
-		userRole: string
+		userRole: Roles
 	): void {
-		const booking = this.bookingRepo.getByID(bookingId);
-		if (!booking) {
-			throw new NotFoundError("Booking not found");
-		}
-
-		// Only admin or booking owner can delete
-		if (userRole !== "ADMIN" && booking.user_id !== userId) {
-			throw new ForbiddenError("Cannot delete booking");
-		}
+		AccessControl.checkAccess<BookingEntry>(
+			userId,
+			userRole,
+			this.cfg.min_required_role,
+			bookingId,
+			(id) => this.bookingRepo.getByID(id)
+		);
 
 		this.bookingRepo.removeByID(bookingId);
 	}

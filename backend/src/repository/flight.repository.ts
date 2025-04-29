@@ -107,11 +107,11 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				route_code TEXT NOT NULL UNIQUE CHECK(route_code GLOB '[A-Z][0-9][0-9][0-9]'),
 				departure_airport_id INTEGER NOT NULL,
 				arrival_airport_id INTEGER NOT NULL,
-				departure_date DATETIME NOT NULL CHECK(departure_date > CURRENT_TIMESTAMP),
+				departure_date DATETIME NOT NULL,
 				arrival_date DATETIME NOT NULL,
 				company_id INTEGER NOT NULL,
 				seats_available INTEGER NOT NULL CHECK(seats_available BETWEEN 0 AND 512),
-				price INTEGER NOT NULL CHECK (price > 0),
+				price INTEGER NOT NULL CHECK(price > 0),
 				status TEXT NOT NULL CHECK(status IN ('ACTIVE', 'COMPLETED', 'DELAYED', 'CANCELLED')) DEFAULT 'ACTIVE',
 				
 				FOREIGN KEY(departure_airport_id) REFERENCES airport(id) ON DELETE SET NULL,

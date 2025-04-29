@@ -9,6 +9,7 @@ import { RelatedDataError, InvalidFieldError, NotFoundError } from "../types/ser
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/user.type";
+import { processServiceError } from "../lib/api/process-error";
 
 export class FlightHandler {
 	private static addFlight(req: Request, res: Response): void {
@@ -17,11 +18,8 @@ export class FlightHandler {
 			req.dependencies.flightService.add(entry);
 			res.send(ResponseTypes.ok({}));
 		} catch (err) {
-			if (err instanceof InvalidFieldError) {
-				res.status(400).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, req);
+			return;
 		}
 	}
 
@@ -35,11 +33,8 @@ export class FlightHandler {
 			const id = parseInt(req.params.id);
 			req.dependencies.flightService.updateGeneral(id, req.body);
 		} catch (err) {
-			if (err instanceof InvalidFieldError) {
-				res.status(400).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, req);
+			return;
 		}
 	}
 
@@ -48,13 +43,8 @@ export class FlightHandler {
 			const id = parseInt(req.params.id);
 			req.dependencies.flightService.removeByID(id);
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else if (err instanceof RelatedDataError) {
-				res.status(405).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, req);
+			return;
 		}
 	}
 
@@ -64,11 +54,8 @@ export class FlightHandler {
 			const flights = req.dependencies.flightService.search(query);
 			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, req);
+			return;
 		}
 	}
 
@@ -78,11 +65,8 @@ export class FlightHandler {
 			const flight = req.dependencies.flightService.getByID(id);
 			res.json(flight);
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, req);
+			return;
 		}
 	}
 
@@ -92,11 +76,8 @@ export class FlightHandler {
 			const status: FlightStatus = req.body.status;
 			req.dependencies.flightService.updateStatus(id, status);
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, req);
+			return;
 		}
 	}
 

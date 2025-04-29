@@ -1,17 +1,26 @@
 import bcrypt from "bcrypt";
 import { UserRepository } from "../repository/user.repository";
-import { Roles, type UserPublicDTO, type UserEntry, type UserRegDTO } from "../types/user.type";
+import {
+	Roles,
+	type UserPublicDTO,
+	type UserEntry,
+	type UserRegDTO,
+} from "../types/user.type";
 import type { Config } from "../types/config.type";
 import { createToken } from "../lib/api/token";
 import type { PaymentRepository } from "../repository/payment.repository";
 import type { PaymentEntry } from "../types/payment.type";
-import { StorageError, StorageErrorType } from "../lib/repository/storage-error";
+import {
+	StorageError,
+	StorageErrorType,
+} from "../lib/repository/storage-error";
 import {
 	ForbiddenError,
 	InvalidFieldError,
 	NotFoundError,
 	NotUniqueError,
 } from "../types/service.type";
+import { AccessControl } from "../lib/service/access-control";
 
 export class UserService {
 	constructor(
@@ -23,10 +32,10 @@ export class UserService {
 	public register(user: UserRegDTO): bigint {
 		const password_hash = bcrypt.hashSync(user.password, this.cfg.salt);
 		user.password = password_hash;
-		const entry : UserEntry = {
+		const entry: UserEntry = {
 			...user,
 			role: Roles.Customer,
-		}
+		};
 		try {
 			const res = this.userRepo.add(entry);
 			return res;
@@ -68,7 +77,7 @@ export class UserService {
 		return token;
 	}
 
-	public getByID(id: number): UserEntry | null {
+	public getByID(id: number): UserEntry {
 		const user = this.userRepo.getByID(id);
 		if (!user) {
 			throw new NotFoundError("user not found");
@@ -76,7 +85,7 @@ export class UserService {
 		return user;
 	}
 
-	public getPublicDataByID(id: number): UserPublicDTO | null {
+	public getPublicDataByID(id: number): UserPublicDTO {
 		const user = this.userRepo.getPublicDataByID(id);
 		if (!user) {
 			throw new NotFoundError("user not found");
@@ -84,7 +93,7 @@ export class UserService {
 		return user;
 	}
 
-	public getAll(): UserEntry[] | null {
+	public getAll(): UserEntry[] {
 		const users = this.userRepo.getAll();
 		if (!users) {
 			throw new NotFoundError("user not found");
@@ -102,7 +111,7 @@ export class UserService {
 			: null;
 
 		if (newFields.role && !roleChangingAllowed) {
-			throw new ForbiddenError('role changing is not allowed');
+			throw new ForbiddenError("role changing is not allowed");
 		}
 
 		let updated: UserEntry = {
@@ -119,8 +128,7 @@ export class UserService {
 
 		try {
 			this.userRepo.update(updated);
-		} catch (_err) {
-			const err = _err as Error;
+		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.UNIQUE) {
 					throw new NotUniqueError(`user with same ${err.field} exists`);
@@ -133,45 +141,49 @@ export class UserService {
 		}
 	}
 
-	public delete(id: number): number {
-		return this.userRepo.removeByID(id);
+	public delete(id: number): void {
+		const changes = this.userRepo.removeByID(id);
+		if (!changes) {
+			throw new NotFoundError("user not found");
+		}
 	}
 
-	public addPayment(entry: PaymentEntry): bigint {
+	public addPayment(entry: PaymentEntry) {
 		try {
 			// WARN: one user can use similar cards
 			const inserted_id = this.paymentRepo.add(entry);
-			return inserted_id;
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
 					throw new InvalidFieldError(`invalid field '${err.field}'`);
 				}
+			} else {
+				throw err;
 			}
-			throw err;
 		}
 	}
 
-	public deletePayment(id: number): void {
-		const changes = this.paymentRepo.removeByID(id);
-		if (!changes) {
-			throw new NotFoundError("payment method not found");
-		}
+	public getPaymentByID(userID: number, userRole: Roles, id: number): PaymentEntry {
+		return AccessControl.checkAccess<PaymentEntry>(
+			userID, userRole,
+			Roles.Admin, id,
+			(id) => this.paymentRepo.getByID(id)
+		);
 	}
 
-	public getPaymentsByUserID(user_id: number): PaymentEntry[] | null {
+	public deletePayment(userID: number, userRole: Roles, id: number): void {
+		// Check access to data
+		AccessControl.checkAccess<PaymentEntry>(
+			userID, userRole,
+			Roles.Admin, id,
+			(id) => this.paymentRepo.getByID(id)
+		);
+		
+		this.paymentRepo.removeByID(id);
+	}
+
+	public getPaymentsByUserID(user_id: number): PaymentEntry[] {
 		const payments = this.paymentRepo.getByUserID(user_id);
-		if (!payments) {
-			throw new NotFoundError("payment methods not found");
-		}
-		return payments;
-	}
-
-	public getPaymentByID(id: number): PaymentEntry | null {
-		const payment = this.paymentRepo.getByID(id);
-		if (!payment) {
-			throw new NotFoundError("payment method not found");
-		}
-		return payment;
+		return payments ?? [];
 	}
 }

@@ -24,22 +24,25 @@ import { BookingRepository } from "./repository/booking.repository";
 import { DiscountRepository } from "./repository/discount.repository";
 import { createClient, RedisClientType } from "redis";
 import { BookingService } from "./service/booking.service";
+import { BookingHandler } from "./handlers/booking.handler";
 
 // Load config
 const cfg: Config = readConfig("./config/local.yaml");
-console.log("config loaded");
+console.log("config loaded:", cfg);
 
 // Connect to storage
 const storage: Storage = new Storage(cfg.storage_path);
 console.log("storage loaded from path:", cfg.storage_path);
 
 // Connect to Redis server
+/*
 const redisClient = createClient({
 	url: `redis://${cfg.redis_server.host}:${cfg.redis_server.port}`,
 })
 	.on("error", (err: Error) => console.error("redis connection error", err))
 	.connect();
 console.log("redis cache connected");
+*/
 
 // Create storage repositories
 const userRepo = new UserRepository(storage);
@@ -55,7 +58,7 @@ const bookingRepo = new BookingRepository(storage);
 // Create services
 const userService = new UserService(userRepo, paymentRepo, cfg);
 const flightService = new FlightService(flightRepo);
-const bookingService = new BookingService(bookingRepo, discountRepo, flightRepo, userRepo);
+const bookingService = new BookingService(bookingRepo, discountRepo, flightRepo, userRepo, companyRepo, cfg);
 
 const app = express();
 
@@ -74,16 +77,16 @@ app.use(express.json());
 // Add logger for request and response
 app.use(loggerMiddleware);
 // Add possability to view static
-app.use("/upload", express.static("./upload"));
+app.use("/upload", express.static(`./${cfg.public_files_path}`));
 app.use(
 	"/upload/user",
 	authorizationMiddleware,
-	express.static("./upload/protected/user")
+	express.static(`./${cfg.user_files_path}`)
 );
 app.use(
 	"/upload/booking",
 	authorizationMiddleware,
-	express.static("./upload/protected/booking")
+	express.static(`./${cfg.booking_files_path}`)
 );
 
 // Add repositories to Express App dependencies
@@ -99,6 +102,7 @@ const masterRouter = Router();
 masterRouter.use("/user", UserHandler.router());
 masterRouter.use("/user/payment", PaymentHandler.router());
 masterRouter.use("/flight", FlightHandler.router());
+masterRouter.use("/booking", BookingHandler.router());
 
 app.use("/api", masterRouter);
 

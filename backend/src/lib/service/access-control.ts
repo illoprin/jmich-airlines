@@ -10,8 +10,8 @@ import {
 export class AccessControl {
 	/**
 	 * Checks if user has permission to access a specific entity
-	 * @param req - Express request object with authenticated user
-	 * @param minRequiredRole - Minimum role needed for unrestricted access
+	 * @param userID - ID of user who is trying to get data access
+	 * @param userRole - Role of user that who is trying to get data access
 	 * @param entityId - ID of the entity to check access for
 	 * @param fetchEntityCallback - Function that retrieves the entity from database
 	 * @returns The requested entity if access is granted
@@ -19,18 +19,12 @@ export class AccessControl {
 	 * @throws {ForbiddenError} When access is denied
 	 */
 	public static checkAccess<T extends Entry>(
-		req: Request,
+		userID: number,
+		userRole: Roles,
 		minRequiredRole: Roles,
 		entityId: number,
 		fetchEntityCallback: (id: number) => T | null
 	): T {
-		// Validate authenticated user
-		if (!req.token_data) {
-			throw new AuthorizationError("authentication required");
-		}
-
-		const { id: userId, role: userRole } = req.token_data;
-
 		// Fetch the entity from database
 		const entity = fetchEntityCallback(entityId);
 		if (!entity) {
@@ -44,11 +38,11 @@ export class AccessControl {
 
 		// Check ownership for regular users
 		const ownerId = this.getEntityOwnerId(entity);
-		if (ownerId === userId) {
+		if (ownerId === userID) {
 			return entity;
 		}
 
-		throw new ForbiddenError("protected data");
+		throw new ForbiddenError("access denied");
 	}
 
 	/**

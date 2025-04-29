@@ -39,3 +39,15 @@ export class ForbiddenError extends Error {
 		this.name = "ForbiddenError"
 	}
 }
+
+export class FileSaveError extends Error {
+	constructor(message: string) {
+		super(message);
+	}
+}
+
+export class QRCodeGenerationError extends Error {
+	constructor(message: string) {
+		super(message);
+	}
+}

@@ -9,6 +9,7 @@ import {
 	NotFoundError,
 	NotUniqueError,
 } from "../types/service.type";
+import { processServiceError } from "../lib/api/process-error";
 
 export class UserHandler {
 	constructor() {}
@@ -18,13 +19,8 @@ export class UserHandler {
 			req.dependencies?.userService.register(req.body);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			if (err instanceof NotUniqueError) {
-				res.status(400).json(ResponseTypes.error(err.message));
-			} else if (err instanceof InvalidFieldError) {
-				res.status(400).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
@@ -33,13 +29,8 @@ export class UserHandler {
 			const token = req.dependencies.userService.login(req.body);
 			res.json(ResponseTypes.ok({ token }));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else if (err instanceof ForbiddenError) {
-				res.status(403).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
@@ -50,11 +41,8 @@ export class UserHandler {
 			) as UserEntry;
 			res.json(ResponseTypes.ok<UserEntry>(user));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
@@ -72,11 +60,8 @@ export class UserHandler {
 				res.json(ResponseTypes.ok<UserEntry>(user));
 			}
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
@@ -91,31 +76,19 @@ export class UserHandler {
 			);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error("user not exist"));
-			} else if (err instanceof InvalidFieldError) {
-				res.status(400).json(ResponseTypes.error(err.message));
-			} else if (err instanceof NotUniqueError) {
-				res.status(409).json(ResponseTypes.error(err.message));
-			} else if (err instanceof ForbiddenError) {
-				res.status(403).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
 	private static deleteByToken(req: Request, res: Response): void {
 		try {
 			const id = req.token_data.id;
-			const changes: number = req.dependencies.userService.delete(id);
-			if (!changes) {
-				res.status(404).json(ResponseTypes.error("user not exist"));
-				return;
-			}
+			req.dependencies.userService.delete(id);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			res.status(500).json(ResponseTypes.internalError());
+			processServiceError(res, err);
+			return;
 		}
 	}
 
@@ -125,11 +98,8 @@ export class UserHandler {
 				req.dependencies.userService.getAll() as UserEntry[];
 			res.json(ResponseTypes.ok({ user }));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 

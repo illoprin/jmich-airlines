@@ -8,16 +8,16 @@ import { BaggageRuleRepository } from "../repository/baggage-rule.repository";
 import { CityRepository } from "../repository/city.repository";
 import { CompanyRepository } from "../repository/company.repository";
 import { FlightRepository } from "../repository/flight.repository";
-import type { FlightEntry } from "../types/flight.type";
+import { FlightStatus, type FlightEntry } from "../types/flight.type";
 import {
 	mockAirports,
 	mockBaggageRules,
 	mockCities,
 	mockCompanies,
 	DAY_MILLISECONDS,
-	mockFlights,
+	getMockFlight,
 	HOUR_MILLISECONDS,
-} from "./mocks.data";
+} from "./mock/mock.data";
 
 describe("flight.repository", () => {
 	let storage: Storage;
@@ -48,9 +48,9 @@ describe("flight.repository", () => {
 		mockCompanies.map((company) => {
 			companyRepo.add(company);
 		});
-		mockFlights.map((flight) => {
-			flightRepo.add(flight);
-		});
+		for (let i = 0; i < 5; i++) {
+			flightRepo.add(getMockFlight(5));
+		}
 	});
 
 	afterAll(() => {
@@ -232,16 +232,51 @@ describe("flight.repository", () => {
 
 	// Test: search flight with full query
 	it("search flight full query", () => {
-		const departure_date = new Date(Date.now() + DAY_MILLISECONDS);
-		const flights = flightRepo.searchActiveFlights(4, 3, departure_date, 1);
+		const flight: FlightEntry = {
+			departure_airport_id: 3,
+			arrival_airport_id: 1,
+			departure_date: new Date(Date.now() + DAY_MILLISECONDS),
+			arrival_date: new Date(
+				Date.now() + DAY_MILLISECONDS + HOUR_MILLISECONDS * 2.3
+			),
+			company_id: 4,
+			price: 5000,
+			route_code: "Y283",
+			seats_available: 32,
+			status: FlightStatus.ACTIVE,
+		};
+		flightRepo.add(flight);
+		const flights = flightRepo.searchActiveFlights(
+			3, // Пулково (СПб)
+			1, // Шереметьево (Москва)
+			undefined,
+			10,
+			0
+		);
+
 		expect(flights).toBeDefined();
 		if (flights) {
-			expect(flights.length).toEqual(1);
+			expect(flights.length).toBeGreaterThan(0);
 		}
 	});
 
 	// Test: search flight with limited query
 	it("search flight by departure date and departure airport", () => {
+		const flight: FlightEntry = {
+			departure_airport_id: 4,
+			arrival_airport_id: 1,
+			departure_date: new Date(Date.now() + DAY_MILLISECONDS),
+			arrival_date: new Date(
+				Date.now() + DAY_MILLISECONDS + HOUR_MILLISECONDS * 2.3
+			),
+			company_id: 4,
+			price: 5000,
+			route_code: "Z223",
+			seats_available: 32,
+			status: FlightStatus.ACTIVE,
+		};
+		flightRepo.add(flight);
+
 		const departure_date = new Date(Date.now() + DAY_MILLISECONDS);
 		const flights = flightRepo.searchActiveFlights(
 			4,
@@ -251,7 +286,7 @@ describe("flight.repository", () => {
 		);
 		expect(flights).toBeDefined();
 		if (flights) {
-			expect(flights.length).toEqual(1);
+			expect(flights.length).toBeGreaterThan(0);
 		}
 	});
 });

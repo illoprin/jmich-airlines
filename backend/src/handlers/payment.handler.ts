@@ -9,20 +9,22 @@ import {
 } from "../types/service.type";
 import { AccessControl } from "../lib/service/access-control";
 import { Roles } from "../types/user.type";
+import { processServiceError } from "../lib/api/process-error";
 
 export class PaymentHandler {
 	public static addPayment(req: Request, res: Response): void {
 		try {
-			const payment: PaymentEntry = req.body;
-			payment.user_id = req.token_data.id;
+			const payment: PaymentEntry = {
+				number: req.body.number,
+				expires: req.body.expires,
+				cvv: req.body.cvv,
+				user_id: req.token_data.id,
+			};
 			req.dependencies.userService.addPayment(payment);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			if (err instanceof InvalidFieldError) {
-				res.status(400).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
@@ -33,56 +35,40 @@ export class PaymentHandler {
 				req.dependencies.userService.getPaymentsByUserID(
 					user_id
 				) as PaymentEntry[];
-			res.json(ResponseTypes.ok({payment}));
+			res.json(ResponseTypes.ok({ payment }));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error("payment methods not found"));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
 	public static getPaymentByID(req: Request, res: Response): void {
 		try {
 			const id: number = parseInt(req.params.id);
-			const payment = AccessControl.checkAccess<PaymentEntry>(
-				req,
-				Roles.Admin,
-				id,
-				(id) => req.dependencies.userService.getPaymentByID(id)
+			const payment = req.dependencies.userService.getPaymentByID(
+				req.token_data.id,
+				req.token_data.role,
+				id
 			);
 			res.json(ResponseTypes.ok<PaymentEntry>(payment));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error(err.message));
-			} else if (err instanceof ForbiddenError) {
-				res.status(403).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 
 	public static deletePaymentByID(req: Request, res: Response): void {
 		try {
 			const id: number = parseInt(req.params.id);
-			AccessControl.checkAccess<PaymentEntry>(
-				req,
-				Roles.Admin,
-				id,
-				(id) => req.dependencies.userService.getPaymentByID(id)
+			req.dependencies.userService.deletePayment(
+				req.token_data.id,
+				req.token_data.role,
+				id
 			);
-			req.dependencies.userService.deletePayment(id);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			if (err instanceof NotFoundError) {
-				res.status(404).json(ResponseTypes.error("not found"));
-			} else if (err instanceof ForbiddenError) {
-				res.status(403).json(ResponseTypes.error(err.message));
-			} else {
-				res.status(500).json(ResponseTypes.internalError());
-			}
+			processServiceError(res, err);
+			return;
 		}
 	}
 

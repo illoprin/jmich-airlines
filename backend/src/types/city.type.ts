@@ -5,14 +5,12 @@ export interface CityEntry extends Entry {
 	image: string;
 }
 
-export interface CityDTO extends Entry {
-	name: string;
-	image: string;
-	airports: {name: string, code: string}[];
+export interface CityDTO extends CityEntry {
+	airports: AirportEntry[];
 }
 
 export interface AirportEntry extends Entry {
-	city_id: number;
+	city_id?: number;
 	name: string;
 	code: string;
 }

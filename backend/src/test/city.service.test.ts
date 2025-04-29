@@ -1,0 +1,142 @@
+import { Storage } from "../lib/repository/storage";
+import { AirportRepository } from "../repository/airport.repository";
+import { BaggageRuleRepository } from "../repository/baggage-rule.repository";
+import { CityRepository } from "../repository/city.repository";
+import { CompanyRepository } from "../repository/company.repository";
+import { FlightRepository } from "../repository/flight.repository";
+import { CityService } from "../service/city.service";
+import { NotFoundError, NotUniqueError, RelatedDataError } from "../types/service.type";
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS, mockAirports, mockBaggageRules, mockCities, mockCompanies } from "./mock/mock.data";
+
+describe("city.service", () => {
+	let storage: Storage;
+	let flightID: number;
+	let cityService: CityService;
+
+	beforeAll(() => {
+		storage = new Storage(":memory:");
+
+		const baggageRuleRepo = new BaggageRuleRepository(storage);
+		const companyRepo = new CompanyRepository(storage);
+		const cityRepo = new CityRepository(storage);
+		const airportRepo = new AirportRepository(storage);
+		const flightRepo = new FlightRepository(storage);
+
+		// Add mock companies 
+		mockBaggageRules.map(company => baggageRuleRepo.add(company));
+		mockCompanies.map(company => companyRepo.add(company));
+
+		cityService = new CityService(cityRepo, airportRepo);
+
+		mockCities.map(city => cityRepo.add(city));
+		airportRepo.add(mockAirports[0]);
+		airportRepo.add(mockAirports[1]);
+		airportRepo.add(mockAirports[2]);
+
+		flightRepo.add({
+			departure_airport_id: 1,
+			arrival_airport_id: 3,
+			departure_date: new Date(Date.now() + DAY_MILLISECONDS),
+			arrival_date: new Date(Date.now() + DAY_MILLISECONDS + HOUR_MILLISECONDS * 2),
+			company_id: 1,
+			price: 4000,
+			route_code: "B745",
+			seats_available: 32,
+		});
+	});
+
+	afterAll(() => {
+		storage.close()
+	});
+
+	describe("deleteAirportByID", () => {
+		it("delete airport linked with flight", () => {
+			try {
+				cityService.removeAirportByID(1);
+			} catch(err) {
+				expect(err).toBeInstanceOf(RelatedDataError);
+			}
+		});
+	});
+
+	describe("addAirport", () => {
+		it("should throw NotUniqueError", () => {
+			try {
+				cityService.addAirport(mockAirports[0]);
+			} catch(err) {
+				expect(err).toBeInstanceOf(NotUniqueError);
+			}
+		});
+	});
+
+	describe("addCity", () => {
+		it("should throw NotUniqueError", () => {
+			try {
+				cityService.addCity(mockCities[0]);
+			} catch(err) {
+				expect(err).toBeInstanceOf(NotUniqueError);
+			}
+		});
+	});
+
+	describe("getCityDTO", () => {
+		it("should return city dto correctly", () => {
+			const city = cityService.getCityByID(1);
+
+			expect(city.name).toBe(mockCities[0].name);
+			expect(city.image).toBe(mockCities[0].image);
+			expect(city.airports).toBeDefined();
+			expect(city.airports.length).toBeGreaterThan(1);
+		});
+	});
+
+	describe("getAllCitiesDTO", () => {
+		it("should return city dtos correctly", () => {
+			const cities = cityService.getAllCities();
+			expect(cities.length).toBe(mockCities.length);
+		});
+	});
+	describe("updateCity", () => {
+		it("should throw NotUniqueError", () => {
+			try {
+				cityService.updateCityByID(1, {name: mockCities[0].name});
+			} catch(err) {
+				expect(err).toBeInstanceOf(NotUniqueError);
+			}
+		});
+		it("should throw NotFoundError", () => {
+			try {
+				cityService.updateCityByID(999, {name: mockCities[0].name});
+			} catch(err) {
+				expect(err).toBeInstanceOf(NotFoundError);
+			}
+		});
+	});
+
+	describe("updateAirport", () => {
+		it("should throw NotUniqueError", () => {
+			try {
+				cityService.updateAirportByID(1, {name: mockAirports[0].name});
+			} catch(err) {
+				expect(err).toBeInstanceOf(NotUniqueError);
+			}
+		});
+		it("should throw NotFoundError", () => {
+			try {
+				cityService.updateAirportByID(999, {name: mockAirports[0].name});
+			} catch(err) {
+				expect(err).toBeInstanceOf(NotFoundError);
+			}
+		});
+	});
+	
+	describe("deleteCityByID", () => {
+		it("delete city linked with airport which linked with flight", () => {
+			try {
+				cityService.removeCityByID(1);
+			} catch(err) {
+				expect(err).toBeInstanceOf(RelatedDataError);
+			}
+		});
+	})
+})

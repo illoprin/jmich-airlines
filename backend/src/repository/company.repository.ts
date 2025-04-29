@@ -5,67 +5,60 @@ export class CompanyRepository extends BaseRepository<CompanyEntry> {
 	public getTableName(): string {
 		return "company";
 	}
+	private getJSONFieldName(): string {
+		return "company_json";
+	}
 
 	protected create(): void {
 		this.storage.run(
-			`
-			CREATE TABLE IF NOT EXISTS ${this.getTableName()} (
-				id INTEGER PRIMARY KEY,
-				name TEXT NOT NULL,
-				logo TEXT NOT NULL,
-				baggage_rule_id INTEGER NOT NULL,
-				FOREIGN KEY (baggage_rule_id) REFERENCES baggage_rule(id) ON DELETE SET NULL
-			);
-		`,
+			`--sql
+				CREATE TABLE IF NOT EXISTS ${this.getTableName()} (
+					id INTEGER PRIMARY KEY,
+					name TEXT NOT NULL,
+					logo TEXT NOT NULL,
+					baggage_rule_id INTEGER NOT NULL,
+					FOREIGN KEY (baggage_rule_id) REFERENCES baggage_rule(id) ON DELETE SET NULL
+				);
+			`,
 			[]
 		);
 
 		this.storage.run(
-			`
-			CREATE UNIQUE INDEX IF NOT EXISTS idx_company ON ${this.getTableName()}(name)
-		`,
+			`--sql
+				CREATE UNIQUE INDEX IF NOT EXISTS idx_company ON ${this.getTableName()}(name)
+			`,
 			[]
 		);
 	}
 
 	private getDTOQuery(whereClause: string): string {
-		return `
-			SELECT
-				c.id AS company_id,
-				c.name AS company_name,
-				c.logo AS company_logo,
-				c.baggage_rule_id AS baggage_rule_id,
-				b.max_free_weight AS baggage_max_free,
-				b.price_per_kg AS baggage_price
+		return `--sql
+			SELECT json_object(
+				'id', c.id,
+				'name', c.name,
+				'logo', c.logo,
+				'baggage_rule', json_object(
+					'id', b.id,
+					'max_free_weight', b.max_free_weight,
+					'price_per_kg', b.price_per_kg
+				)
+			) as ${this.getJSONFieldName()}
 			FROM
-				company c
+				${this.getTableName()} c
 			LEFT JOIN
 				baggage_rule b ON c.baggage_rule_id = b.id
 			${whereClause}
 		`;
 	}
 
-	private getDTORow(row: any): CompanyDTO {
-		return {
-			id: row.company_id,
-			name: row.company_name,
-			logo: row.company_logo,
-			baggage_rule: {
-				id: row.baggage_rule_id,
-				max_free_weight: row.baggage_max_free,
-				price_per_kg: row.baggage_price,
-			},
-		};
-	}
-
 	public add({ name, logo, baggage_rule_id }: CompanyEntry): bigint {
 		const { lastID } = this.storage.run(
-			`
-			INSERT INTO
-				${this.getTableName()}(name, logo, baggage_rule_id)
-			VALUES
-				(?, ?, ?)
-		`,
+			`--sql
+				INSERT INTO
+					${this.getTableName()}(name, logo, baggage_rule_id)
+				VALUES
+					(?, ?, ?)
+			`,
 			[name, logo, baggage_rule_id]
 		);
 		return lastID as bigint;
@@ -76,14 +69,14 @@ export class CompanyRepository extends BaseRepository<CompanyEntry> {
 		{ name, logo, baggage_rule_id }: CompanyEntry
 	): number {
 		const { changes } = this.storage.run(
-			`
-			UPDATE ${this.getTableName()} SET
-				name = ?,
-				logo = ?,
-				baggage_rule_id = ?,
-			WHERE
-				id = ?
-		`,
+			`--sql
+				UPDATE ${this.getTableName()} SET
+					name = ?,
+					logo = ?,
+					baggage_rule_id = ?,
+				WHERE
+					id = ?
+			`,
 			[name, logo, baggage_rule_id, id]
 		);
 		return changes;
@@ -100,16 +93,22 @@ export class CompanyRepository extends BaseRepository<CompanyEntry> {
 	}
 
 	public getDTOByName(name: string): CompanyDTO | null {
-		const whereClause = `WHERE name = ?`;
+		const whereClause = `WHERE c.name = ?`;
 		const company = this.storage.get<any>(this.getDTOQuery(whereClause), [
 			name,
 		]);
-		return this.getDTORow(company);
+		if (!company || !company[this.getJSONFieldName()]) {
+			return null;
+		}
+		return JSON.parse(company[this.getJSONFieldName()]) as CompanyDTO;
 	}
 
 	public getDTOByID(id: number): CompanyDTO | null {
 		const whereClause = `WHERE id = ?`;
 		const company = this.storage.get<any>(this.getDTOQuery(whereClause), [id]);
-		return this.getDTORow(company);
+		if (!company) {
+			return null;
+		}
+		return JSON.parse(company[this.getJSONFieldName()]) as CompanyDTO;
 	}
 }

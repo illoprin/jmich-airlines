@@ -8,7 +8,7 @@ export class PaymentRepository extends BaseRepository<PaymentEntry> {
 
 	protected create() {
 		this.storage.run(
-			`
+			`--sql
 			CREATE TABLE IF NOT EXISTS payment (
 				id INTEGER PRIMARY KEY,
 				-- foreign key to user(id),
@@ -29,7 +29,7 @@ export class PaymentRepository extends BaseRepository<PaymentEntry> {
 
 	public add({ user_id, number, expires, cvv }: PaymentEntry): bigint {
 		const { lastID } = this.storage.run(
-			`
+			`--sql
 				INSERT INTO payment
 					(user_id, number, expires, cvv)
 				VALUES
@@ -42,7 +42,7 @@ export class PaymentRepository extends BaseRepository<PaymentEntry> {
 
 	public getByUserID(user_id: number): PaymentEntry[] | null {
 		const entry = this.storage.all<PaymentEntry>(
-			`
+			`--sql
 				SELECT * FROM payment WHERE user_id = ?
 			`,
 			[user_id]

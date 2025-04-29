@@ -1,5 +1,6 @@
 import type { FlightDTO, FlightEntry } from "../types/flight.type";
 import { BaseRepository } from "../lib/repository/base.repository";
+import { parseJSONArray } from "../lib/repository/parse";
 
 export class FlightRepository extends BaseRepository<FlightEntry> {
 	public getTableName(): string {
@@ -10,92 +11,8 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 		return "flight_";
 	}
 
-	private getDTOQuery(whereClause: string, usePagination: boolean = false) : string {
-		return `
-			SELECT
-				f.id AS flight_id,
-				f.route_code AS flight_route_code,
-				f.departure_date AS flight_departure_date,
-				f.arrival_date AS flight_arrival_date,
-				f.seats_available AS flight_seats,
-				f.price AS flight_price,
-				f.status AS flight_status,
-				
-				dep_city.name AS departure_city_name,
-				dep_city.image AS departure_city_image,
-				dep_airport.code AS departure_airport_code,
-				dep_airport.name AS departure_airport_name,
-				
-				arr_city.name AS arrival_city_name,
-				arr_city.image AS arrival_city_image,
-				arr_airport.code AS arrival_airport_code,
-				arr_airport.name AS arrival_airport_name,
-
-				c.name AS company_name,
-				c.logo AS company_logo,
-				b.max_free_weight AS company_max_free_weight,
-				b.price_per_kg AS company_price_per_kg
-			FROM
-				${this.getTableName()} f
-
-			LEFT JOIN
-				airport dep_airport ON f.departure_airport_id = dep_airport.id
-			LEFT JOIN
-				city dep_city ON dep_airport.city_id = dep_city.id
-			 
-			LEFT JOIN
-				airport arr_airport ON f.arrival_airport_id = arr_airport.id
-			LEFT JOIN
-				city arr_city ON arr_airport.city_id = arr_city.id
-
-			LEFT JOIN
-				company c ON f.company_id = c.id
-			LEFT JOIN
-				baggage_rule b ON c.baggage_rule_id = b.id
-			
-			${whereClause}
-
-			ORDER BY
-				f.departure_date DESC
-
-			${usePagination ? "LIMIT ? OFFSET ?" : ""}
-		`;
-	}
-
-	private getDTORow(row: any | null) : FlightDTO | null {
-		return row ? {
-			id: row.flight_id,
-			route_code: row.flight_route_code,
-			departure_city: {
-				name: row.departure_city_name,
-				airport: {
-					code: row.departure_airport_code,
-					name: row.departure_airport_name,
-				},
-				image: row.departure_city_image,
-			},
-			arrival_city: {
-				name: row.arrival_city_name,
-				airport: {
-					code: row.arrival_airport_code,
-					name: row.arrival_airport_name,
-				},
-				image: row.arrival_city_image,
-			},
-			departure_date: new Date(row.flight_departure_date),
-			arrival_date: new Date(row.flight_arrival_date),
-			company: {
-				name: row.company_name,
-				logo: row.company_logo,
-				baggage_rule: {
-					max_free_weight: row.company_max_free_weight,
-					price_per_kg: row.company_price_per_kg,
-				},
-			},
-			seats_available: row.flight_seats,
-			price: row.flight_price,
-			status: row.flight_status,
-		} : null;
+	private getJSONFieldName(): string {
+		return "flight_json";
 	}
 
 	protected create() {
@@ -137,9 +54,81 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 		);
 	}
 
+	private getDTOQuery(
+		whereClause: string,
+		usePagination: boolean = false
+	): string {
+		return `--sql
+			SELECT json_object(
+				'id', flight.id,
+				'route_code', flight.route_code,
+				'departure_city', json_object(
+					'id', depc.id,
+					'name', depc.name,
+					'image', depc.image,
+					'airport', json_object(
+						'id', depa.id,
+						'code', depa.code,
+						'name', depa.name
+					)
+				),
+				'arrival_city', json_object(
+					'id', arrc.id,
+					'name', arrc.name,
+					'image', arrc.image,
+					'airport', json_object(
+						'id', arra.id,
+						'code', arra.code,
+						'name', arra.name
+					)
+				),
+				'company', json_object(
+					'id', c.id,
+					'name', c.name,
+					'logo', c.logo,
+					'baggage_rule', json_object(
+						'max_free_weight', b.max_free_weight,
+						'price_per_kg', b.price_per_kg
+					)
+				),
+				'departure_date', flight.departure_date,
+				'arrival_date', flight.arrival_date,
+				'price', flight.price,
+				'seats_available', flight.seats_available,
+				'status', flight.status
+			) as ${this.getJSONFieldName()}
+			FROM
+				${this.getTableName()}
+			LEFT JOIN
+				airport depa on flight.departure_airport_id = depa.id
+			LEFT JOIN
+				city depc on depa.city_id = depc.id
+
+			LEFT JOIN
+				airport arra on flight.arrival_airport_id = arra.id
+			LEFT JOIN
+				city arrc on arra.city_id = arrc.id
+				
+			LEFT JOIN
+				company c on flight.company_id = c.id
+			LEFT JOIN
+				baggage_rule b on c.baggage_rule_id = b.id
+
+			${whereClause}
+			ORDER BY flight.departure_date DESC
+			${usePagination ? "LIMIT ? OFFSET ?" : ""}
+		`;
+	}
+
+	private getDTORow(row: any): any {
+		row.departure_date = new Date(row.departure_date);
+		row.arrival_date = new Date(row.arrival_date);
+		return row;
+	}
+
 	public add(flight: FlightEntry): bigint {
 		const { lastID } = this.storage.run(
-			`
+			`--sql
 			INSERT INTO ${this.getTableName()}
 				(route_code, departure_airport_id, arrival_airport_id, departure_date, 
 				arrival_date, company_id, seats_available, price)
@@ -163,7 +152,7 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 	public update(flight: FlightEntry): number {
 		// TODO: delete redis cache
 		const { changes } = this.storage.run(
-			`
+			`--sql
 			UPDATE ${this.getTableName()} SET
 					route_code = ?,
 					departure_airport_id = ?,
@@ -202,34 +191,34 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 		departureDate?: Date,
 		minSeatsAvailable: number = 1,
 		max?: number,
-		page?: number,
+		page?: number
 	): FlightDTO[] | null {
 		// Build WHERE conditions dynamically based on provided parameters
-		const conditions: string[] = ["status = 'ACTIVE'"];
+		const conditions: string[] = [`${this.getTableName()}.status = 'ACTIVE'`];
 		const params: any[] = [];
 
 		if (departureAirportId !== undefined) {
-			conditions.push("f.departure_airport_id = ?");
+			conditions.push(`${this.getTableName()}.departure_airport_id = ?`);
 			params.push(departureAirportId);
 		}
 
 		if (arrivalAirportId !== undefined) {
-			conditions.push("f.arrival_airport_id = ?");
+			conditions.push(`${this.getTableName()}.arrival_airport_id = ?`);
 			params.push(arrivalAirportId);
 		}
 
 		if (departureDate !== undefined) {
 			const dateStr = departureDate.toISOString().split("T")[0];
-			conditions.push("date(f.departure_date) >= date(?)");
+			conditions.push(`date(${this.getTableName()}.departure_date) >= date(?)`);
 			params.push(dateStr);
 		}
 
-		conditions.push("f.seats_available >= ?");
+		conditions.push(`${this.getTableName()}.seats_available >= ?`);
 		params.push(minSeatsAvailable);
 
 		const whereClause =
 			conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-		
+
 		let pagination = false;
 		if (max && page) {
 			pagination = true;
@@ -238,21 +227,43 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 
 		const query = this.getDTOQuery(whereClause, pagination);
 		const rows = this.storage.all<any>(query, params);
-		return rows ? rows.map(row => this.getDTORow(row) as FlightDTO) : null;
+
+		if (!rows) {
+			return null;
+		}
+		const dtos = parseJSONArray<FlightDTO>(
+			rows,
+			this.getJSONFieldName(),
+			(row) => this.getDTORow(row)
+		);
+		return dtos;
 	}
 
 	public getDTOByID(id: number): FlightDTO | null {
-		const whereClause = `WHERE f.id = ?`;
+		const whereClause = `WHERE ${this.getTableName()}.id = ?`;
 		const params = [id];
-		const row = this.storage.get<any>(
-			this.getDTOQuery(whereClause), params
+		const row = this.storage.get<any>(this.getDTOQuery(whereClause), params);
+
+		if (!row) {
+			return null;
+		}
+		const dto: FlightDTO = this.getDTORow(
+			JSON.parse(row[this.getJSONFieldName()])
 		);
-		return this.getDTORow(row);
+		return dto;
 	}
 
 	public getDTOAll(max: number, page: number): FlightDTO[] | null {
 		const rows = this.storage.all<any>(this.getDTOQuery(""), [max, page]);
-		return rows ? rows.map(row => this.getDTORow(row) as FlightDTO) : null;
+		if (!rows) {
+			return null;
+		}
+		const dtos = parseJSONArray<FlightDTO>(
+			rows,
+			this.getJSONFieldName(),
+			(row) => this.getDTORow(row)
+		);
+		return dtos;
 	}
 
 	/**
@@ -260,7 +271,7 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 	 */
 	public updateSeats(id: number, seatsChange: number): number {
 		const { changes } = this.storage.run(
-			`
+			`--sql
 			UPDATE ${this.getTableName()}
 			SET seats_available = seats_available + ?
 			WHERE id = ? AND seats_available + ? >= 0

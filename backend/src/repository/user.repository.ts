@@ -7,7 +7,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 	}
 	protected create() {
 		// Create table
-		this.storage.run(`
+		this.storage.run(`--sql
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
 				login TEXT NOT NULL UNIQUE,
@@ -24,8 +24,9 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		);
 
 		// Create indexes for search optimization
-		this.storage.run(`
-			CREATE UNIQUE INDEX IF NOT EXISTS idx_${this.getTableName()} ON ${this.getTableName()}(login)
+		this.storage.run(
+			`--sql
+				CREATE UNIQUE INDEX IF NOT EXISTS idx_${this.getTableName()} ON ${this.getTableName()}(login)
 			`,
 			[]
 		);
@@ -41,19 +42,19 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		role,
 	}: UserEntry): bigint {
 		const { lastID } = this.storage.run(
-			`
-			INSERT INTO ${this.getTableName()}
-				(login, firstname, secondname, email, avatarpath, password, phone, role)
-			VALUES
-				(?, ?, ?, ?, ?, ?, ?, ?)
-		`,
+			`--sql
+				INSERT INTO ${this.getTableName()}
+					(login, firstname, secondname, email, avatarpath, password, phone, role)
+				VALUES
+					(?, ?, ?, ?, ?, ?, ?, ?)
+			`,
 			[login, firstname, secondname, email, avatarpath, password, phone, role]
 		);
 		return lastID as bigint;
 	}
 	public getPublicDataByID(id: number): UserPublicDTO | null {
 		const entry = this.storage.get<UserPublicDTO>(
-			`
+			`--sql
 				SELECT
 					firstname, secondname, email, avatarpath
 				FROM
@@ -77,7 +78,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		role,
 	}: UserEntry): number {
 		const { changes } = this.storage.run(
-			`
+			`--sql
 				UPDATE ${this.getTableName()} SET
 					login = ?,
 					firstname = ?,
@@ -106,7 +107,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 	}
 	public getByLogin(login: string): UserEntry | null {
 		const res = this.storage.get<UserEntry>(
-			`
+			`--sql
 				SELECT * FROM ${this.getTableName()} WHERE login = ?
 			`,
 			[login]

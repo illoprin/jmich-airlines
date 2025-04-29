@@ -8,7 +8,7 @@ export class BaggageRuleRepository extends BaseRepository<BaggageRuleEntry> {
 
 	protected create(): void {
 		this.storage.run(
-			`
+			`--sql
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()} (
 				id INTEGER PRIMARY KEY,
 				max_free_weight INTEGER NOT NULL,
@@ -21,7 +21,7 @@ export class BaggageRuleRepository extends BaseRepository<BaggageRuleEntry> {
 
 	public add({ max_free_weight, price_per_kg }: BaggageRuleEntry): bigint {
 		const { lastID } = this.storage.run(
-			`
+			`--sql
 			INSERT INTO ${this.getTableName()}
 				(max_free_weight, price_per_kg)
 			VALUES
@@ -37,7 +37,7 @@ export class BaggageRuleRepository extends BaseRepository<BaggageRuleEntry> {
 		{ max_free_weight, price_per_kg }: BaggageRuleEntry
 	): number {
 		const { changes } = this.storage.run(
-			`
+			`--sql
 			UPDATE ${this.getTableName()} SET
 				max_free_weight = ?,
 				price_per_kg = ?,

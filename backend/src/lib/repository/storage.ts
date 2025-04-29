@@ -22,7 +22,7 @@ export class Storage {
 	public all<T = any>(sql: string, params: any[]): T[] | null {
 		const stmt: sqlite.Statement = this.db.prepare(sql);
 		const runResult: any = stmt.all(params);
-		if (runResult) {
+		if (runResult.length > 0) {
 			return runResult as T[];
 		}
 		return null;

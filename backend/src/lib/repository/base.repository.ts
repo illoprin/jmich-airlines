@@ -23,9 +23,7 @@ export abstract class BaseRepository<T> {
 	 */
 	public removeByID(id: number): number {
 		const { changes } = this.storage.run(
-			`
-				DELETE FROM ${this.getTableName()} WHERE id = ?
-			`,
+			`DELETE FROM ${this.getTableName()} WHERE id = ?`,
 			[id]
 		);
 		return changes;

@@ -1,4 +1,6 @@
 import type { Entry } from "../lib/repository/base.repository";
+import { AirportEntry } from "./city.type";
+import { BaggageRuleEntry, CompanyDTO } from "./company.type";
 
 export enum FlightStatus {
 	ACTIVE = "ACTIVE",
@@ -10,31 +12,20 @@ export enum FlightStatus {
 export interface FlightDTO extends Entry {
 	route_code: string;
 	departure_city: {
+		id?: number;
 		name: string;
-		airport: {
-			code: string;
-			name: string;
-		}
+		airport: AirportEntry;
 		image: string; // City image
 	};
 	arrival_city: {
+		id?: number;
 		name: string;
-		airport: {
-			code: string;
-			name: string;
-		}
+		airport: AirportEntry;
 		image: string; // City image
 	};
 	departure_date: Date;
 	arrival_date: Date;
-	company: {
-		name: string;
-		logo: string;
-		baggage_rule?: {
-			max_free_weight: number;
-			price_per_kg: number;
-		};
-	};
+	company: CompanyDTO;
 	seats_available: number;
 	price: number;
 	status: FlightStatus;

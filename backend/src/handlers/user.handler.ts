@@ -3,17 +3,10 @@ import { ResponseTypes } from "../lib/api/response";
 import { Roles, type UserPublicDTO, type UserEntry } from "../types/user.type";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
-import {
-	ForbiddenError,
-	InvalidFieldError,
-	NotFoundError,
-	NotUniqueError,
-} from "../types/service.type";
 import { processServiceError } from "../lib/api/process-error";
+import { PaymentHandler } from "./payment.handler";
 
 export class UserHandler {
-	constructor() {}
-
 	private static registerUser(req: Request, res: Response): void {
 		try {
 			req.dependencies?.userService.register(req.body);
@@ -125,6 +118,9 @@ export class UserHandler {
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getAll
 		);
+
+		// Use payment routes
+		router.use("/payment", PaymentHandler.router());
 
 		return router;
 	}

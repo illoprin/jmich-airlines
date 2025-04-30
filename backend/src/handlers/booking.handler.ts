@@ -2,6 +2,9 @@ import { Request, Response, Router } from "express";
 import { processServiceError } from "../lib/api/process-error";
 import { ResponseTypes } from "../lib/api/response";
 import type { BookingDTO } from "../types/booking.type";
+import { authorizationMiddleware } from "../middleware/authorization.middleware";
+import { roleMiddleware } from "../middleware/role.middleware";
+import { Roles } from "../types/user.type";
 
 export class BookingHandler {
 	private static getBookingByID(req: Request, res: Response): void {
@@ -13,7 +16,7 @@ export class BookingHandler {
 				role,
 				bookingID
 			);
-			res.json(ResponseTypes.ok<BookingDTO>(booking));
+			res.json(ResponseTypes.ok({ booking }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -30,7 +33,7 @@ export class BookingHandler {
 				flight_id,
 				seats,
 				baggage_weight,
-				code ?? undefined
+				code || undefined
 			);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
@@ -43,7 +46,7 @@ export class BookingHandler {
 		try {
 			const { id } = req.token_data;
 			const bookings = req.dependencies.bookingService.getUserBookings(id);
-			res.json(ResponseTypes.ok({bookings}));
+			res.json(ResponseTypes.ok({ bookings }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -52,9 +55,13 @@ export class BookingHandler {
 
 	private static getAllBookings(req: Request, res: Response): void {
 		try {
-			const { max, page } = req.params;
-			const bookings = req.dependencies.bookingService.getAllBookings(parseInt(max), parseInt(page));
-			res.json(ResponseTypes.ok({bookings}));
+			const max = parseInt(req.query.limit as string);
+			const page = parseInt(req.query.page as string);
+			const bookings = req.dependencies.bookingService.getAllBookings(
+				max,
+				page
+			);
+			res.json(ResponseTypes.ok({ bookings }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -66,6 +73,7 @@ export class BookingHandler {
 			const booking_id = parseInt(req.params.id);
 			const { role, id } = req.token_data;
 			req.dependencies.bookingService.deleteBooking(booking_id, id, role);
+			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -78,7 +86,13 @@ export class BookingHandler {
 			const booking_id = parseInt(req.params.id);
 			const { role, id } = req.token_data;
 			const { status } = req.body;
-			req.dependencies.bookingService.updateBookingStatus(id, role, booking_id, status);
+			req.dependencies.bookingService.updateBookingStatus(
+				id,
+				role,
+				booking_id,
+				status
+			);
+			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -95,14 +109,26 @@ export class BookingHandler {
 		router.get("/tranding", this.getTrandingBookings);
 
 		// Auth routes
-		router.get("/:id", this.getBookingByID);
-		router.post("/", this.newBooking);
-		router.get("/", this.getBookingsByToken);
+		router.get("/:id", [authorizationMiddleware], this.getBookingByID);
+		router.post("/", [authorizationMiddleware], this.newBooking);
+		router.get("/", [authorizationMiddleware], this.getBookingsByToken);
+		router.put(
+			"/status/:id",
+			[authorizationMiddleware],
+			this.updateBookingStatus
+		);
 
 		// Admin routes
-		router.get("/all/:max:page", this.getAllBookings);
-		router.delete("/:id", this.deleteBooking);
-		router.put("/status/:id", this.updateBookingStatus);
+		router.get(
+			"/all",
+			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
+			this.getAllBookings
+		);
+		router.delete(
+			"/:id",
+			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
+			this.deleteBooking
+		);
 		return router;
 	}
 }

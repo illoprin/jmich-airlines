@@ -31,8 +31,8 @@ export class CityService {
 		}
 	}
 
-	public getCityByID(id: number): CityDTO {
-		const entry = this.cityRepo.getDTOByID(id);
+	public getCityByID(id: number): CityEntry {
+		const entry = this.cityRepo.getByID(id);
 		if (!entry) {
 			throw new NotFoundError("city not found");
 		}
@@ -96,34 +96,37 @@ export class CityService {
 		}
 	}
 
-	public getAirportByID(id: number): AirportEntry {
-		const entry = this.airportRepo.getByID(id);
+	public getAirportsByCityID(city_id: number): AirportEntry[] {
+		const entries = this.airportRepo.getByCityID(city_id);
+		return entries ?? [];
+	}
+
+	public getAirportByCode(code: string): AirportEntry {
+		const entry = this.airportRepo.getByCode(code);
 		if (!entry) {
 			throw new NotFoundError("airport not found");
 		}
 		return entry;
 	}
 
-	public getAllAirports(): AirportEntry[] {
-		const entry = this.airportRepo.getAll();
-		return entry || [];
-	}
-
-	public updateAirportByID(id: number, payload: any) {
-		const entry = this.airportRepo.getByID(id);
+	public updateAirportByCodeAndCityID(city_id: number, code: string, payload: any) {
+		const entry = this.airportRepo.getByCode(code);
 		if (!entry) {
 			throw new NotFoundError("airport not found");
 		}
 
+		if (city_id !== entry.city_id) {
+			throw new RelatedDataError(`this city has not airport with code '${code}'`);
+		}
+
 		const updated: AirportEntry = {
-			id: entry.id,
 			name: payload.name ?? entry.name,
 			code: payload.code ?? entry.code,
 			city_id: payload.city_id ?? entry.city_id,
 		};
 
 		try {
-			this.airportRepo.update(id, updated);
+			this.airportRepo.update(entry.id as number, updated);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if ((err as StorageError).type == StorageErrorType.UNIQUE) {
@@ -134,11 +137,11 @@ export class CityService {
 		}
 	}
 
-	public removeAirportByID(id: number) {
+	public removeCityAirportByCodeAndCityID(city_id: number, code: string) {
 		try {
-			const changes = this.airportRepo.removeByID(id);
+			const changes = this.airportRepo.removeByCodeAndCityID(city_id, code);
 			if (!changes) {
-				throw new NotFoundError("city not found");
+				throw new NotFoundError("airport not found");
 			}
 		} catch (err) {
 			if (err instanceof StorageError) {

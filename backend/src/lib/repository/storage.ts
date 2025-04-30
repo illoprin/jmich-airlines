@@ -13,7 +13,7 @@ export class Storage {
 	public get<T = any>(sql: string, params: any[]): T | null {
 		const stmt: sqlite.Statement = this.db.prepare(sql);
 		const runResult: any = stmt.get(params);
-		if (runResult) {
+		if (runResult && Object.keys(runResult).length !== 0) {
 			return runResult as T;
 		}
 		return null;

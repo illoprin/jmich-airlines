@@ -2,13 +2,6 @@ import { Request, Response, Router } from "express";
 import { ResponseTypes } from "../lib/api/response";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import type { PaymentEntry } from "../types/payment.type";
-import {
-	ForbiddenError,
-	InvalidFieldError,
-	NotFoundError,
-} from "../types/service.type";
-import { AccessControl } from "../lib/service/access-control";
-import { Roles } from "../types/user.type";
 import { processServiceError } from "../lib/api/process-error";
 
 export class PaymentHandler {
@@ -50,7 +43,7 @@ export class PaymentHandler {
 				req.token_data.role,
 				id
 			);
-			res.json(ResponseTypes.ok<PaymentEntry>(payment));
+			res.json(ResponseTypes.ok({ payment }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;

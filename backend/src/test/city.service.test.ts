@@ -10,7 +10,6 @@ import { DAY_MILLISECONDS, HOUR_MILLISECONDS, mockAirports, mockBaggageRules, mo
 
 describe("city.service", () => {
 	let storage: Storage;
-	let flightID: number;
 	let cityService: CityService;
 
 	beforeAll(() => {
@@ -50,11 +49,18 @@ describe("city.service", () => {
 	});
 
 	describe("deleteAirportByID", () => {
-		it("delete airport linked with flight", () => {
+		it("should throw RelatedDataError", () => {
 			try {
-				cityService.removeAirportByID(1);
+				cityService.removeCityAirportByCodeAndCityID(1, "SVO");
 			} catch(err) {
 				expect(err).toBeInstanceOf(RelatedDataError);
+			}
+		});
+		it("should throw NotFoundError", () => {
+			try {
+				cityService.removeCityAirportByCodeAndCityID(1, "XXX");
+			} catch(err) {
+				expect(err).toBeInstanceOf(NotFoundError);
 			}
 		});
 	});
@@ -85,8 +91,6 @@ describe("city.service", () => {
 
 			expect(city.name).toBe(mockCities[0].name);
 			expect(city.image).toBe(mockCities[0].image);
-			expect(city.airports).toBeDefined();
-			expect(city.airports.length).toBeGreaterThan(1);
 		});
 	});
 
@@ -116,14 +120,21 @@ describe("city.service", () => {
 	describe("updateAirport", () => {
 		it("should throw NotUniqueError", () => {
 			try {
-				cityService.updateAirportByID(1, {name: mockAirports[0].name});
+				cityService.updateAirportByCodeAndCityID(1, "SVO", {name: mockAirports[0].name});
 			} catch(err) {
 				expect(err).toBeInstanceOf(NotUniqueError);
 			}
 		});
+		it("should throw RelatedDataError", () => {
+			try {
+				cityService.updateAirportByCodeAndCityID(999, "SVO", {name: mockAirports[0].name});
+			} catch(err) {
+				expect(err).toBeInstanceOf(RelatedDataError);
+			}
+		});
 		it("should throw NotFoundError", () => {
 			try {
-				cityService.updateAirportByID(999, {name: mockAirports[0].name});
+				cityService.updateAirportByCodeAndCityID(1, "UUI", {name: mockAirports[0].name});
 			} catch(err) {
 				expect(err).toBeInstanceOf(NotFoundError);
 			}
@@ -131,7 +142,7 @@ describe("city.service", () => {
 	});
 	
 	describe("deleteCityByID", () => {
-		it("delete city linked with airport which linked with flight", () => {
+		it("should throw RelatedDataError", () => {
 			try {
 				cityService.removeCityByID(1);
 			} catch(err) {

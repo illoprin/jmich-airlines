@@ -60,11 +60,27 @@ export class AirportRepository extends BaseRepository<AirportEntry> {
 		return changes;
 	}
 
-	public getByCityId(city_id: number): AirportEntry[] | null {
+	public getByCityID(city_id: number): AirportEntry[] | null {
 		const entries = this.storage.all<AirportEntry>(
 			`SELECT * FROM ${this.getTableName()} WHERE city_id = ?`,
 			[city_id]
 		);
 		return entries;
+	}
+
+	public getByCode(code: string): AirportEntry | null {
+		const entry = this.storage.get(
+			`SELECT * FROM ${this.getTableName()} WHERE code = ?`,
+			[code]
+		);
+		return entry;
+	}
+
+	public removeByCodeAndCityID(city_id: number, code: string): number {
+		const { changes } = this.storage.run(
+			`DELETE FROM ${this.getTableName()} WHERE code = ? and city_id = ?`,
+			[code, city_id]
+		);
+		return changes;
 	}
 }

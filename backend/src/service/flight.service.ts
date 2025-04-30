@@ -197,10 +197,9 @@ export class FlightService {
 		return flight;
 	}
 
-	public getAll(): FlightDTO[] {
-		// TODO: get all entries
-		// TODO: pagination
-		return [];
+	public getAll(max: number, page: number): FlightDTO[] {
+		const flight = this.flightRepo.getDTOAll(max, page);
+		return flight ?? [];
 	}
 
 	/**

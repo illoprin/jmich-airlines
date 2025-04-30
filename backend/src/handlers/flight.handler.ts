@@ -5,7 +5,6 @@ import type {
 	FlightSearchPayload,
 	FlightStatus,
 } from "../types/flight.type";
-import { RelatedDataError, InvalidFieldError, NotFoundError } from "../types/service.type";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/user.type";
@@ -14,8 +13,26 @@ import { processServiceError } from "../lib/api/process-error";
 export class FlightHandler {
 	private static addFlight(req: Request, res: Response): void {
 		try {
-			const entry: FlightEntry = req.body;
-			req.dependencies.flightService.add(entry);
+			const {
+				departure_airport_id,
+				departure_date,
+				arrival_airport_id,
+				arrival_date,
+				route_code,
+				price,
+				seats_available,
+				company_id
+			}: FlightEntry = req.body;
+			req.dependencies.flightService.add({
+				departure_airport_id,
+				departure_date: new Date(departure_date),
+				arrival_airport_id,
+				arrival_date: new Date(arrival_date),
+				route_code,
+				company_id,
+				price,
+				seats_available,
+			});
 			res.send(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, req);
@@ -32,6 +49,7 @@ export class FlightHandler {
 		try {
 			const id = parseInt(req.params.id);
 			req.dependencies.flightService.updateGeneral(id, req.body);
+			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, req);
 			return;
@@ -42,6 +60,7 @@ export class FlightHandler {
 		try {
 			const id = parseInt(req.params.id);
 			req.dependencies.flightService.removeByID(id);
+			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, req);
 			return;
@@ -50,8 +69,11 @@ export class FlightHandler {
 
 	private static searchFlights(req: Request, res: Response): void {
 		try {
-			const query: FlightSearchPayload = req.body;
-			const flights = req.dependencies.flightService.search(query);
+			const payload: FlightSearchPayload = req.body;
+			payload.departure_date = new Date(req.body.departure_date as string);
+			payload.max = parseInt(req.query.limit as string);
+			payload.page = parseInt(req.query.page as string);
+			const flights = req.dependencies.flightService.search(payload);
 			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
 			processServiceError(res, req);
@@ -63,7 +85,7 @@ export class FlightHandler {
 		try {
 			const id = parseInt(req.params.id);
 			const flight = req.dependencies.flightService.getByID(id);
-			res.json(flight);
+			res.json(ResponseTypes.ok({ flight }));
 		} catch (err) {
 			processServiceError(res, req);
 			return;
@@ -75,6 +97,19 @@ export class FlightHandler {
 			const id = parseInt(req.params.id);
 			const status: FlightStatus = req.body.status;
 			req.dependencies.flightService.updateStatus(id, status);
+			res.json(ResponseTypes.ok({}));
+		} catch (err) {
+			processServiceError(res, req);
+			return;
+		}
+	}
+
+	private static getAllFlights(req: Request, res: Response): void {
+		try {
+			const max = parseInt(req.query.limit as string);
+			const page = parseInt(req.query.page as string);
+			const flights = req.dependencies.flightService.getAll(max, page);
+			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
 			processServiceError(res, req);
 			return;
@@ -85,7 +120,8 @@ export class FlightHandler {
 		const router = Router();
 
 		// Guest routes
-		router.get("/search", this.searchFlights);
+		// NOTE: I use post method for search so that url can contain query params
+		router.post("/search", this.searchFlights);
 		router.get("/:id", this.getFlightByID);
 
 		// Moderator routes
@@ -104,6 +140,10 @@ export class FlightHandler {
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.updateFlightStatus
 		);
+		router.get("/all",
+			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
+			this.getAllFlights
+		)
 
 		// Admin routes
 		router.delete(

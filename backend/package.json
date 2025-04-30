@@ -4,7 +4,7 @@
 	"description": "Jmich.Airlines server app",
 	"main": "./dist/index.js",
 	"scripts": {
-		"start": "tsc && node .",
+		"backend": "tsc && node .",
 		"dev": "nodemon ./src/index.ts",
 		"test": "jest",
 		"test:coverage": "jest --coverage"

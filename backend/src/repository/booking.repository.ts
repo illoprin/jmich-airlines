@@ -35,15 +35,15 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 
 		this.storage.run(
 			`--sql
-			CREATE INDEX IF NOT EXISTS idx_booking_user ON ${this.getTableName()}(user_id)
-		`,
+				CREATE INDEX IF NOT EXISTS idx_booking_user ON ${this.getTableName()}(user_id)
+			`,
 			[]
 		);
 
 		this.storage.run(
 			`--sql
-			CREATE INDEX IF NOT EXISTS idx_booking_flight ON ${this.getTableName()}(flight_id)
-		`,
+				CREATE INDEX IF NOT EXISTS idx_booking_flight ON ${this.getTableName()}(flight_id)
+			`,
 			[]
 		);
 	}

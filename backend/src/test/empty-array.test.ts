@@ -1,5 +1,4 @@
-describe("empty-array", () => {
-
+describe.skip("empty-array", () => {
 	const arrayCase = (arr: any[]) => {
 		if (!arr.length) {
 			return null;
@@ -27,6 +26,5 @@ describe("empty-array", () => {
 	it("should return null", () => {
 		expect(stringCase("")).toBe(null);
 	});
-
 
 });

@@ -104,7 +104,7 @@ export class CompanyRepository extends BaseRepository<CompanyEntry> {
 	}
 
 	public getDTOByID(id: number): CompanyDTO | null {
-		const whereClause = `WHERE id = ?`;
+		const whereClause = `WHERE c.id = ?`;
 		const company = this.storage.get<any>(this.getDTOQuery(whereClause), [id]);
 		if (!company) {
 			return null;

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import type { Dependencies, MiddlewareFunc } from "../types/middlewaree.type";
+import type { MiddlewareFunc } from "../types/middlewaree.type";
+import { Dependencies } from "../service";
 
 declare global {
 	namespace Express {

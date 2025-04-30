@@ -10,7 +10,7 @@ export function loggerMiddleware(req: Request, res: Response, next: NextFunction
 		const { method, originalUrl } = req;
 		const { statusCode } = res;
 		console.log(
-			`[${new Date().toISOString()}] ${method} ${originalUrl} - ${statusCode} | ${duration}ms | ${responseSize || "?"} bytes`
+			`[${new Date().toLocaleString()}] ${method} ${originalUrl} - ${statusCode} | ${duration}ms | ${responseSize || "?"} bytes`
 		);
 	});
 

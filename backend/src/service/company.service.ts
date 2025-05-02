@@ -1,11 +1,26 @@
-import { StorageError, StorageErrorType } from "../lib/repository/storage-error";
+import {
+	StorageError,
+	StorageErrorType,
+} from "../lib/repository/storage-error";
 import type { BaggageRuleRepository } from "../repository/baggage-rule.repository";
 import type { CompanyRepository } from "../repository/company.repository";
-import type { BaggageRuleEntry, CompanyDTO, CompanyEntry } from "../types/company.type";
-import { NotFoundError, NotUniqueError, RelatedDataError } from "../types/service.type";
+import type {
+	BaggageRuleEntry,
+	CompanyDTO,
+	CompanyEntry,
+} from "../types/company.type";
+import {
+	InvalidFieldError,
+	NotFoundError,
+	NotUniqueError,
+	RelatedDataError,
+} from "../types/service.type";
 
 export class CompanyService {
-	constructor(private companyRepo: CompanyRepository, private baggageRuleRepo: BaggageRuleRepository) {}
+	constructor(
+		private companyRepo: CompanyRepository,
+		private baggageRuleRepo: BaggageRuleRepository
+	) {}
 
 	public addCompany(entry: CompanyEntry): bigint {
 		try {
@@ -15,6 +30,10 @@ export class CompanyService {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.UNIQUE) {
 					throw new NotUniqueError("company with same name exists");
+				} else if (err.type == StorageErrorType.CHECK) {
+					throw new InvalidFieldError("some fields are not filled in");
+				} else if (err.type == StorageErrorType.FOREIGN_KEY) {
+					throw new InvalidFieldError(err.message);
 				}
 			}
 			throw err;
@@ -27,6 +46,11 @@ export class CompanyService {
 			throw new NotFoundError("company not found");
 		}
 		return entry;
+	}
+
+	public getAllCompanies(): CompanyEntry[] {
+		const entries = this.companyRepo.getAll();
+		return entries ?? [];
 	}
 
 	public updateCompanyByID(id: number, updates: any) {
@@ -61,8 +85,13 @@ export class CompanyService {
 			}
 		} catch (err) {
 			if (err instanceof StorageError) {
-				if (err.type == StorageErrorType.CHECK || err.type == StorageErrorType.FOREIGN_KEY) {
-					throw new RelatedDataError("this company entry linked with another entity");
+				if (
+					err.type == StorageErrorType.CHECK ||
+					err.type == StorageErrorType.FOREIGN_KEY
+				) {
+					throw new RelatedDataError(
+						"this company entry linked with another entity"
+					);
 				}
 			}
 			throw err;
@@ -70,8 +99,17 @@ export class CompanyService {
 	}
 
 	public addBaggageRule(entry: BaggageRuleEntry): bigint {
-		const lastID = this.baggageRuleRepo.add(entry);
-		return lastID;
+		try {
+			const lastID = this.baggageRuleRepo.add(entry);
+			return lastID;
+		} catch (err) {
+			if (err instanceof StorageError) {
+				if (err.type == StorageErrorType.CHECK) {
+					throw new InvalidFieldError("some fields are not filled in");
+				}
+			}
+			throw err;
+		}
 	}
 
 	public getBaggageRuleByID(id: number): BaggageRuleEntry {
@@ -87,7 +125,7 @@ export class CompanyService {
 		if (!entry) {
 			throw new NotFoundError("baggage rule not found");
 		}
-		
+
 		const updated: BaggageRuleEntry = {
 			max_free_weight: updates.max_free_weight ?? entry.max_free_weight,
 			price_per_kg: updates.price_per_kg ?? entry.price_per_kg,
@@ -109,8 +147,13 @@ export class CompanyService {
 			}
 		} catch (err) {
 			if (err instanceof StorageError) {
-				if (err.type == StorageErrorType.CHECK || err.type == StorageErrorType.FOREIGN_KEY) {
-					throw new RelatedDataError("this baggage rule entry linked with another entity");
+				if (
+					err.type == StorageErrorType.CHECK ||
+					err.type == StorageErrorType.FOREIGN_KEY
+				) {
+					throw new RelatedDataError(
+						"this baggage rule entry linked with another entity"
+					);
 				}
 			}
 			throw err;

@@ -27,6 +27,7 @@ import { generateRandomGate } from "../lib/service/random";
 import { saveBufferToFile } from "../lib/service/save-file";
 import { Config } from "../types/config.type";
 import { CompanyRepository } from "../repository/company.repository";
+import { FlightStatus } from "../types/flight.type";
 
 export class BookingService {
 	constructor(
@@ -51,7 +52,7 @@ export class BookingService {
 	 * @throws {FileSaveError}
 	 * @throws {RelatedDataError}
 	 */
-	public async createBooking(
+	public async add(
 		userID: number,
 		flightID: number,
 		seats: number,
@@ -74,6 +75,9 @@ export class BookingService {
 		const flight = this.flightRepo.getDTOByID(flightID);
 		if (!flight) {
 			throw new RelatedDataError("flight not found");
+		}
+		if (flight.status !== FlightStatus.ACTIVE) {
+			throw new InvalidFieldError("you cannot make reservation on inactive flight");
 		}
 		console.log("Booking flight price: ", flight.price);
 
@@ -281,5 +285,10 @@ export class BookingService {
 		);
 
 		this.bookingRepo.removeByID(bookingId);
+	}
+
+	public completeExpired(): number {
+		const changes = this.bookingRepo.completeExpired(BookingStatus.COMPLETED);
+		return changes;
 	}
 }

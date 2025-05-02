@@ -27,6 +27,20 @@ function main() {
 	// Init router
 	const router = initRouter();
 
+	setInterval(() => {
+		try {
+			console.log(
+				"Update flights and booking statuses:\n" +
+					"\tFlights updated %d\n" +
+					"\tBookings updated: %d\n",
+				services.flightService.completeExpired(),
+				services.bookingService.completeExpired()
+			);
+		} catch (err) {
+			console.error((err as any).code);
+		}
+	}, 10_000);
+
 	// Create app
 	const app = new App(services, cfg, router);
 	app.start();

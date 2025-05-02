@@ -7,9 +7,8 @@ import { PaymentEntry } from "../../types/payment.type";
 import { BookingEntry } from "../../types/booking.type";
 import { DiscountEntry } from "../../types/discount.type";
 import { generateRandomRouteCode, generateRandomString, randomID, randomIntInRange, Range } from "../../lib/service/random";
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from '../../lib/service/const'
 
-export const DAY_MILLISECONDS = 86400000;
-export const HOUR_MILLISECONDS = 3600000;
 
 const mockCities: CityEntry[] = [
 	{

@@ -113,7 +113,7 @@ describe("booking.service", () => {
 
 			// Add booking
 			const id = Number(
-				await bookingService.createBooking(user_id, flight_id, seats, 5)
+				await bookingService.add(user_id, flight_id, seats, 5)
 			);
 
 			const booking = bookingRepo.getByID(id);
@@ -142,7 +142,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const code = discountRepo.getByID(validDiscountId)?.code;
 			const id = Number(
-				await bookingService.createBooking(user_id, flight_id, 1, 5, code)
+				await bookingService.add(user_id, flight_id, 1, 5, code)
 			);
 
 			const booking = bookingRepo.getByID(id);
@@ -164,7 +164,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const code = discountRepo.getByID(validDiscountId)?.code;
 			try {
-				await bookingService.createBooking(999, flight_id, 1, 5, code);
+				await bookingService.add(999, flight_id, 1, 5, code);
 			} catch (err) {
 				expect(err).toBeInstanceOf(RelatedDataError);
 			}
@@ -174,7 +174,7 @@ describe("booking.service", () => {
 			const user_id = randomID(usersCount);
 			const code = discountRepo.getByID(validDiscountId)?.code;
 			try {
-				await bookingService.createBooking(user_id, 999, 1, 5, code);
+				await bookingService.add(user_id, 999, 1, 5, code);
 			} catch (err) {
 				expect(err).toBeInstanceOf(RelatedDataError);
 			}
@@ -185,7 +185,7 @@ describe("booking.service", () => {
 			const user_id = randomID(usersCount);
 			const flight_id = randomID(flightsCount);
 			try {
-				await bookingService.createBooking(
+				await bookingService.add(
 					user_id,
 					flight_id,
 					1,
@@ -203,7 +203,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const code = discountRepo.getByID(invalidDiscountId)?.code;
 			try {
-				await bookingService.createBooking(user_id, flight_id, 1, 5, code);
+				await bookingService.add(user_id, flight_id, 1, 5, code);
 			} catch (err) {
 				expect(err).toBeInstanceOf(InvalidFieldError);
 				expect((err as InvalidFieldError).message.includes("code")).toBe(true);
@@ -215,21 +215,21 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 
 			try {
-				await bookingService.createBooking(user_id, flight_id, -4, 5);
+				await bookingService.add(user_id, flight_id, -4, 5);
 			} catch (err) {
 				expect(err).toBeInstanceOf(InvalidFieldError);
 				expect((err as InvalidFieldError).message.includes("seats")).toBe(true);
 			}
 
 			try {
-				await bookingService.createBooking(user_id, flight_id, 0, 5);
+				await bookingService.add(user_id, flight_id, 0, 5);
 			} catch (err) {
 				expect(err).toBeInstanceOf(InvalidFieldError);
 				expect((err as InvalidFieldError).message.includes("seats")).toBe(true);
 			}
 
 			try {
-				await bookingService.createBooking(user_id, flight_id, 1, -2);
+				await bookingService.add(user_id, flight_id, 1, -2);
 			} catch (err) {
 				expect(err).toBeInstanceOf(InvalidFieldError);
 				expect((err as InvalidFieldError).message.includes("baggage")).toBe(
@@ -248,7 +248,7 @@ describe("booking.service", () => {
 			const user_id = userID;
 			const seats = 3;
 			const id = Number(
-				await bookingService.createBooking(user_id, flight_id, seats, 5)
+				await bookingService.add(user_id, flight_id, seats, 5)
 			);
 
 			try {
@@ -278,7 +278,7 @@ describe("booking.service", () => {
 			const user_id = userID;
 			const seats = 3;
 			const id = Number(
-				await bookingService.createBooking(user_id, flight_id, seats, 5)
+				await bookingService.add(user_id, flight_id, seats, 5)
 			);
 
 			try {
@@ -316,7 +316,7 @@ describe("booking.service", () => {
 			for (let i = 0; i < booking_count; i++) {
 				const flight_id = randomID(flightsCount);
 				const seats = 1;
-				const booking_id = await bookingService.createBooking(
+				const booking_id = await bookingService.add(
 					userID,
 					flight_id,
 					seats,
@@ -369,7 +369,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const seats = 1;
 			const booking_id = Number(
-				await bookingService.createBooking(userID, flight_id, seats, 5)
+				await bookingService.add(userID, flight_id, seats, 5)
 			);
 
 			bookingService.updateBookingStatus(
@@ -400,7 +400,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const seats = 1;
 			const booking_id = Number(
-				await bookingService.createBooking(userID, flight_id, seats, 5)
+				await bookingService.add(userID, flight_id, seats, 5)
 			);
 
 			try {
@@ -420,7 +420,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const seats = 1;
 			const booking_id = Number(
-				await bookingService.createBooking(userID, flight_id, seats, 5)
+				await bookingService.add(userID, flight_id, seats, 5)
 			);
 
 			try {
@@ -441,7 +441,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const seats = 1;
 			let booking_id = Number(
-				await bookingService.createBooking(userID, flight_id, seats, 5)
+				await bookingService.add(userID, flight_id, seats, 5)
 			);
 
 			bookingService.deleteBooking(booking_id, userID, Roles.Customer);
@@ -449,7 +449,7 @@ describe("booking.service", () => {
 			expect(bookingRepo.getByID(booking_id)).toBe(null);
 
 			booking_id = Number(
-				await bookingService.createBooking(userID, flight_id, seats, 5)
+				await bookingService.add(userID, flight_id, seats, 5)
 			);
 
 			bookingService.deleteBooking(booking_id, adminID, Roles.Admin);
@@ -469,7 +469,7 @@ describe("booking.service", () => {
 			const flight_id = randomID(flightsCount);
 			const seats = 1;
 			const booking_id = Number(
-				await bookingService.createBooking(userID, flight_id, seats, 5)
+				await bookingService.add(userID, flight_id, seats, 5)
 			);
 
 			try {

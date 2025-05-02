@@ -6,6 +6,7 @@ import type { AirportRepository } from "../repository/airport.repository";
 import type { CityRepository } from "../repository/city.repository";
 import type { AirportEntry, CityDTO, CityEntry } from "../types/city.type";
 import {
+	InvalidFieldError,
 	NotFoundError,
 	NotUniqueError,
 	RelatedDataError,
@@ -25,6 +26,8 @@ export class CityService {
 			if (err instanceof StorageError) {
 				if ((err as StorageError).type == StorageErrorType.UNIQUE) {
 					throw new NotUniqueError("city entry is not unique");
+				} else if (err.type == StorageErrorType.CHECK) {
+					throw new InvalidFieldError("some fields are not filled in");
 				}
 			}
 			throw err;
@@ -89,7 +92,9 @@ export class CityService {
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if ((err as StorageError).type == StorageErrorType.UNIQUE) {
-					throw new NotUniqueError("city entry is not unique");
+					throw new NotUniqueError("airport entry is not unique");
+				} else if (err.type == StorageErrorType.CHECK) {
+					throw new InvalidFieldError(`invalid field '${err.field.split(' ')[0]}'`);
 				}
 			}
 			throw err;
@@ -135,6 +140,11 @@ export class CityService {
 			}
 			throw err;
 		}
+	}
+
+	public getAllAirports(): AirportEntry[] {
+		const airports = this.airportRepo.getAll();
+		return airports ?? [];
 	}
 
 	public removeCityAirportByCodeAndCityID(city_id: number, code: string) {

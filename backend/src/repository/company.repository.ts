@@ -1,5 +1,6 @@
 import type { CompanyDTO, CompanyEntry } from "../types/company.type";
 import { BaseRepository } from "../lib/repository/base.repository";
+import { parseJSONArray } from "../lib/repository/parse";
 
 export class CompanyRepository extends BaseRepository<CompanyEntry> {
 	public getTableName(): string {
@@ -110,5 +111,14 @@ export class CompanyRepository extends BaseRepository<CompanyEntry> {
 			return null;
 		}
 		return JSON.parse(company[this.getJSONFieldName()]) as CompanyDTO;
+	}
+
+	public getDTOAll(): CompanyDTO[] | null {
+		const rows = this.storage.all<any>(this.getDTOQuery(""), []);
+		if (!rows) {
+			return null;
+		}
+		const dtos = parseJSONArray<CompanyDTO>(rows, this.getJSONFieldName());
+		return dtos;
 	}
 }

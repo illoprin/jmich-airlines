@@ -62,7 +62,7 @@ export class AirportRepository extends BaseRepository<AirportEntry> {
 
 	public getByCityID(city_id: number): AirportEntry[] | null {
 		const entries = this.storage.all<AirportEntry>(
-			`SELECT * FROM ${this.getTableName()} WHERE city_id = ?`,
+			`SELECT id, name, code FROM ${this.getTableName()} WHERE city_id = ?`,
 			[city_id]
 		);
 		return entries;

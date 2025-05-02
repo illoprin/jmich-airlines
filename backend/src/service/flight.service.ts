@@ -3,7 +3,7 @@ import {
 	StorageError,
 	StorageErrorType,
 } from "../lib/repository/storage-error";
-import type {
+import {
 	FlightDTO,
 	FlightEntry,
 	FlightSearchPayload,
@@ -15,6 +15,10 @@ import {
 	NotFoundError,
 	NotUniqueError,
 } from "../types/service.type";
+import type { CompanyEntry } from "../types/company.type";
+import type { AirportEntry } from "../types/city.type";
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from '../lib/service/const'
+import { randomFlight } from "../lib/service/random-flight";
 
 export class FlightService {
 	constructor(private flightRepo: FlightRepository) {}
@@ -26,9 +30,11 @@ export class FlightService {
 	 */
 	public add(entry: FlightEntry): bigint {
 		if (entry.departure_date < new Date()) {
-			throw new InvalidFieldError("departure date cannot be in past")
+			throw new InvalidFieldError("departure date cannot be in past");
 		} else if (entry.arrival_date < entry.departure_date) {
-			throw new InvalidFieldError("arrival date cannot be less than departure date")
+			throw new InvalidFieldError(
+				"arrival date cannot be less than departure date"
+			);
 		}
 
 		try {
@@ -70,8 +76,10 @@ export class FlightService {
 		const edited: FlightEntry = {
 			id,
 			route_code: payload.route_code ?? flight.route_code,
-			departure_airport_id: payload.departure_airport_id ?? flight.departure_airport_id,
-			arrival_airport_id: payload.arrival_airport_id ?? flight.arrival_airport_id,
+			departure_airport_id:
+				payload.departure_airport_id ?? flight.departure_airport_id,
+			arrival_airport_id:
+				payload.arrival_airport_id ?? flight.arrival_airport_id,
 			departure_date: payload.departure_date ?? new Date(flight.departure_date),
 			arrival_date: payload.arrival_date ?? new Date(flight.arrival_date),
 			company_id: payload.company_id ?? flight.company_id,
@@ -86,7 +94,9 @@ export class FlightService {
 				if (err.type == StorageErrorType.CHECK) {
 					throw new InvalidFieldError(`invalid field '${err.field}'`);
 				} else if (err.type == StorageErrorType.UNIQUE) {
-					throw new NotUniqueError( `invalid field'${err.field != "?" ? err.field : ""}'`);
+					throw new NotUniqueError(
+						`invalid field'${err.field != "?" ? err.field : ""}'`
+					);
 				} else if (err.type == StorageErrorType.FOREIGN_KEY) {
 					throw new InvalidFieldError(err.message);
 				}
@@ -115,7 +125,7 @@ export class FlightService {
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
-					throw new InvalidFieldError(`invalid field ${err.field}`);
+					throw new InvalidFieldError(`invalid field '${err.field.split(' ')[0]}'`);
 				}
 			} else {
 				throw err;
@@ -180,9 +190,51 @@ export class FlightService {
 		return this.flightRepo.updateSeats(id, delta);
 	}
 
-	public addRandom(quantity: number, days_range: number): FlightEntry[] {
-		// TODO: add random flights
-		return [];
+	public addRandom(
+		quantity: number,
+		daysRange: number,
+		maxFlightDuration: number,
+		maxPrice: number,
+		airports: AirportEntry[],
+		companies: CompanyEntry[]
+	): Error[] {
+		// FIX: create separate function to generate random flight
+		console.log(
+			"Generating random flights:\n" +
+				"Quantity: %d\n" +
+				"Days: %d\n" +
+				"Max Duration: %d\n" +
+				"Max Price: %d\n",
+			quantity,
+			daysRange,
+			maxFlightDuration,
+			maxPrice
+		);
+		let errors: Error[] = [];
+		const flightsPerDay = Math.ceil(daysRange / quantity);
+		let currentDay = 0;
+		for (let i = 0; i < quantity; i++) {
+			const startTime =
+				DAY_MILLISECONDS * currentDay +
+				(i % flightsPerDay) * HOUR_MILLISECONDS * maxFlightDuration;
+			const flight = randomFlight(
+				startTime,
+				maxFlightDuration,
+				maxPrice,
+				companies,
+				airports
+			);
+
+			try {
+				this.add(flight);
+				if (i % flightsPerDay === 0) {
+					currentDay++;
+				}
+			} catch (err) {
+				errors.push(err as Error);
+			}
+		}
+		return errors;
 	}
 
 	/**
@@ -198,8 +250,8 @@ export class FlightService {
 	}
 
 	public getAll(max: number, page: number): FlightDTO[] {
-		const flight = this.flightRepo.getDTOAll(max, page);
-		return flight ?? [];
+		const flights = this.flightRepo.getDTOAll(max, page);
+		return flights ?? [];
 	}
 
 	/**
@@ -220,5 +272,10 @@ export class FlightService {
 				}
 			}
 		}
+	}
+	
+	public completeExpired(): number {
+		const changes = this.flightRepo.completeExpired(FlightStatus.COMPLETED);
+		return changes;
 	}
 }

@@ -29,29 +29,28 @@ export function authorizationMiddleware(
 		// Check auth header
 		const authHeader = req.headers.authorization;
 		if (!authHeader) {
-			 res
-				.status(401)
-				.json(ResponseTypes.error("user is not authorized"));
-				return;
+			res.status(401).json(ResponseTypes.error("user is not authorized"));
+			return;
 		}
 
 		// Get token from header
 		const token = authHeader.split(" ")[1];
 		if (!token) {
-			 res
-				.status(401)
-				.json(ResponseTypes.error("user is not authorized"));
-				return;
+			res.status(401).json(ResponseTypes.error("user is not authorized"));
+			return;
 		}
 
 		// Verify token
-		const decodedData = jwt.verify(token, req.dependencies.cfg.secret) as TokenData;
+		const decodedData = jwt.verify(
+			token,
+			req.dependencies.cfg.secret
+		) as TokenData;
 
 		// Check candidate entry exsistence
 		const user = req.dependencies.userService.getByID(decodedData.id);
 		if (!user || user.login !== decodedData.login) {
-			 res.status(401).json(ResponseTypes.error("invalid token"));
-			 return;
+			res.status(401).json(ResponseTypes.error("invalid token"));
+			return;
 		}
 
 		// Add decoded data to request
@@ -59,7 +58,8 @@ export function authorizationMiddleware(
 
 		next();
 	} catch (e) {
-		 res.status(401).json(ResponseTypes.error("user is not authorized"));
-		 return
+		console.error(e);
+		res.status(401).json(ResponseTypes.error("user is not authorized"));
+		return;
 	}
 }

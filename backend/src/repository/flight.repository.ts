@@ -1,4 +1,4 @@
-import type { FlightDTO, FlightEntry } from "../types/flight.type";
+import { FlightDTO, FlightEntry, FlightStatus } from "../types/flight.type";
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
 
@@ -18,7 +18,7 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 	protected create() {
 		// Create table
 		this.storage.run(
-			`
+			`--sql
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
 				route_code TEXT NOT NULL UNIQUE CHECK(route_code GLOB '[A-Z][0-9][0-9][0-9]'),
@@ -115,7 +115,7 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				baggage_rule b on c.baggage_rule_id = b.id
 
 			${whereClause}
-			ORDER BY flight.departure_date DESC
+			ORDER BY flight.departure_date ASC
 			${usePagination ? "LIMIT ? OFFSET ?" : ""}
 		`;
 	}
@@ -254,7 +254,7 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 	}
 
 	public getDTOAll(max: number, page: number): FlightDTO[] | null {
-		const rows = this.storage.all<any>(this.getDTOQuery(""), [max, page]);
+		const rows = this.storage.all<any>(this.getDTOQuery("", true), [max, page * max]);
 		if (!rows) {
 			return null;
 		}
@@ -278,6 +278,18 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			`,
 			[seatsChange, id, seatsChange]
 		);
+		return changes;
+	}
+	
+	public completeExpired(statusToSet: FlightStatus): number {
+		const query = `--sql
+			UPDATE ${this.getTableName()} SET status = ?
+			WHERE
+				datetime(departure_date) <= datetime('now')
+			AND
+				status = ?
+		`
+		const { changes } = this.storage.run(query, [statusToSet, FlightStatus.ACTIVE]);
 		return changes;
 	}
 }

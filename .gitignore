@@ -1,5 +1,8 @@
 frontend/node_modules
+frontend/.idea
+old.frontend
 backend/node_modules
+backend/.idea
 backend/docs/*_PROMT.md
 backend/docs/PROMTS.md
 backend/start-dev.cmd

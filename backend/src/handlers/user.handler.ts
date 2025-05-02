@@ -1,13 +1,45 @@
 import { Request, Response, Router } from "express";
-import { ResponseTypes } from "../lib/api/response";
+import { checkValidation, ResponseTypes } from "../lib/api/response";
 import { Roles, type UserPublicDTO, type UserEntry } from "../types/user.type";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
 import { processServiceError } from "../lib/api/process-error";
 import { PaymentHandler } from "./payment.handler";
+import { ValidationChain } from "express-validator";
+import { body } from "express-validator";
+import { applyOptionalFlag } from "../lib/api/validation-chain";
+import { LOGIN_REGEX, SINGLE_UNICODE_WORD_REGEX } from "../lib/service/const";
 
 export class UserHandler {
+	private static getChain(optional: boolean = false): ValidationChain[] {
+		const validators: ValidationChain[] = [
+			body("login")
+				.isLength({ min: 4, max: 255 })
+				.matches(LOGIN_REGEX)
+				.withMessage(
+					"login string can contain latin chars and '_' '-' symbols"
+				),
+			body("password")
+				.isLength({ min: 4, max: 255 })
+				.withMessage("password length must between 4 and 255"),
+			body("firstname")
+				.matches(SINGLE_UNICODE_WORD_REGEX)
+				.withMessage("firstname must be a single word"),
+			body("secondname")
+				.matches(SINGLE_UNICODE_WORD_REGEX)
+				.withMessage("secondname must be a single word"),
+			body("phone")
+				.matches(/^[0-9]{10}$/g)
+				.withMessage("phone must be a 10 digits string"),
+			body("email")
+				.isEmail({ allow_ip_domain: true })
+				.withMessage("invalid email"),
+		];
+		return applyOptionalFlag(validators, optional);
+	}
+
 	private static registerUser(req: Request, res: Response): void {
+		if (!checkValidation(req, res)) return;
 		try {
 			req.dependencies?.userService.register(req.body);
 			res.json(ResponseTypes.ok({}));
@@ -59,15 +91,24 @@ export class UserHandler {
 	}
 
 	private static updateByToken(req: Request, res: Response): void {
+		if (!checkValidation(req, res)) return;
 		try {
 			const id = req.token_data.id;
-			const roleChangeAllowed: string | undefined = req.get("Allow-Access");
-			req.dependencies.userService.update(
+			const allowAccessHeader: string | undefined = req.get("Allow-Access");
+			console.log(allowAccessHeader);
+			let allowRoleChaning: boolean = false;
+			if (allowAccessHeader) {
+				allowRoleChaning = allowAccessHeader === "1" ? true : false;
+			}
+			const token = req.dependencies.userService.update(
 				id,
 				req.body,
-				roleChangeAllowed === "1" ? true : false
+				allowRoleChaning
 			);
-			res.json(ResponseTypes.ok({}));
+			// WARN: return new access token after changing a role or login is bad practice in my opinion
+			token
+				? res.json(ResponseTypes.ok({ token }))
+				: res.json(ResponseTypes.ok({ token }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -99,14 +140,17 @@ export class UserHandler {
 	public static router(): Router {
 		const router = Router();
 		// Guest routes
-		// FIX: validate fields
-		router.post("/", this.registerUser);
-		// FIX: validate fields
+		router.post("/", this.getChain(), this.registerUser);
 		router.post("/login", this.login);
 
 		// Auth private routes
 		router.get("/", authorizationMiddleware, this.getByToken);
-		router.put("/", authorizationMiddleware, this.updateByToken);
+		router.put(
+			"/",
+			authorizationMiddleware,
+			this.getChain(true),
+			this.updateByToken
+		);
 		router.delete("/", authorizationMiddleware, this.deleteByToken);
 
 		// Auth routes

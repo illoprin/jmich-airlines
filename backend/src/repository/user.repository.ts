@@ -16,7 +16,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				phone TEXT NOT NULL CHECK(length(phone) == 10),
 				email TEXT NOT NULL UNIQUE,
 				password TEXT NOT NULL,
-				avatarpath TEXT DEFAULT '/upload/protected/user/avatar_default.jpg',
+				avatarpath TEXT DEFAULT '/upload/user/avatar_default.jpg',
 				role INTEGER DEFAULT 1
 			);
 		`,
@@ -36,7 +36,6 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		firstname,
 		secondname,
 		email,
-		avatarpath,
 		password,
 		phone,
 		role,
@@ -44,11 +43,11 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		const { lastID } = this.storage.run(
 			`--sql
 				INSERT INTO ${this.getTableName()}
-					(login, firstname, secondname, email, avatarpath, password, phone, role)
+					(login, firstname, secondname, email, password, phone, role)
 				VALUES
-					(?, ?, ?, ?, ?, ?, ?, ?)
+					(?, ?, ?, ?, ?, ?, ?)
 			`,
-			[login, firstname, secondname, email, avatarpath, password, phone, role]
+			[login, firstname, secondname, email, password, phone, role]
 		);
 		return lastID as bigint;
 	}

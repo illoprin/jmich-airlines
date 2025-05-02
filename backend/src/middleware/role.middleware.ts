@@ -12,8 +12,10 @@ export function roleMiddleware(roles: number): MiddlewareFunc {
 		// Get role from token decoded data
 		const { role } = req.token_data;
 
+		console.log("User role %d\nRequired role %d", role, roles);
+
 		// Role of user < accessible_role (for e.g. access role - 1, user role - 0)
-		if (role < roles) {
+		if (role < (roles as number)) {
 			res.status(403).json(ResponseTypes.error("access denied"));
 			return;
 		}

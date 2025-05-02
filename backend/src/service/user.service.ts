@@ -36,6 +36,7 @@ export class UserService {
 			...user,
 			role: Roles.Customer,
 		};
+		// NOTE: send email and wait for confirmation
 		try {
 			const res = this.userRepo.add(entry);
 			return res;
@@ -101,7 +102,14 @@ export class UserService {
 		return users;
 	}
 
-	public update(id: number, newFields: any, roleChangingAllowed: boolean) {
+	/**
+	 * Update user data
+	 * @param id - User ID
+	 * @param newFields - user entry fields with new value
+	 * @param roleChangingAllowed - is role changing allowed operation
+	 * @returns new access token if key field (role, login) has been changed
+	 */
+	public update(id: number, newFields: any, roleChangingAllowed: boolean): string | undefined {
 		const candidate = this.userRepo.getByID(id);
 		if (!candidate) {
 			throw new NotFoundError("user not found");
@@ -128,6 +136,8 @@ export class UserService {
 
 		try {
 			this.userRepo.update(updated);
+			// WARN: return new access token after changing a role or login is bad practice in my opinion
+			return newFields.role || newFields.login ? createToken(updated, this.cfg.secret) : undefined
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.UNIQUE) {

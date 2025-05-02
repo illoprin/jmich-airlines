@@ -15,6 +15,9 @@ export class App {
 		this.app.use(express.json());
 		// Add logger for request and response
 		this.app.use(loggerMiddleware);
+		// Add dependencies
+		this.app.use(dependencyInjectionMiddleware(dependencies))
+		this.app.use(cors(createCorsOptions(cfg)));
 		// Add possability to view static
 		this.app.use("/upload", express.static(`./${cfg.public_files_path}`));
 		// Add authorized users possability to view personal data
@@ -28,9 +31,6 @@ export class App {
 			authorizationMiddleware,
 			express.static(`./${this.cfg.booking_files_path}`)
 		);
-		// Add dependencies
-		this.app.use(dependencyInjectionMiddleware(dependencies))
-		this.app.use(cors(createCorsOptions(cfg)));
 
 		// Add master router to api routes
 		this.app.use("/api", router);

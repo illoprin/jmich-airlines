@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { ResponseTypes } from "../lib/api/response";
+import { checkValidation, ResponseTypes } from "../lib/api/response";
 import type {
 	FlightEntry,
 	FlightSearchPayload,
@@ -9,9 +9,37 @@ import { authorizationMiddleware } from "../middleware/authorization.middleware"
 import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/user.type";
 import { processServiceError } from "../lib/api/process-error";
+import { body, ValidationChain } from "express-validator";
+import {
+	applyOptionalFlag,
+	getForeignKeyValidation,
+	getISO8601Validation,
+} from "../lib/api/validation-chain";
 
 export class FlightHandler {
+	private static getChain(optional: boolean = false): ValidationChain[] {
+		const validators: ValidationChain[] = [
+			getForeignKeyValidation("departure_airport_id"),
+			getForeignKeyValidation("arrival_airport_id"),
+			getForeignKeyValidation("company_id"),
+			getISO8601Validation("departure_date"),
+			getISO8601Validation("arrival_date"),
+			body("route_code")
+				.isLength({ min: 4, max: 4 })
+				.matches(/^[A-Z][0-9]{3}$/g)
+				.withMessage("route code must satisfy pattern /[A-Z][0-9][0-9][0-9]/"),
+			body("price")
+				.isInt({ min: 1 })
+				.withMessage("price must be positive number starting from 1"),
+			body("seats_available")
+				.isInt({ min: 0 })
+				.withMessage("number of available seats must be positive number"),
+		];
+		return applyOptionalFlag(validators, optional);
+	}
+
 	private static addFlight(req: Request, res: Response): void {
+		if (!checkValidation(req, res)) return;
 		try {
 			const {
 				departure_airport_id,
@@ -21,7 +49,7 @@ export class FlightHandler {
 				route_code,
 				price,
 				seats_available,
-				company_id
+				company_id,
 			}: FlightEntry = req.body;
 			req.dependencies.flightService.add({
 				departure_airport_id,
@@ -35,23 +63,40 @@ export class FlightHandler {
 			});
 			res.send(ResponseTypes.ok({}));
 		} catch (err) {
-			processServiceError(res, req);
+			processServiceError(res, err);
 			return;
 		}
 	}
 
 	private static addRandomFlights(req: Request, res: Response): void {
-		// TODO
-		res.status(501).send(ResponseTypes.error("not implemented"));
+		try {
+			const { quantity, days_range, max_duration, max_price } = req.body;
+			const airports = req.dependencies.cityService.getAllAirports();
+			const companies = req.dependencies.companyService.getAllCompanies();
+			const errs = req.dependencies.flightService.addRandom(
+				quantity ?? 100,
+				days_range ?? 30,
+				max_duration ?? 5,
+				max_price ?? 10_000,
+				airports,
+				companies
+			);
+			res.send(ResponseTypes.ok({ errs }));
+		} catch (err) {
+			processServiceError(res, err);
+			return;
+		}
+		return;
 	}
 
 	private static updateFlight(req: Request, res: Response): void {
+		if (!checkValidation(req, res)) return;
 		try {
 			const id = parseInt(req.params.id);
 			req.dependencies.flightService.updateGeneral(id, req.body);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			processServiceError(res, req);
+			processServiceError(res, err);
 			return;
 		}
 	}
@@ -62,7 +107,7 @@ export class FlightHandler {
 			req.dependencies.flightService.removeByID(id);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			processServiceError(res, req);
+			processServiceError(res, err);
 			return;
 		}
 	}
@@ -76,7 +121,7 @@ export class FlightHandler {
 			const flights = req.dependencies.flightService.search(payload);
 			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
-			processServiceError(res, req);
+			processServiceError(res, err);
 			return;
 		}
 	}
@@ -87,7 +132,7 @@ export class FlightHandler {
 			const flight = req.dependencies.flightService.getByID(id);
 			res.json(ResponseTypes.ok({ flight }));
 		} catch (err) {
-			processServiceError(res, req);
+			processServiceError(res, err);
 			return;
 		}
 	}
@@ -99,19 +144,19 @@ export class FlightHandler {
 			req.dependencies.flightService.updateStatus(id, status);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
-			processServiceError(res, req);
+			processServiceError(res, err);
 			return;
 		}
 	}
 
 	private static getAllFlights(req: Request, res: Response): void {
 		try {
-			const max = parseInt(req.query.limit as string);
-			const page = parseInt(req.query.page as string);
+			const max = parseInt(req.query.limit as string) || 10;
+			const page = parseInt(req.query.page as string) || 0;
 			const flights = req.dependencies.flightService.getAll(max, page);
 			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
-			processServiceError(res, req);
+			processServiceError(res, err);
 			return;
 		}
 	}
@@ -126,24 +171,27 @@ export class FlightHandler {
 
 		// Moderator routes
 		router.post(
-			"/:id",
+			"/",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
+			this.getChain(),
 			this.addFlight
 		);
 		router.put(
 			"/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
+			this.getChain(true),
 			this.updateFlight
 		);
 		router.put(
-			"/status/:id",
+			"/:id/status",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.updateFlightStatus
 		);
-		router.get("/all",
+		router.get(
+			"/admin/all",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.getAllFlights
-		)
+		);
 
 		// Admin routes
 		router.delete(
@@ -152,7 +200,7 @@ export class FlightHandler {
 			this.deleteFlight
 		);
 		router.post(
-			"/random",
+			"/admin/random",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.addRandomFlights
 		);

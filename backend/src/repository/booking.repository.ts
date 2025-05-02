@@ -1,15 +1,15 @@
 import { BookingDTO, BookingEntry, BookingStatus } from "../types/booking.type";
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
+import { FlightStatus } from "../types/flight.type";
 
 export class BookingRepository extends BaseRepository<BookingEntry> {
-	
 	public getTableName(): string {
 		return "booking";
 	}
 
 	private getJSONFieldName(): string {
-		return 'booking_json';
+		return "booking_json";
 	}
 
 	protected create(): void {
@@ -183,8 +183,10 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 			return null;
 		}
 
-		const dtos = parseJSONArray<BookingDTO>(rows, this.getJSONFieldName(), (dto) =>
-			this.getDTORow(dto)
+		const dtos = parseJSONArray<BookingDTO>(
+			rows,
+			this.getJSONFieldName(),
+			(dto) => this.getDTORow(dto)
 		);
 
 		return dtos;
@@ -221,17 +223,16 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 			params.push(max, page * max);
 		}
 
-		const rows = this.storage.all<any>(
-			this.getDTOQuery("", true),
-			params
-		);
+		const rows = this.storage.all<any>(this.getDTOQuery("", true), params);
 
 		if (!rows) {
 			return null;
 		}
 
-		const dtos = parseJSONArray<BookingDTO>(rows, this.getJSONFieldName(), (dto) =>
-			this.getDTORow(dto)
+		const dtos = parseJSONArray<BookingDTO>(
+			rows,
+			this.getJSONFieldName(),
+			(dto) => this.getDTORow(dto)
 		);
 
 		return dtos;
@@ -255,5 +256,29 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 			[flight_id]
 		);
 		return entries;
+	}
+
+	public completeExpired(statusToSet: BookingStatus): number {
+		const query = `--sql
+			UPDATE ${this.getTableName()} SET
+				status = ?
+			WHERE flight_id IN (
+				SELECT
+					id
+				FROM
+					flight
+				WHERE
+					(status = ? OR status = ?)
+			)
+			AND
+				status = ?
+		`;
+		const { changes } = this.storage.run(query, [
+			statusToSet,
+			FlightStatus.CANCELLED,
+			FlightStatus.COMPLETED,
+			BookingStatus.ACTIVE
+		]);
+		return changes;
 	}
 }

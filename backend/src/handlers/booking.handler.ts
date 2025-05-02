@@ -1,12 +1,31 @@
 import { Request, Response, Router } from "express";
 import { processServiceError } from "../lib/api/process-error";
-import { ResponseTypes } from "../lib/api/response";
+import { checkValidation, ResponseTypes } from "../lib/api/response";
 import type { BookingDTO } from "../types/booking.type";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/user.type";
+import { body, ValidationChain } from "express-validator";
+import { getForeignKeyValidation } from "../lib/api/validation-chain";
+import { DISCOUNT_REGEX } from "../lib/service/const";
 
 export class BookingHandler {
+	private static getAddBookingChain(): ValidationChain[] {
+		return [
+			getForeignKeyValidation("flight_id"),
+			body("seats")
+				.isInt({ min: 1 })
+				.withMessage("min seats to reserve is positive number from 1"),
+			body("baggage_weight")
+				.isInt({ min: 0 })
+				.withMessage("baggage weight is positive number"),
+			body("code")
+				.optional()
+				.matches(DISCOUNT_REGEX)
+				.withMessage("discount code must be valid"),
+		];
+	}
+
 	private static getBookingByID(req: Request, res: Response): void {
 		try {
 			const bookingID = parseInt(req.params.id);
@@ -23,12 +42,12 @@ export class BookingHandler {
 		}
 	}
 
-	private static newBooking(req: Request, res: Response): void {
+	private static addBooking(req: Request, res: Response): void {
+		if (!checkValidation(req, res)) return;
 		try {
-			// FIX: validate fields
 			const { flight_id, seats, code, baggage_weight } = req.body;
 			const { id: user_id } = req.token_data;
-			req.dependencies.bookingService.createBooking(
+			req.dependencies.bookingService.add(
 				user_id,
 				flight_id,
 				seats,
@@ -82,7 +101,6 @@ export class BookingHandler {
 
 	private static updateBookingStatus(req: Request, res: Response): void {
 		try {
-			// FIX: validate fields
 			const booking_id = parseInt(req.params.id);
 			const { role, id } = req.token_data;
 			const { status } = req.body;
@@ -110,7 +128,12 @@ export class BookingHandler {
 
 		// Auth routes
 		router.get("/:id", [authorizationMiddleware], this.getBookingByID);
-		router.post("/", [authorizationMiddleware], this.newBooking);
+		router.post(
+			"/",
+			[authorizationMiddleware],
+			this.getAddBookingChain(),
+			this.addBooking
+		);
 		router.get("/", [authorizationMiddleware], this.getBookingsByToken);
 		router.put(
 			"/status/:id",

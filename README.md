@@ -1,7 +1,7 @@
 # ЖМЫХ Airlines
 ## Летаем с одним крылом
 
-![Image](https://github.com/illoprin/jmich-airlines/img/promo.jpg)
+![Image](https://raw.githubusercontent.com/illoprin/jmich-airlines/refs/heads/master/img/promo.jpg)
 
 ---
 

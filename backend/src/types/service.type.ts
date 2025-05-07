@@ -43,11 +43,20 @@ export class ForbiddenError extends Error {
 export class FileSaveError extends Error {
 	constructor(message: string) {
 		super(message);
+		this.name = "FileSavingError"
 	}
 }
 
 export class QRCodeGenerationError extends Error {
 	constructor(message: string) {
 		super(message);
+		this.name = "QRCodeError"
+	}
+}
+
+export class PaymentError extends Error {
+	constructor (message: string) {
+		super(message);
+		this.name = "PaymentError"
 	}
 }

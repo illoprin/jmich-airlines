@@ -21,10 +21,12 @@ import {
 	NotUniqueError,
 } from "../types/service.type";
 import { AccessControl } from "../lib/service/access-control";
+import { UserCache } from "../redis/user.cache";
 
 export class UserService {
 	constructor(
 		private userRepo: UserRepository,
+		private userCache: UserCache,
 		private paymentRepo: PaymentRepository,
 		private cfg: Config
 	) {}
@@ -57,7 +59,10 @@ export class UserService {
 	 * @param entry user login & password
 	 * @returns jwt access token
 	 */
-	public login(entry: { login: string; password: string }): string {
+	public async login(entry: {
+		login: string;
+		password: string;
+	}): Promise<string> {
 		const candidate = this.userRepo.getByLogin(entry.login);
 
 		if (!candidate) {
@@ -74,16 +79,22 @@ export class UserService {
 		}
 
 		const token = createToken(candidate, this.cfg.secret);
+		await this.userCache.set(candidate.id as number, candidate);
 
 		return token;
 	}
 
-	public getByID(id: number): UserEntry {
-		const user = this.userRepo.getByID(id);
-		if (!user) {
-			throw new NotFoundError("user not found");
+	public async getByID(id: number): Promise<UserEntry> {
+		const userCached = await this.userCache.get(id);
+		if (!userCached) {
+			const user = this.userRepo.getByID(id);
+			if (!user) {
+				throw new NotFoundError("user not found");
+			}
+			await this.userCache.set(id, user);
+			return user;
 		}
-		return user;
+		return userCached;
 	}
 
 	public getPublicDataByID(id: number): UserPublicDTO {
@@ -109,7 +120,11 @@ export class UserService {
 	 * @param roleChangingAllowed - is role changing allowed operation
 	 * @returns new access token if key field (role, login) has been changed
 	 */
-	public update(id: number, newFields: any, roleChangingAllowed: boolean): string | undefined {
+	public async update(
+		id: number,
+		newFields: any,
+		roleChangingAllowed: boolean
+	): Promise<string | undefined> {
 		const candidate = this.userRepo.getByID(id);
 		if (!candidate) {
 			throw new NotFoundError("user not found");
@@ -137,7 +152,10 @@ export class UserService {
 		try {
 			this.userRepo.update(updated);
 			// WARN: return new access token after changing a role or login is bad practice in my opinion
-			return newFields.role || newFields.login ? createToken(updated, this.cfg.secret) : undefined
+			await this.userCache.invalidate(id);
+			return newFields.role || newFields.login
+				? createToken(updated, this.cfg.secret)
+				: undefined;
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.UNIQUE) {
@@ -151,17 +169,18 @@ export class UserService {
 		}
 	}
 
-	public delete(id: number): void {
+	public async delete(id: number) {
 		const changes = this.userRepo.removeByID(id);
 		if (!changes) {
 			throw new NotFoundError("user not found");
 		}
+		await this.userCache.invalidate(id);
 	}
 
 	public addPayment(entry: PaymentEntry) {
 		try {
 			// WARN: one user can use similar cards
-			const inserted_id = this.paymentRepo.add(entry);
+			this.paymentRepo.add(entry);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
@@ -173,10 +192,16 @@ export class UserService {
 		}
 	}
 
-	public getPaymentByID(userID: number, userRole: Roles, id: number): PaymentEntry {
+	public getPaymentByID(
+		userID: number,
+		userRole: Roles,
+		id: number
+	): PaymentEntry {
 		return AccessControl.checkAccess<PaymentEntry>(
-			userID, userRole,
-			Roles.Admin, id,
+			userID,
+			userRole,
+			Roles.Admin,
+			id,
 			(id) => this.paymentRepo.getByID(id)
 		);
 	}
@@ -184,11 +209,13 @@ export class UserService {
 	public deletePayment(userID: number, userRole: Roles, id: number): void {
 		// Check access to data
 		AccessControl.checkAccess<PaymentEntry>(
-			userID, userRole,
-			Roles.Admin, id,
+			userID,
+			userRole,
+			Roles.Admin,
+			id,
 			(id) => this.paymentRepo.getByID(id)
 		);
-		
+
 		this.paymentRepo.removeByID(id);
 	}
 

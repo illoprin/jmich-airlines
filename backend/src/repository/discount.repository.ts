@@ -53,7 +53,7 @@ export class DiscountRepository extends BaseRepository<DiscountEntry> {
 		return discounts;
 	}
 
-	public deleteUnvalid(): number {
+	public deleteInvalid(): number {
 		const sql = `
 			DELETE FROM ${this.getTableName()}
 			WHERE

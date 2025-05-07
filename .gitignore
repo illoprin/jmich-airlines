@@ -1,15 +1,15 @@
-frontend/node_modules
-frontend/.idea
+sketches
+
 old.frontend
+
+# backend app
 backend/node_modules
 backend/.idea
-backend/docs/*_PROMT.md
-backend/docs/PROMTS.md
+backend/docs
 backend/start-dev.cmd
 backend/dist
 backend/coverage
-backend_old
-html
-sketches
-jmich.sql
-workspace.code-workspace
+
+# frontend app
+frontend/node_modules
+frontend/dist

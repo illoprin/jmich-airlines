@@ -7,20 +7,28 @@ import { CompanyService } from "./service/company.service";
 import { CityService } from "./service/city.service";
 import { DiscountService } from "./service/discount.service";
 
-export function initServices (repositories: Repositories, cfg: Config) {
+export function initServices(repositories: Repositories, cfg: Config) {
+	const flightService = new FlightService(
+		repositories.flightRepo,
+		repositories.flightCache
+	);
+	const userService = new UserService(
+		repositories.userRepo,
+		repositories.userCache,
+		repositories.paymentRepo,
+		cfg
+	);
 	return {
-		userService: new UserService(
-			repositories.userRepo,
-			repositories.paymentRepo,
-			cfg
-		),
-		flightService: new FlightService(repositories.flightRepo),
+		userService,
+		flightService,
 		bookingService: new BookingService(
 			repositories.bookingRepo,
+			repositories.bookingCache,
 			repositories.discountRepo,
-			repositories.flightRepo,
-			repositories.userRepo,
+			flightService,
+			userService,
 			repositories.companyRepo,
+			repositories.paymentRepo,
 			cfg
 		),
 		companyService: new CompanyService(
@@ -29,12 +37,13 @@ export function initServices (repositories: Repositories, cfg: Config) {
 		),
 		cityService: new CityService(
 			repositories.cityRepo,
+			repositories.cityCache,
 			repositories.airportRepo
 		),
 		discountService: new DiscountService(repositories.discountRepo),
-		cfg
+		cfg,
 	};
-};
+}
 
 export type Services = ReturnType<typeof initServices>;
 export type Dependencies = ReturnType<typeof initServices>;

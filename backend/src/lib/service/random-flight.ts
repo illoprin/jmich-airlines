@@ -6,7 +6,7 @@ import { generateRandomRouteCode, randomIndex } from "./random";
 
 export function randomFlight(
 	startTime: number,
-	maxDuraion: number,
+	maxDuration: number,
 	maxPrice: number,
 	companies: CompanyEntry[],
 	airports: AirportEntry[]
@@ -20,7 +20,7 @@ export function randomFlight(
 	const arrival_date = new Date(
 		Date.now() +
 			startTime +
-			(maxDuraion * Math.random() + 1.0) * HOUR_MILLISECONDS
+			(maxDuration * Math.random() + 1.0) * HOUR_MILLISECONDS
 	);
 	const price = Math.ceil(Math.random() * maxPrice);
 	const route_code = generateRandomRouteCode();

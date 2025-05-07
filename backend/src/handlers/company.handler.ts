@@ -6,16 +6,21 @@ import { authorizationMiddleware } from "../middleware/authorization.middleware"
 import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/user.type";
 import { body, ValidationChain } from "express-validator";
-import { applyOptionalFlag, getFilepathValidation, getForeignKeyValidation } from "../lib/api/validation-chain";
-import { FILE_PATH_REGEX } from "../lib/service/const";
+import {
+	applyOptionalFlag,
+	getFilepathValidation,
+	getForeignKeyValidation,
+} from "../lib/api/validation-chain";
 
 export class CompanyHandler {
 	private static getChain(optional: boolean = false): ValidationChain[] {
 		const validators: ValidationChain[] = [
-			body("name").isLength({ min: 3, max: 255 }).withMessage("company name must be valid"),
+			body("name")
+				.isLength({ min: 3, max: 255 })
+				.withMessage("company name must be valid"),
 			getFilepathValidation("logo"),
 			getForeignKeyValidation("baggage_rule_id"),
-		]
+		];
 		return applyOptionalFlag(validators, optional);
 	}
 
@@ -116,27 +121,17 @@ export class CompanyHandler {
 	public static router(): Router {
 		const router = Router();
 
+		// Guest routes
+		router.get("/:id", this.getCompanyByID);
+		router.get("/:id/rule", this.getCompanyRuleByID);
+		router.get("/", this.getCompanies);
+
 		// Admin routes
 		router.post(
 			"/",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getChain(),
 			this.addCompany
-		);
-		router.get(
-			"/",
-			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
-			this.getCompanies
-		);
-		router.get(
-			"/:id",
-			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
-			this.getCompanyByID
-		);
-		router.get(
-			"/:id/rule",
-			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
-			this.getCompanyRuleByID
 		);
 		router.put(
 			"/:id",
@@ -149,7 +144,6 @@ export class CompanyHandler {
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.removeCompany
 		);
-
 		router.post(
 			"/rule",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],

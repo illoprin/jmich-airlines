@@ -48,11 +48,11 @@ export class CityHandler {
 		}
 	}
 
-	private static updateCity(req: Request, res: Response): void {
+	private static async updateCity(req: Request, res: Response) {
 		if (!checkValidation(req, res)) return;
 		try {
 			const id = parseInt(req.params.id);
-			req.dependencies.cityService.updateCityByID(id, req.body);
+			await req.dependencies.cityService.updateCityByID(id, req.body);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -60,10 +60,10 @@ export class CityHandler {
 		}
 	}
 
-	private static getCityByID(req: Request, res: Response): void {
+	private static async getCityByID(req: Request, res: Response) {
 		try {
 			const id = parseInt(req.params.id);
-			const city = req.dependencies.cityService.getCityByID(id);
+			const city = await req.dependencies.cityService.getCityByID(id);
 			res.json(ResponseTypes.ok({ city }));
 		} catch (err) {
 			processServiceError(res, err);
@@ -71,10 +71,10 @@ export class CityHandler {
 		}
 	}
 
-	private static removeCityByID(req: Request, res: Response): void {
+	private static async removeCityByID(req: Request, res: Response) {
 		try {
 			const id = parseInt(req.params.id);
-			req.dependencies.cityService.removeCityByID(id);
+			await req.dependencies.cityService.removeCityByID(id);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -82,9 +82,9 @@ export class CityHandler {
 		}
 	}
 
-	private static getAllCities(req: Request, res: Response): void {
+	private static async getAllCities(req: Request, res: Response) {
 		try {
-			const cities = req.dependencies.cityService.getAllCities();
+			const cities = await req.dependencies.cityService.getAllCities();
 			res.json(ResponseTypes.ok({ cities }));
 		} catch (err) {
 			processServiceError(res, err);
@@ -104,7 +104,7 @@ export class CityHandler {
 		}
 	}
 
-	private static addCityAirport(req: Request, res: Response): void {
+	private static async addCityAirport(req: Request, res: Response) {
 		if (!checkValidation(req, res)) return;
 		try {
 			const { name, code } = req.body;
@@ -116,8 +116,7 @@ export class CityHandler {
 				city_id,
 			};
 
-			req.dependencies.cityService.addAirport(airport);
-
+			await req.dependencies.cityService.addAirport(airport);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -125,11 +124,11 @@ export class CityHandler {
 		}
 	}
 
-	private static removeCityAirport(req: Request, res: Response): void {
+	private static async removeCityAirport(req: Request, res: Response) {
 		try {
 			const cityID = parseInt(req.params.id);
 			const code = req.params.code;
-			req.dependencies.cityService.removeCityAirportByCodeAndCityID(
+			await req.dependencies.cityService.removeCityAirportByCodeAndCityID(
 				cityID,
 				code
 			);
@@ -140,12 +139,12 @@ export class CityHandler {
 		}
 	}
 
-	private static updateAirport(req: Request, res: Response): void {
+	private static async updateAirport(req: Request, res: Response) {
 		if (!checkValidation(req, res)) return;
 		try {
 			const cityID = parseInt(req.params.id);
 			const code = req.params.code;
-			req.dependencies.cityService.updateAirportByCodeAndCityID(
+			await req.dependencies.cityService.updateAirportByCodeAndCityID(
 				cityID,
 				code,
 				req.body

@@ -9,8 +9,6 @@ import {
 import { AccessControl } from "../lib/service/access-control";
 import type { BookingRepository } from "../repository/booking.repository";
 import type { DiscountRepository } from "../repository/discount.repository";
-import type { FlightRepository } from "../repository/flight.repository";
-import type { UserRepository } from "../repository/user.repository";
 import {
 	type BookingDTO,
 	type BookingEntry,
@@ -21,6 +19,7 @@ import {
 	InvalidFieldError,
 	RelatedDataError,
 	NotFoundError,
+	PaymentError,
 } from "../types/service.type";
 import { Roles } from "../types/user.type";
 import { generateRandomGate } from "../lib/service/random";
@@ -28,14 +27,20 @@ import { saveBufferToFile } from "../lib/service/save-file";
 import { Config } from "../types/config.type";
 import { CompanyRepository } from "../repository/company.repository";
 import { FlightStatus } from "../types/flight.type";
+import { PaymentRepository } from "../repository/payment.repository";
+import { BookingCache } from "../redis/booking.cache";
+import { FlightService } from "./flight.service";
+import { UserService } from "./user.service";
 
 export class BookingService {
 	constructor(
 		private bookingRepo: BookingRepository,
+		private bookingCache: BookingCache,
 		private discountRepo: DiscountRepository,
-		private flightRepo: FlightRepository,
-		private userRepo: UserRepository,
+		private flightService: FlightService,
+		private userService: UserService,
 		private companyRepo: CompanyRepository,
+		private paymentRepo: PaymentRepository,
 		private cfg: Config
 	) {}
 
@@ -48,6 +53,7 @@ export class BookingService {
 	 * @returns Created booking DTO
 	 * @throws {InvalidFieldError}
 	 * @throws {NotFoundError}
+	 * @throws {PaymentError}
 	 * @throws {QRCodeGenerationError}
 	 * @throws {FileSaveError}
 	 * @throws {RelatedDataError}
@@ -57,32 +63,38 @@ export class BookingService {
 		flightID: number,
 		seats: number,
 		baggageWeight: number,
+		paymentID: number,
 		discountCode?: string
 	): Promise<bigint> {
-		// 0. Validate baggage & seats
+		// 0. Validate baggage, seats and payment id
 		if (seats <= 0) {
 			throw new InvalidFieldError(
 				"seats reservation cannot be 0 or less then 0"
 			);
 		}
 		if (baggageWeight < 0) {
-			throw new InvalidFieldError(
-				"baggage weight cannot be less then 0"
-			);
+			throw new InvalidFieldError("baggage weight cannot be less then 0");
+		}
+		// Validate payment
+		const payment = this.paymentRepo.getByID(paymentID);
+		if (!payment) {
+			throw new PaymentError("invalid payment");
 		}
 
 		// 1. Validate flight exists
-		const flight = this.flightRepo.getDTOByID(flightID);
+		const flight = await this.flightService.getByID(flightID);
 		if (!flight) {
 			throw new RelatedDataError("flight not found");
 		}
 		if (flight.status !== FlightStatus.ACTIVE) {
-			throw new InvalidFieldError("you cannot make reservation on inactive flight");
+			throw new InvalidFieldError(
+				"you cannot make reservation on inactive flight"
+			);
 		}
 		console.log("Booking flight price: ", flight.price);
 
 		// 2. Get user public dto by id
-		const user = this.userRepo.getPublicDataByID(userID);
+		const user = await this.userService.getPublicDataByID(userID);
 		if (!user) {
 			throw new RelatedDataError("user not found");
 		}
@@ -151,6 +163,8 @@ export class BookingService {
 		);
 		const qrCodeURL = `http://${this.cfg.http_server.host}:${this.cfg.http_server.port}/upload/booking/${fileName}`;
 
+		// NOTE: here we can write off funds from user $$$
+
 		// 6. Create booking entry
 		try {
 			const bookingId = this.bookingRepo.add({
@@ -162,9 +176,13 @@ export class BookingService {
 				seats,
 				cost: finalCost,
 			});
+			// Invalidate user cache
+			await this.bookingCache.invalidate(userID);
 
 			// 7. Update flight.seats_available count
-			this.flightRepo.updateSeats(flightID, -seats);
+			await this.flightService.updateGeneral(flightID, {
+				seats_available: flight.seats_available - seats,
+			});
 			return bookingId;
 		} catch (err) {
 			if (err instanceof StorageError) {
@@ -213,8 +231,15 @@ export class BookingService {
 	 * @param userId - ID of the user whose bookings to retrieve
 	 * @returns Array of booking DTOs
 	 */
-	public getUserBookings(userID: number): BookingDTO[] {
-		return this.bookingRepo.getDTOByUserID(userID) || [];
+	public async getUserBookings(userID: number): Promise<BookingDTO[]> {
+		// Check existence of data in cache
+		const bookingsCached = await this.bookingCache.getByUser(userID);
+		if (!bookingsCached) {
+			const bookings = this.bookingRepo.getDTOByUserID(userID);
+			if (bookings) await this.bookingCache.setForUser(userID, bookings);
+			return bookings ?? [];
+		}
+		return bookingsCached;
 	}
 
 	/**
@@ -237,12 +262,12 @@ export class BookingService {
 	 * @throws {ForbiddenError}
 	 * @throws {InvalidFieldError}
 	 */
-	public updateBookingStatus(
+	public async updateBookingStatus(
 		userId: number,
 		userRole: Roles,
 		bookingId: number,
 		status: BookingStatus
-	): void {
+	): Promise<void> {
 		try {
 			AccessControl.checkAccess<BookingEntry>(
 				userId,
@@ -251,7 +276,8 @@ export class BookingService {
 				bookingId,
 				(id) => this.bookingRepo.getByID(id)
 			);
-			const changes = this.bookingRepo.updateStatus(bookingId, status);
+			this.bookingRepo.updateStatus(bookingId, status);
+			await this.bookingCache.invalidate(userId);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type === StorageErrorType.CHECK) {
@@ -271,11 +297,11 @@ export class BookingService {
 	 * @throws {NotFoundError}
 	 * @throws {ForbiddenError}
 	 */
-	public deleteBooking(
+	public async deleteBooking(
 		bookingId: number,
 		userId: number,
 		userRole: Roles
-	): void {
+	): Promise<void> {
 		AccessControl.checkAccess<BookingEntry>(
 			userId,
 			userRole,
@@ -285,6 +311,7 @@ export class BookingService {
 		);
 
 		this.bookingRepo.removeByID(bookingId);
+		await this.bookingCache.invalidate(bookingId);
 	}
 
 	public completeExpired(): number {

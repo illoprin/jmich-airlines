@@ -253,8 +253,15 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 		return dto;
 	}
 
-	public getDTOAll(max: number, page: number): FlightDTO[] | null {
-		const rows = this.storage.all<any>(this.getDTOQuery("", true), [max, page * max]);
+	public getDTOAll(
+		max: number,
+		page: number,
+		status: string = "ACTIVE"
+	): FlightDTO[] | null {
+		const rows = this.storage.all<any>(
+			this.getDTOQuery("WHERE status = ?", true),
+			[status, max, page * max]
+		);
 		if (!rows) {
 			return null;
 		}
@@ -280,7 +287,7 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 		);
 		return changes;
 	}
-	
+
 	public completeExpired(statusToSet: FlightStatus): number {
 		const query = `--sql
 			UPDATE ${this.getTableName()} SET status = ?
@@ -288,8 +295,11 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				datetime(departure_date) <= datetime('now')
 			AND
 				status = ?
-		`
-		const { changes } = this.storage.run(query, [statusToSet, FlightStatus.ACTIVE]);
+		`;
+		const { changes } = this.storage.run(query, [
+			statusToSet,
+			FlightStatus.ACTIVE,
+		]);
 		return changes;
 	}
 }

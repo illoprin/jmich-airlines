@@ -15,11 +15,11 @@ declare global {
 	}
 }
 
-export function authorizationMiddleware(
+export async function authorizationMiddleware(
 	req: Request,
 	res: Response,
 	next: NextFunction
-): void {
+) {
 	// Skip several request types
 	if (["OPTIONS", "HEAD", "PATCH"].includes(req.method)) {
 		return next();
@@ -47,7 +47,7 @@ export function authorizationMiddleware(
 		) as TokenData;
 
 		// Check candidate entry exsistence
-		const user = req.dependencies.userService.getByID(decodedData.id);
+		const user = await req.dependencies.userService.getByID(decodedData.id);
 		if (!user || user.login !== decodedData.login) {
 			res.status(401).json(ResponseTypes.error("invalid token"));
 			return;

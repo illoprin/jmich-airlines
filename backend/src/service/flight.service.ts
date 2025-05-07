@@ -19,9 +19,10 @@ import type { CompanyEntry } from "../types/company.type";
 import type { AirportEntry } from "../types/city.type";
 import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from '../lib/service/const'
 import { randomFlight } from "../lib/service/random-flight";
+import { FlightCache } from "../redis/flight.cache";
 
 export class FlightService {
-	constructor(private flightRepo: FlightRepository) {}
+	constructor(private flightRepo: FlightRepository, private flightCache: FlightCache) {}
 
 	/**
 	 * Create new flight
@@ -60,12 +61,12 @@ export class FlightService {
 	}
 
 	/**
-	 * Update flight data excluding status
+	 * async Update flight data excluding status
 	 * @throws {NotFoundError}
 	 * @throws {InvalidFieldError}
 	 * @throws {NotUniqueError}
 	 */
-	public updateGeneral(id: number, payload: any) {
+	public async updateGeneral(id: number, payload: any): Promise<void> {
 		const flight = this.flightRepo.getByID(id);
 		if (!flight) {
 			throw new NotFoundError("flight not found");
@@ -89,6 +90,7 @@ export class FlightService {
 		};
 		try {
 			this.flightRepo.update(edited);
+			await this.flightCache.invalidate(id);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
@@ -111,7 +113,7 @@ export class FlightService {
 	 * @throws {NotFoundError}
 	 * @throws {InvalidFieldError}
 	 */
-	public updateStatus(id: number, status: FlightStatus) {
+	public async updateStatus(id: number, status: FlightStatus): Promise<void> {
 		const flight = this.flightRepo.getByID(id);
 		if (!flight) {
 			throw new NotFoundError("flight not found");
@@ -122,6 +124,7 @@ export class FlightService {
 
 		try {
 			this.flightRepo.update(flight);
+			await this.flightCache.invalidate(id); 
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
@@ -157,7 +160,7 @@ export class FlightService {
 	 */
 	public search(payload: FlightSearchPayload): FlightDTO[] {
 		if (payload.departure_date) {
-			if (payload.departure_date.getMilliseconds() <= Date.now()) {
+			if (payload.departure_date <= new Date()) {
 				throw new InvalidFieldError("departure date cannot be in past");
 			}
 		}
@@ -198,7 +201,6 @@ export class FlightService {
 		airports: AirportEntry[],
 		companies: CompanyEntry[]
 	): Error[] {
-		// FIX: create separate function to generate random flight
 		console.log(
 			"Generating random flights:\n" +
 				"Quantity: %d\n" +
@@ -241,16 +243,21 @@ export class FlightService {
 	 * Get fight DTO by ID
 	 * @throws {NotFoundError}
 	 */
-	public getByID(id: number): FlightDTO {
-		const flight = this.flightRepo.getDTOByID(id);
-		if (!flight) {
-			throw new NotFoundError("flight not found");
+	public async getByID(id: number): Promise<FlightDTO> {
+		const flightCached = await this.flightCache.get(id);
+		if (!flightCached) {
+			const flight = this.flightRepo.getDTOByID(id);
+			if (!flight) {
+				throw new NotFoundError("flight not found");
+			}
+			await this.flightCache.set(id, flight);
+			return flight;
 		}
-		return flight;
+		return flightCached;
 	}
 
-	public getAll(max: number, page: number): FlightDTO[] {
-		const flights = this.flightRepo.getDTOAll(max, page);
+	public getAll(max: number, page: number, status: string): FlightDTO[] {
+		const flights = this.flightRepo.getDTOAll(max, page, status);
 		return flights ?? [];
 	}
 
@@ -259,12 +266,13 @@ export class FlightService {
 	 * @throws {NotFoundError}
 	 * @throws {RelatedDataError}
 	 */
-	public removeByID(id: number) {
+	public async removeByID(id: number) {
 		try {
 			const changes = this.flightRepo.removeByID(id);
 			if (!changes) {
 				throw new NotFoundError("flight not found");
 			}
+			await this.flightCache.invalidate(id);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if ((err as StorageError).type == StorageErrorType.RELATED) {

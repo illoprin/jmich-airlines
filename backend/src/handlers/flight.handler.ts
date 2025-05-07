@@ -89,11 +89,11 @@ export class FlightHandler {
 		return;
 	}
 
-	private static updateFlight(req: Request, res: Response): void {
+	private static async updateFlight(req: Request, res: Response) {
 		if (!checkValidation(req, res)) return;
 		try {
 			const id = parseInt(req.params.id);
-			req.dependencies.flightService.updateGeneral(id, req.body);
+			await req.dependencies.flightService.updateGeneral(id, req.body);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -101,10 +101,10 @@ export class FlightHandler {
 		}
 	}
 
-	private static deleteFlight(req: Request, res: Response): void {
+	private static async deleteFlight(req: Request, res: Response) {
 		try {
 			const id = parseInt(req.params.id);
-			req.dependencies.flightService.removeByID(id);
+			await req.dependencies.flightService.removeByID(id);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -126,10 +126,10 @@ export class FlightHandler {
 		}
 	}
 
-	private static getFlightByID(req: Request, res: Response): void {
+	private static async getFlightByID(req: Request, res: Response) {
 		try {
 			const id = parseInt(req.params.id);
-			const flight = req.dependencies.flightService.getByID(id);
+			const flight = await req.dependencies.flightService.getByID(id);
 			res.json(ResponseTypes.ok({ flight }));
 		} catch (err) {
 			processServiceError(res, err);
@@ -137,11 +137,11 @@ export class FlightHandler {
 		}
 	}
 
-	private static updateFlightStatus(req: Request, res: Response): void {
+	private static async updateFlightStatus(req: Request, res: Response) {
 		try {
 			const id = parseInt(req.params.id);
 			const status: FlightStatus = req.body.status;
-			req.dependencies.flightService.updateStatus(id, status);
+			await req.dependencies.flightService.updateStatus(id, status);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -153,7 +153,8 @@ export class FlightHandler {
 		try {
 			const max = parseInt(req.query.limit as string) || 10;
 			const page = parseInt(req.query.page as string) || 0;
-			const flights = req.dependencies.flightService.getAll(max, page);
+			const status =  (req.params.status as string).toUpperCase();
+			const flights = req.dependencies.flightService.getAll(max, page, status);
 			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
 			processServiceError(res, err);
@@ -188,7 +189,7 @@ export class FlightHandler {
 			this.updateFlightStatus
 		);
 		router.get(
-			"/admin/all",
+			"/admin/all/:status",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.getAllFlights
 		);

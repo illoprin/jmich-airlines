@@ -6,7 +6,8 @@ import { CompanyRepository } from "../repository/company.repository";
 import { FlightRepository } from "../repository/flight.repository";
 import { CityService } from "../service/city.service";
 import { NotFoundError, NotUniqueError, RelatedDataError } from "../types/service.type";
-import { DAY_MILLISECONDS, HOUR_MILLISECONDS, mockAirports, mockBaggageRules, mockCities, mockCompanies } from "./mock/mock.data";
+import { mockAirports, mockBaggageRules, mockCities, mockCompanies } from "./mock/mock.data";
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from "../lib/service/const";
 
 describe("city.service", () => {
 	let storage: Storage;

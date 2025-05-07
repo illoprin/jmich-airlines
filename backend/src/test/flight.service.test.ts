@@ -19,9 +19,8 @@ import {
 	mockCompanies,
 	getMockFlight,
 	getMockUser,
-	DAY_MILLISECONDS,
-	HOUR_MILLISECONDS,
 } from "./mock/mock.data";
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from "../lib/service/const";
 import { BookingRepository } from "../repository/booking.repository";
 import { faker } from "@faker-js/faker/locale/ru";
 import { UserRepository } from "../repository/user.repository";

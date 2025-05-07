@@ -36,7 +36,7 @@ export class App {
 		this.app.use("/api", router);
 
 		this.app.get("/ping", (req, res) => {
-			res.json({ pong: `enviroment: ${req.dependencies.cfg.env}` });
+			res.json({ pong: `environment: ${req.dependencies.cfg.env}` });
 		})
 	}
 

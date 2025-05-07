@@ -4,22 +4,21 @@ import { App } from "./app";
 import { initRouter } from "./router";
 import { initStorage } from "./storage";
 import { initServices } from "./service";
+import { scheduleUpdateStatus } from "./cron/update-status.cron";
+import { scheduleInvalidateDiscounts } from "./cron/invalidate-discounts.cron";
 
-function main() {
+async function main() {
 	// Load config
 	const cfg: Config = readConfig("./config/local.yaml");
 	console.log("config loaded:", cfg);
 
 	// Init storage
-	const storage = initStorage(cfg.storage_path);
-
-	// Connect to Redis server
-	/* const redisClient = createClient({
-		url: `redis://${cfg.redis_server.host}:${cfg.redis_server.port}`,
-	})
-		.on("error", (err: Error) => console.error("redis connection error", err))
-		.connect();
-	console.log("redis cache connected"); */
+	const storage = initStorage(
+		cfg.storage_path,
+		cfg.redis_server.host,
+		cfg.redis_server.port
+	);
+	await storage.redisClient.init();
 
 	// Create services
 	const services = initServices(storage.repositories, cfg);
@@ -27,23 +26,21 @@ function main() {
 	// Init router
 	const router = initRouter();
 
-	setInterval(() => {
-		try {
-			console.log(
-				"Update flights and booking statuses:\n" +
-					"\tFlights updated %d\n" +
-					"\tBookings updated: %d\n",
-				services.flightService.completeExpired(),
-				services.bookingService.completeExpired()
-			);
-		} catch (err) {
-			console.error((err as any).code);
-		}
-	}, 10_000);
+	// Schedule cron jobs (periodic execution of some task)
+	scheduleUpdateStatus(services.flightService, services.bookingService);
+	scheduleInvalidateDiscounts(services.discountService);
 
 	// Create app
 	const app = new App(services, cfg, router);
 	app.start();
 }
 
-main();
+(async () => {
+	try {
+		await main();
+	} catch (err) {
+		if (err instanceof Error) {
+			console.error(`api failed to start: ${err.message}`);
+		}
+	}
+})();

@@ -49,9 +49,9 @@ export class UserHandler {
 		}
 	}
 
-	private static login(req: Request, res: Response): void {
+	private static async login(req: Request, res: Response): Promise<void> {
 		try {
-			const token = req.dependencies.userService.login(req.body);
+			const token = await req.dependencies.userService.login(req.body);
 			res.json(ResponseTypes.ok({ token }));
 		} catch (err) {
 			processServiceError(res, err);
@@ -59,9 +59,9 @@ export class UserHandler {
 		}
 	}
 
-	private static getByToken(req: Request, res: Response): void {
+	private static async getByToken(req: Request, res: Response): Promise<void> {
 		try {
-			const user: UserEntry = req.dependencies.userService.getByID(
+			const user: UserEntry = await req.dependencies.userService.getByID(
 				req.token_data.id
 			) as UserEntry;
 			res.json(ResponseTypes.ok<UserEntry>(user));
@@ -71,7 +71,7 @@ export class UserHandler {
 		}
 	}
 
-	private static getUserByID(req: Request, res: Response): void {
+	private static async getUserByID(req: Request, res: Response): Promise<void> {
 		try {
 			const id: number = parseInt(req.params.id);
 			const reqUserID: number = req.token_data.id;
@@ -81,7 +81,7 @@ export class UserHandler {
 				) as UserPublicDTO;
 				res.json(ResponseTypes.ok<UserPublicDTO>(user));
 			} else {
-				const user = req.dependencies.userService.getByID(id) as UserEntry;
+				const user = await req.dependencies.userService.getByID(id) as UserEntry;
 				res.json(ResponseTypes.ok<UserEntry>(user));
 			}
 		} catch (err) {
@@ -90,7 +90,7 @@ export class UserHandler {
 		}
 	}
 
-	private static updateByToken(req: Request, res: Response): void {
+	private static async updateByToken(req: Request, res: Response): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const id = req.token_data.id;
@@ -100,7 +100,7 @@ export class UserHandler {
 			if (allowAccessHeader) {
 				allowRoleChaning = allowAccessHeader === "1" ? true : false;
 			}
-			const token = req.dependencies.userService.update(
+			const token = await req.dependencies.userService.update(
 				id,
 				req.body,
 				allowRoleChaning
@@ -108,17 +108,17 @@ export class UserHandler {
 			// WARN: return new access token after changing a role or login is bad practice in my opinion
 			token
 				? res.json(ResponseTypes.ok({ token }))
-				: res.json(ResponseTypes.ok({ token }));
+				: res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
 		}
 	}
 
-	private static deleteByToken(req: Request, res: Response): void {
+	private static async deleteByToken(req: Request, res: Response): Promise<void> {
 		try {
 			const id = req.token_data.id;
-			req.dependencies.userService.delete(id);
+			await req.dependencies.userService.delete(id);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -128,9 +128,9 @@ export class UserHandler {
 
 	private static getAll(req: Request, res: Response): void {
 		try {
-			const user: UserEntry[] =
+			const users: UserEntry[] =
 				req.dependencies.userService.getAll() as UserEntry[];
-			res.json(ResponseTypes.ok({ user }));
+			res.json(ResponseTypes.ok({ user: users }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -139,6 +139,9 @@ export class UserHandler {
 
 	public static router(): Router {
 		const router = Router();
+		// Use payment routes
+		router.use("/payment", PaymentHandler.router());
+
 		// Guest routes
 		router.post("/", this.getChain(), this.registerUser);
 		router.post("/login", this.login);
@@ -163,8 +166,6 @@ export class UserHandler {
 			this.getAll
 		);
 
-		// Use payment routes
-		router.use("/payment", PaymentHandler.router());
 
 		return router;
 	}

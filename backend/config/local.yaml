@@ -1,4 +1,4 @@
-env: "local"
+env: "local" # server environment
 storage_path: "./storage/storage.db"
 
 salt: 4 # bcrypt
@@ -11,7 +11,7 @@ public_files_path: "upload/public"
 
 redis_server:
   host: "localhost"
-  port: 9500
+  port: 9000
 http_server:
   host: "localhost"
   port: 8000

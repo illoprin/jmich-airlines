@@ -14,10 +14,9 @@ import {
 	mockBaggageRules,
 	mockCities,
 	mockCompanies,
-	DAY_MILLISECONDS,
-	getMockFlight,
-	HOUR_MILLISECONDS,
+	getMockFlight
 } from "./mock/mock.data";
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from "../lib/service/const";
 
 describe("flight.repository", () => {
 	let storage: Storage;

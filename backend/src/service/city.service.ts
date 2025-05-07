@@ -2,6 +2,7 @@ import {
 	StorageError,
 	StorageErrorType,
 } from "../lib/repository/storage-error";
+import { CityCache } from "../redis/city.cache";
 import type { AirportRepository } from "../repository/airport.repository";
 import type { CityRepository } from "../repository/city.repository";
 import type { AirportEntry, CityDTO, CityEntry } from "../types/city.type";
@@ -15,6 +16,7 @@ import {
 export class CityService {
 	constructor(
 		private cityRepo: CityRepository,
+		private cityCache: CityCache,
 		private airportRepo: AirportRepository
 	) {}
 
@@ -34,20 +36,36 @@ export class CityService {
 		}
 	}
 
-	public getCityByID(id: number): CityEntry {
-		const entry = this.cityRepo.getByID(id);
-		if (!entry) {
-			throw new NotFoundError("city not found");
+	public async getCityByID(id: number): Promise<CityEntry> {
+		const cachedEntries = await this.cityCache.getAll();
+		const cachedEntry = cachedEntries?.find((city) => city.id == id);
+		if (!cachedEntry) {
+			const entry = this.cityRepo.getByID(id);
+			if (!entry) {
+				throw new NotFoundError("city not found");
+			}
+			return entry;
 		}
-		return entry;
+		return cachedEntry;
 	}
 
-	public getAllCities(): CityDTO[] {
-		const entries = this.cityRepo.getDTOAll();
-		return entries ?? [];
+	public async getAllCities(): Promise<CityDTO[]> {
+		// Check existence of data in cache
+		const cachedCities = await this.cityCache.getAll();
+		if (!cachedCities) {
+			// Get entries from db repo
+			const entries = this.cityRepo.getDTOAll();
+			if (!entries) {
+				return [];
+			}
+			// Write entries to cache
+			await this.cityCache.setAll(entries);
+			return entries;
+		}
+		return cachedCities;
 	}
 
-	public updateCityByID(id: number, payload: any) {
+	public async updateCityByID(id: number, payload: any): Promise<void> {
 		const city = this.cityRepo.getByID(id);
 		if (!city) {
 			throw new NotFoundError("city not found");
@@ -59,6 +77,7 @@ export class CityService {
 		};
 		try {
 			this.cityRepo.update(id, updated);
+			await this.cityCache.invalidate();
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if ((err as StorageError).type == StorageErrorType.UNIQUE) {
@@ -69,12 +88,13 @@ export class CityService {
 		}
 	}
 
-	public removeCityByID(id: number) {
+	public async removeCityByID(id: number): Promise<void> {
 		try {
 			const changes = this.cityRepo.removeByID(id);
 			if (!changes) {
 				throw new NotFoundError("city not found");
 			}
+			await this.cityCache.invalidate();
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
@@ -85,16 +105,19 @@ export class CityService {
 		}
 	}
 
-	public addAirport(airport: AirportEntry): bigint {
+	public async addAirport(airport: AirportEntry): Promise<bigint> {
 		try {
 			const lastID = this.airportRepo.add(airport);
+			await this.cityCache.invalidate();
 			return lastID;
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if ((err as StorageError).type == StorageErrorType.UNIQUE) {
 					throw new NotUniqueError("airport entry is not unique");
 				} else if (err.type == StorageErrorType.CHECK) {
-					throw new InvalidFieldError(`invalid field '${err.field.split(' ')[0]}'`);
+					throw new InvalidFieldError(
+						`invalid field '${err.field.split(" ")[0]}'`
+					);
 				}
 			}
 			throw err;
@@ -114,14 +137,20 @@ export class CityService {
 		return entry;
 	}
 
-	public updateAirportByCodeAndCityID(city_id: number, code: string, payload: any) {
+	public async updateAirportByCodeAndCityID(
+		city_id: number,
+		code: string,
+		payload: any
+	) {
 		const entry = this.airportRepo.getByCode(code);
 		if (!entry) {
 			throw new NotFoundError("airport not found");
 		}
 
 		if (city_id !== entry.city_id) {
-			throw new RelatedDataError(`this city has not airport with code '${code}'`);
+			throw new RelatedDataError(
+				`this city has not airport with code '${code}'`
+			);
 		}
 
 		const updated: AirportEntry = {
@@ -132,6 +161,7 @@ export class CityService {
 
 		try {
 			this.airportRepo.update(entry.id as number, updated);
+			await this.cityCache.invalidate();
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if ((err as StorageError).type == StorageErrorType.UNIQUE) {
@@ -147,12 +177,16 @@ export class CityService {
 		return airports ?? [];
 	}
 
-	public removeCityAirportByCodeAndCityID(city_id: number, code: string) {
+	public async removeCityAirportByCodeAndCityID(
+		city_id: number,
+		code: string
+	): Promise<void> {
 		try {
 			const changes = this.airportRepo.removeByCodeAndCityID(city_id, code);
 			if (!changes) {
 				throw new NotFoundError("airport not found");
 			}
+			await this.cityCache.invalidate();
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {

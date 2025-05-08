@@ -11,22 +11,21 @@ import type { BookingRepository } from "../repository/booking.repository";
 import type { DiscountRepository } from "../repository/discount.repository";
 import {
 	type BookingDTO,
-	type BookingEntry,
-	BookingQRPayload,
-	BookingStatus,
-} from "../types/booking.type";
+} from "../types/dto/booking";
+import type { TrandingBookingsDTO, BookingQRPayload } from "../types/features/booking";
+import { BookingEntry, BookingStatus } from "../types/repository/booking";
 import {
 	InvalidFieldError,
 	RelatedDataError,
 	NotFoundError,
 	PaymentError,
-} from "../types/service.type";
-import { Roles } from "../types/user.type";
+} from "../lib/service/errors";
+import { Roles } from "../types/repository/user";
 import { generateRandomGate } from "../lib/service/random";
 import { saveBufferToFile } from "../lib/service/save-file";
-import { Config } from "../types/config.type";
+import { Config } from "../types/internal/config";
 import { CompanyRepository } from "../repository/company.repository";
-import { FlightStatus } from "../types/flight.type";
+import { FlightStatus } from "../types/repository/flight"; 
 import { PaymentRepository } from "../repository/payment.repository";
 import { BookingCache } from "../redis/booking.cache";
 import { FlightService } from "./flight.service";
@@ -312,6 +311,19 @@ export class BookingService {
 
 		this.bookingRepo.removeByID(bookingId);
 		await this.bookingCache.invalidate(bookingId);
+	}
+
+	public async getTrandingBookings(limit: number): Promise<TrandingBookingsDTO[]> {
+		const trandingBookingsCached = await this.bookingCache.getTranding();
+		if (!trandingBookingsCached) {
+			const trandingBookings = this.bookingRepo.getTranding(limit);
+			if (!trandingBookings) {
+				return [];
+			}
+			await this.bookingCache.setTranding(trandingBookings);
+			return trandingBookings;
+		}
+		return trandingBookingsCached?.slice(0, limit);
 	}
 
 	public completeExpired(): number {

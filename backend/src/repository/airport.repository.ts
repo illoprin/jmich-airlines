@@ -1,4 +1,4 @@
-import type { AirportEntry } from "../types/city.type";
+import type { AirportEntry } from "../types/repository/city";
 import { BaseRepository } from "../lib/repository/base.repository";
 
 export class AirportRepository extends BaseRepository<AirportEntry> {

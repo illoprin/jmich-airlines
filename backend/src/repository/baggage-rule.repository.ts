@@ -1,4 +1,4 @@
-import type { BaggageRuleEntry } from "../types/company.type";
+import type { BaggageRuleEntry } from "../types/repository/company";
 import { BaseRepository } from "../lib/repository/base.repository";
 
 export class BaggageRuleRepository extends BaseRepository<BaggageRuleEntry> {

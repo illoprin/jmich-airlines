@@ -17,7 +17,8 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				email TEXT NOT NULL UNIQUE,
 				password TEXT NOT NULL,
 				avatarpath TEXT DEFAULT '/upload/user/avatar_default.jpg',
-				role INTEGER DEFAULT 1
+				role INTEGER DEFAULT 1,
+				level TEXT NOT NULL CHECK(level IN ('Basic', 'Silver', 'Gold', 'Premium', 'Platinum')) DEFAULT 'Basic'
 			);
 		`,
 			[]
@@ -39,15 +40,16 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		password,
 		phone,
 		role,
+		level,
 	}: UserEntry): bigint {
 		const { lastID } = this.storage.run(
 			`--sql
 				INSERT INTO ${this.getTableName()}
-					(login, firstname, secondname, email, password, phone, role)
+					(login, firstname, secondname, email, password, phone, role, level)
 				VALUES
 					(?, ?, ?, ?, ?, ?, ?)
 			`,
-			[login, firstname, secondname, email, password, phone, role]
+			[login, firstname, secondname, email, password, phone, role, level]
 		);
 		return lastID as bigint;
 	}
@@ -55,7 +57,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		const entry = this.storage.get<UserPublicDTO>(
 			`--sql
 				SELECT
-					firstname, secondname, email, avatarpath
+					firstname, secondname, email, avatarpath, level
 				FROM
 					${this.getTableName()}
 				WHERE
@@ -65,6 +67,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		);
 		return entry ? entry : null;
 	}
+
 	public update({
 		id,
 		login,
@@ -75,6 +78,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 		password,
 		phone,
 		role,
+		level,
 	}: UserEntry): number {
 		const { changes } = this.storage.run(
 			`--sql
@@ -86,6 +90,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 					avatarpath = ?,
 					password = ?,
 					phone = ?,
+					level = ?,
 					role = ?
 				WHERE
 					id = ?
@@ -99,11 +104,13 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				password,
 				phone,
 				role,
+				level,
 				id,
 			]
 		);
 		return changes;
 	}
+	
 	public getByLogin(login: string): UserEntry | null {
 		const res = this.storage.get<UserEntry>(
 			`--sql

@@ -7,7 +7,7 @@ export function scheduleInvalidateDiscounts(discountService: DiscountService) {
 			const deleted = discountService.deleteInvalid();
 			console.log(`deleted invalid codes: ${deleted}`);
 		} catch (err) {
-			console.error(`failed discount invalidation: ${(err as Error).message}`);
+			console.error(`failed discount invalidation ${(err as Error).message}`);
 		}
 	});
 }

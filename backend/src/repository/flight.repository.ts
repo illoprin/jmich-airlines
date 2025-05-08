@@ -1,6 +1,7 @@
-import { FlightDTO, FlightEntry, FlightStatus } from "../types/flight.type";
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
+import { FlightEntry, FlightStatus } from "../types/repository/flight";
+import { FlightDTO } from "../types/dto/flight"
 
 export class FlightRepository extends BaseRepository<FlightEntry> {
 	public getTableName(): string {
@@ -118,6 +119,21 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			ORDER BY flight.departure_date ASC
 			${usePagination ? "LIMIT ? OFFSET ?" : ""}
 		`;
+	}
+
+	private getIncreasePriceQuery(): string {
+		return `--sql
+			UPDATE
+				flight
+			SET
+				price = price * ?
+			WHERE
+				(julianday(departure_date) - julianday('now')) * 24 < ?
+			AND
+				status = 'ACTIVE'
+			AND
+				seats_available > 0
+		`
 	}
 
 	private getDTORow(row: any): any {
@@ -300,6 +316,13 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			statusToSet,
 			FlightStatus.ACTIVE,
 		]);
+		return changes;
+	}
+
+	public increasePrice(hoursBefore: number, amount: number): number {
+		const query = this.getIncreasePriceQuery();
+		const params = [amount, hoursBefore];
+		const { changes } = this.storage.run(query, params);
 		return changes;
 	}
 }

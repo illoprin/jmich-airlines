@@ -5,13 +5,15 @@ import {
 import { CityCache } from "../redis/city.cache";
 import type { AirportRepository } from "../repository/airport.repository";
 import type { CityRepository } from "../repository/city.repository";
-import type { AirportEntry, CityDTO, CityEntry } from "../types/city.type";
+import type { CityEntry } from "../types/repository/city";
+import type { CityDTO } from "../types/dto/city";
+import type { AirportEntry } from "../types/repository/city";
 import {
 	InvalidFieldError,
 	NotFoundError,
 	NotUniqueError,
 	RelatedDataError,
-} from "../types/service.type";
+} from "../lib/service/errors";
 
 export class CityService {
 	constructor(

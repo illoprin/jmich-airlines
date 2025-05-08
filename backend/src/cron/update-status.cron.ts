@@ -12,11 +12,11 @@ export function scheduleUpdateStatus(
 			const completedBookings = bookingService.completeExpired();
 			console.log(
 				`update status job:` +
-					`\ncompleted flights: ${completedFlights}` +
-					`\ncompleted bookings: ${completedBookings}`
+					`\n\tcompleted flights: ${completedFlights}` +
+					`\n\tcompleted bookings: ${completedBookings}`
 			);
 		} catch (err) {
-			console.error(`failed status update: ${(err as Error).message}`);
+			console.error(`failed status update ${(err as Error).message}`);
 		}
 	});
 }

@@ -131,8 +131,15 @@ export class BookingHandler {
 		}
 	}
 
-	private static getTrandingBookings(req: Request, res: Response): void {
-		res.status(501).json(ResponseTypes.error("not implemented"));
+	private static async getTrandingBookings(req: Request, res: Response): Promise<void> {
+		try {
+			const limit = parseInt(req.params.limit ?? 10);
+			const tranding = await req.dependencies.bookingService.getTrandingBookings(limit);
+			res.json(ResponseTypes.ok({ tranding }));
+		} catch(err) {
+			processServiceError(res, err);
+			return;
+		}
 	}
 
 	public static router(): Router {

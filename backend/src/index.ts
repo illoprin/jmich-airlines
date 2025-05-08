@@ -6,6 +6,7 @@ import { initStorage } from "./storage";
 import { initServices } from "./service";
 import { scheduleUpdateStatus } from "./cron/update-status.cron";
 import { scheduleInvalidateDiscounts } from "./cron/invalidate-discounts.cron";
+import { scheduleRefreshCities } from "./cron/update-cities-cache";
 
 async function main() {
 	// Load config
@@ -29,6 +30,7 @@ async function main() {
 	// Schedule cron jobs (periodic execution of some task)
 	scheduleUpdateStatus(services.flightService, services.bookingService);
 	scheduleInvalidateDiscounts(services.discountService);
+	scheduleRefreshCities(storage.repositories.cityCache, services.cityService);
 
 	// Create app
 	const app = new App(services, cfg, router);

@@ -1,4 +1,4 @@
-import type { PaymentEntry } from "../types/payment.type";
+import type { PaymentEntry } from "../types/repository/payment";
 import { BaseRepository } from "../lib/repository/base.repository";
 
 export class PaymentRepository extends BaseRepository<PaymentEntry> {

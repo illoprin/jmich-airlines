@@ -1,15 +1,12 @@
 import bcrypt from "bcrypt";
 import { UserRepository } from "../repository/user.repository";
-import {
-	Roles,
-	type UserPublicDTO,
-	type UserEntry,
-	type UserRegDTO,
-} from "../types/user.type";
-import type { Config } from "../types/config.type";
+import { type UserEntry, UserLevel, Roles } from "../types/repository/user";
+import type { UserPublicDTO } from "../types/dto/user";
+import { UserRegistrationPayload } from "../types/handler/user";
+import type { Config } from "../types/internal/config";
 import { createToken } from "../lib/api/token";
 import type { PaymentRepository } from "../repository/payment.repository";
-import type { PaymentEntry } from "../types/payment.type";
+import type { PaymentEntry } from "../types/repository/payment";
 import {
 	StorageError,
 	StorageErrorType,
@@ -19,7 +16,7 @@ import {
 	InvalidFieldError,
 	NotFoundError,
 	NotUniqueError,
-} from "../types/service.type";
+} from "../lib/service/errors";
 import { AccessControl } from "../lib/service/access-control";
 import { UserCache } from "../redis/user.cache";
 
@@ -31,11 +28,12 @@ export class UserService {
 		private cfg: Config
 	) {}
 
-	public register(user: UserRegDTO): bigint {
+	public register(user: UserRegistrationPayload): bigint {
 		const password_hash = bcrypt.hashSync(user.password, this.cfg.salt);
 		user.password = password_hash;
 		const entry: UserEntry = {
 			...user,
+			level: UserLevel.Basic,
 			role: Roles.Customer,
 		};
 		// NOTE: send email and wait for confirmation
@@ -137,6 +135,10 @@ export class UserService {
 			throw new ForbiddenError("role changing is not allowed");
 		}
 
+		if (newFields.level) {
+			throw new ForbiddenError("you cannot change level manually");
+		}
+
 		let updated: UserEntry = {
 			id: candidate.id,
 			login: newFields.login ?? candidate.login,
@@ -146,6 +148,7 @@ export class UserService {
 			phone: newFields.phone ?? candidate.phone,
 			avatarpath: newFields.avatarpath ?? candidate.avatarpath,
 			password: password_hash ?? candidate.password,
+			level: candidate.level,
 			role: roleChangingAllowed ? newFields.role : candidate.role,
 		};
 

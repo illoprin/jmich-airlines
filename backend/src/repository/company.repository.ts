@@ -1,4 +1,5 @@
-import type { CompanyDTO, CompanyEntry } from "../types/company.type";
+import type { CompanyEntry } from "../types/repository/company";
+import type { CompanyDTO } from "../types/dto/company";
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
 

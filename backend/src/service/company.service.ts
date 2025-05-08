@@ -6,15 +6,15 @@ import type { BaggageRuleRepository } from "../repository/baggage-rule.repositor
 import type { CompanyRepository } from "../repository/company.repository";
 import type {
 	BaggageRuleEntry,
-	CompanyDTO,
 	CompanyEntry,
-} from "../types/company.type";
+} from "../types/repository/company";
 import {
 	InvalidFieldError,
 	NotFoundError,
 	NotUniqueError,
 	RelatedDataError,
-} from "../types/service.type";
+} from "../lib/service/errors";
+import type { CompanyDTO } from '../types/dto/company'
 
 export class CompanyService {
 	constructor(

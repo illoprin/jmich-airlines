@@ -1,4 +1,5 @@
-import type { CityDTO, CityEntry } from "../types/city.type";
+import type { CityEntry } from "../types/repository/city";
+import type { CityDTO } from "../types/dto/city";
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
 

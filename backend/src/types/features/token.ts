@@ -1,4 +1,4 @@
-import type { Roles } from "./user.type";
+import { Roles } from '../repository/user'
 
 export interface TokenData {
 	id: number;

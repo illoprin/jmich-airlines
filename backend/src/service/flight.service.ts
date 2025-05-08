@@ -3,23 +3,20 @@ import {
 	StorageError,
 	StorageErrorType,
 } from "../lib/repository/storage-error";
-import {
-	FlightDTO,
-	FlightEntry,
-	FlightSearchPayload,
-	FlightStatus,
-} from "../types/flight.type";
+import { type FlightEntry, FlightStatus } from "../types/repository/flight";
+import type { FlightDTO } from "../types/dto/flight";
 import {
 	RelatedDataError,
 	InvalidFieldError,
 	NotFoundError,
 	NotUniqueError,
-} from "../types/service.type";
-import type { CompanyEntry } from "../types/company.type";
-import type { AirportEntry } from "../types/city.type";
+} from "../lib/service/errors";
+import type { CompanyEntry } from "../types/repository/company";
+import type { AirportEntry } from "../types/repository/city";
 import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from '../lib/service/const'
 import { randomFlight } from "../lib/service/random-flight";
 import { FlightCache } from "../redis/flight.cache";
+import type { FlightSearchPayload } from "../types/handler/flight";
 
 export class FlightService {
 	constructor(private flightRepo: FlightRepository, private flightCache: FlightCache) {}
@@ -283,7 +280,10 @@ export class FlightService {
 	}
 	
 	public completeExpired(): number {
-		const changes = this.flightRepo.completeExpired(FlightStatus.COMPLETED);
-		return changes;
+		return this.flightRepo.completeExpired(FlightStatus.COMPLETED);;
+	}
+
+	public increasePrice(hoursBefore: number, amount: number): number {
+		return this.flightRepo.increasePrice(hoursBefore, amount + 1);
 	}
 }

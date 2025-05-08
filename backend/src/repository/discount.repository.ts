@@ -1,4 +1,4 @@
-import { DiscountEntry } from "../types/discount.type";
+import { DiscountEntry } from "../types/repository/discount";
 import { BaseRepository } from "../lib/repository/base.repository";
 
 export class DiscountRepository extends BaseRepository<DiscountEntry> {

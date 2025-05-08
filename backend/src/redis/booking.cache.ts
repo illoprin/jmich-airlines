@@ -1,5 +1,6 @@
 import { RedisClient } from "./redis.client";
-import { BookingDTO } from "../types/booking.type";
+import type { BookingDTO } from "../types/dto/booking";
+import type { TrandingBookingsDTO } from "../types/features/booking";
 
 export class BookingCache {
 	private readonly ttl = 1800; // 30 минут
@@ -12,19 +13,43 @@ export class BookingCache {
 			if (bookings.length == 0) {
 				return null;
 			}
-			// FIX: bookings represented in redis as array
-			// but when array is not set, redis returns empty array
 			return bookings as BookingDTO[];
 		} catch {
 			return null;
 		}
 	}
 
+	async getTranding(): Promise<TrandingBookingsDTO[] | null> {
+		const key = `tranding_bookings`;
+		try {
+			const bookings = await this.redis.lrange(key);
+			if (bookings.length == 0) {
+				return null;
+			}
+			return bookings as TrandingBookingsDTO[];
+		} catch {
+			return null;
+		}
+	}
+
+	async setTranding(bookings: TrandingBookingsDTO[]): Promise<void> {
+		const key = `tranding_bookings`;
+		await this.redis.remove(key);
+		for (const booking of bookings) {
+			await this.redis.lpushWithTTL(key, booking, bookings.length * 10, this.ttl);
+		}
+	}
+
+	async invalidateTranding(): Promise<void> {
+		const key = `tranding_bookings`;
+		await this.redis.remove(key);
+	}
+
 	async setForUser(userId: number, bookings: BookingDTO[]): Promise<void> {
 		const key = `booking:${userId}`;
 		await this.redis.remove(key);
 		for (const booking of bookings) {
-			await this.redis.rpushWithTTL(key, booking, 100, this.ttl);
+			await this.redis.rpushWithTTL(key, booking, bookings.length * 10, this.ttl);
 		}
 	}
 

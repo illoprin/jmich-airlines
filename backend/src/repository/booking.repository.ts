@@ -1,7 +1,9 @@
-import { BookingDTO, BookingEntry, BookingStatus } from "../types/booking.type";
+import { type BookingEntry, BookingStatus } from "../types/repository/booking";
+import type { BookingDTO } from "../types/dto/booking";
+import { TrandingBookingsDTO } from "../types/features/booking"
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
-import { FlightStatus } from "../types/flight.type";
+import { FlightStatus } from "../types/repository/flight";
 
 export class BookingRepository extends BaseRepository<BookingEntry> {
 	public getTableName(): string {
@@ -77,7 +79,7 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 		return lastID as bigint;
 	}
 
-	public getDTOQuery(whereClause: string, usePagination: boolean) {
+	private getDTOQuery(whereClause: string, usePagination: boolean) {
 		return `--sql
 			SELECT json_object(
 				'id', booking.id,
@@ -150,6 +152,48 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 			${whereClause}
 			ORDER BY flight.departure_date DESC
 			${usePagination ? "LIMIT ? OFFSET ?" : ""}
+		`;
+	}
+
+	private getTrandingQuery(): string {
+		return `--sql
+			SELECT
+				count(flight.id) as popularity,
+				dc.name as departure_city_name,
+				dc.image as departure_city_image,
+				da.code as departure_airport_code,
+				flight.departure_date,
+				
+				ac.name as arrival_city_name,
+				ac.image as arrival_city_image,
+				aa.code as arrival_airport_code,
+				flight.arrival_date,
+				flight.price
+			FROM
+				booking
+
+			-- join flight
+			LEFT JOIN
+				flight ON booking.flight_id = flight.id
+
+			-- join departure city
+			LEFT JOIN
+				airport da ON flight.departure_airport_id = da.id
+			LEFT JOIN
+				city dc ON da.city_id = dc.id
+
+			-- join arrival city
+			LEFT JOIN
+				airport aa ON flight.arrival_airport_id = aa.id
+			LEFT JOIN
+				city ac ON aa.city_id = ac.id
+			WHERE
+				flight.status = 'ACTIVE'
+			GROUP BY
+				flight.id
+			ORDER BY
+				count(flight.id) DESC
+			LIMIT ? 
 		`;
 	}
 
@@ -280,5 +324,12 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 			BookingStatus.ACTIVE
 		]);
 		return changes;
+	}
+
+	public getTranding(limit: number): TrandingBookingsDTO[] | null {
+		const query = this.getTrandingQuery();
+		const params: number[] = [limit];
+		const tranding = this.storage.all<TrandingBookingsDTO>(query, params);
+		return tranding;
 	}
 }

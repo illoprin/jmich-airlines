@@ -1,5 +1,5 @@
 import { RedisClient } from "./redis.client";
-import { CityDTO } from "../types/city.type";
+import { CityDTO } from "../types/dto/city";
 
 export class CityCache {
 	private readonly key = "cities";

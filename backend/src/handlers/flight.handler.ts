@@ -9,6 +9,7 @@ import { processServiceError } from "../lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
 import {
 	applyOptionalFlag,
+	getDateValidation,
 	getForeignKeyValidation,
 	getISO8601Validation,
 } from "../lib/api/validation-chain";
@@ -19,8 +20,8 @@ export class FlightHandler {
 			getForeignKeyValidation("departure_airport_id"),
 			getForeignKeyValidation("arrival_airport_id"),
 			getForeignKeyValidation("company_id"),
-			getISO8601Validation("departure_date"),
-			getISO8601Validation("arrival_date"),
+			getDateValidation("departure_date"),
+			getDateValidation("arrival_date"),
 			body("route_code")
 				.isLength({ min: 4, max: 4 })
 				.matches(/^[A-Z][0-9]{3}$/g)
@@ -58,7 +59,7 @@ export class FlightHandler {
 				price,
 				seats_available,
 			});
-			res.send(ResponseTypes.ok({}));
+			res.status(201);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -91,7 +92,7 @@ export class FlightHandler {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.flightService.updateGeneral(id, req.body);
-			res.json(ResponseTypes.ok({}));
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -102,7 +103,7 @@ export class FlightHandler {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.flightService.removeByID(id);
-			res.json(ResponseTypes.ok({}));
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -141,7 +142,7 @@ export class FlightHandler {
 			const id = parseInt(req.params.id);
 			const status: FlightStatus = req.body.status;
 			await req.dependencies.flightService.updateStatus(id, status);
-			res.json(ResponseTypes.ok({}));
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 			return;

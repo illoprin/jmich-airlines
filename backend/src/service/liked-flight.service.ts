@@ -1,12 +1,16 @@
-import { NotFoundError } from "../lib/service/errors";
+import { FlightRepository } from "@/repository/flight.repository";
+import { InvalidFieldError, NotFoundError, RelatedDataError } from "../lib/service/errors";
 import { LikedFlightCache } from "../redis/liked-flight.cache";
 import { LikedFlightRepository } from "../repository/liked-flight.repository";
 import { FlightDTO } from "../types/dto/flight";
+import { FlightStatus } from "@/types/repository/flight";
+import { StorageError, StorageErrorType } from "@/lib/repository/storage-error";
 
 export class LikedFlightService {
 	constructor(
 		private likedFlightRepo: LikedFlightRepository,
-		private likedFlightCache: LikedFlightCache
+		private likedFlightCache: LikedFlightCache,
+		private flightRepo: FlightRepository
 	) {}
 
 	public async getUserLikedFlights(userID: number): Promise<FlightDTO[]> {
@@ -19,8 +23,23 @@ export class LikedFlightService {
 	}
 
 	public async likeFlight(userID: number, flightID: number): Promise<void> {
-		this.likedFlightRepo.add({ user_id: userID, flight_id: flightID });
-		await this.likedFlightCache.invalidate(userID);
+		// Check is it active flight
+		const flight = this.flightRepo.getByID(flightID);
+		if (!flight)
+			throw new NotFoundError("invalid flight id");
+		if (flight.status != FlightStatus.ACTIVE)
+			throw new InvalidFieldError("this flight is inactive");
+		try {
+			this.likedFlightRepo.add({ user_id: userID, flight_id: flightID });
+			await this.likedFlightCache.invalidate(userID);
+		} catch(err) {
+			if (err instanceof StorageError) {
+				if (err.type == StorageErrorType.FOREIGN_KEY) {
+					throw new RelatedDataError("invalid user id foreign key");
+				}
+			}
+			throw err;
+		}
 	}
 
 	public async unlikeFlight(userID: number, flightID: number): Promise<void> {
@@ -29,7 +48,7 @@ export class LikedFlightService {
 			flightID
 		);
 		if (!changes) {
-			throw new NotFoundError("Flight is not in user's liked list");
+			throw new NotFoundError("flight is not in user's liked list");
 		}
 		await this.likedFlightCache.invalidate(userID);
 	}

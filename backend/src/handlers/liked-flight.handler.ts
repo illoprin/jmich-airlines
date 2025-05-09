@@ -11,7 +11,7 @@ export class LikedFlightHandler {
 		try {
 			const userID = req.token_data.id;
 			const flights = await req.dependencies.likedFlightService.getUserLikedFlights(userID);
-			res.status(200).json(ResponseTypes.ok({ flights }));
+			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
 			processServiceError(res, err);
 		}
@@ -22,7 +22,7 @@ export class LikedFlightHandler {
 			const userID = req.token_data.id;
 			const flightID = parseInt(req.params.flight_id);
 			await req.dependencies.likedFlightService.likeFlight(userID, flightID);
-			res.sendStatus(204);
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 		}
@@ -36,7 +36,7 @@ export class LikedFlightHandler {
 			const userID = req.token_data.id;
 			const flightID = parseInt(req.params.flight_id);
 			await req.dependencies.likedFlightService.unlikeFlight(userID, flightID);
-			res.sendStatus(204);
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 		}
@@ -45,8 +45,11 @@ export class LikedFlightHandler {
 	public static router(): Router {
 		const router = Router();
 
+		// PERF
 		router.post("/:flight_id", authorizationMiddleware, this.likeFlight);
+		// PERF
 		router.get("/", authorizationMiddleware, this.getUserLikedFlights);
+		// PERF
 		router.delete("/:flight_id", authorizationMiddleware, this.unlikeFlight);
 
 		return router;

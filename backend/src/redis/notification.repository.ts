@@ -13,7 +13,7 @@ export class NotificationRepository {
 	}
 
 	private getUserNotificationKey(userID: number): string {
-		return `user:notifications:${userID}`;
+		return `user:${userID}:notifications`;
 	}
 
 	public async pushNotification(

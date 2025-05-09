@@ -1,17 +1,34 @@
 import { DiscountRepository } from "../repository/discount.repository";
 import { DiscountEntry } from "../types/repository/discount";
-import { InvalidFieldError, NotFoundError } from "../lib/service/errors";
+import {
+	InvalidFieldError,
+	NotFoundError,
+	NotUniqueError,
+} from "../lib/service/errors";
+import { StorageError, StorageErrorType } from "@/lib/repository/storage-error";
 
 export class DiscountService {
 	constructor(private discountRepo: DiscountRepository) {}
 
 	public add(discount: DiscountEntry): bigint {
 		if (discount.valid_until < new Date()) {
-			throw new InvalidFieldError("the promo code validity period cannot be in the past");
+			throw new InvalidFieldError(
+				"the promo code validity period cannot be in the past"
+			);
 		}
-
-		const lastID = this.discountRepo.add(discount);
-		return lastID;
+		try {
+			const lastID = this.discountRepo.add(discount);
+			return lastID;
+		} catch (err) {
+			if (err instanceof StorageError) {
+				if (err.type == StorageErrorType.CHECK) {
+					throw new InvalidFieldError(`invalid field${err.field ? " " + err.field : ""}`);
+				} else if (err.type == StorageErrorType.UNIQUE) {
+					throw new NotUniqueError("same discount code exists");
+				}
+			}
+			throw err;
+		}
 	}
 
 	public getAllDiscounts(): DiscountEntry[] {
@@ -24,6 +41,10 @@ export class DiscountService {
 		if (!discount) {
 			throw new NotFoundError("invalid discount code");
 		}
+
+		if (new Date(discount.valid_until) < new Date()) {
+			throw new NotFoundError("invalid discount code");
+		}
 		return discount;
 	}
 
@@ -33,11 +54,18 @@ export class DiscountService {
 	}
 
 	public deleteInvalid(): number {
-		return this.discountRepo.deleteInvalid();
+		return this.discountRepo.removeInvalid();
+	}
+
+	public removeByCode(code: string): void {
+		const changes = this.discountRepo.removeByCode(code)
+		if (!changes) {
+			throw new NotFoundError("discount not found");
+		}
 	}
 
 	public removeByID(id: number): void {
-		const changes = this.discountRepo.removeByID(id)
+		const changes = this.discountRepo.removeByID(id);
 		if (!changes) {
 			throw new NotFoundError("discount not found");
 		}

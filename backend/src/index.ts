@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import { readConfig } from "./config/config";
 import type { Config } from "./types/internal/config";
 import { App } from "./app";
@@ -8,6 +9,7 @@ import { scheduleUpdateStatus } from "./cron/update-status.cron";
 import { scheduleInvalidateDiscounts } from "./cron/invalidate-discounts.cron";
 import { scheduleRefreshCities } from "./cron/update-cities-cache.cron";
 import { scheduleIncreasePrice } from "./cron/increase-price.cron";
+import { scheduleSendFlightNotifications } from "./cron/notifications.cron";
 
 async function main() {
 	// Load config
@@ -33,6 +35,7 @@ async function main() {
 	scheduleInvalidateDiscounts(services.discountService);
 	scheduleRefreshCities(storage.repositories.cityCache, services.cityService);
 	scheduleIncreasePrice(services.flightService);
+	scheduleSendFlightNotifications(storage.repositories.likedFlightRepo, services.notificationService);
 
 	// Create app
 	const app = new App(services, cfg, router);

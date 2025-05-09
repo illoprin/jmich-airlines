@@ -1,6 +1,6 @@
 {
 	"name": "jmich-airlines-backend",
-	"version": "1.9.0",
+	"version": "1.9.5",
 	"description": "Jmich.Airlines server app",
 	"main": "./dist/index.js",
 	"scripts": {
@@ -10,6 +10,9 @@
 		"test:coverage": "jest --coverage"
 	},
 	"keywords": [],
+	"_moduleAliases": {
+		"@": "./src"
+	},
 	"author": "",
 	"license": "ISC",
 	"type": "commonjs",
@@ -29,6 +32,7 @@
 		"express": "^5.1.0",
 		"express-validator": "^7.2.1",
 		"jsonwebtoken": "^9.0.2",
+		"module-alias": "^2.2.3",
 		"node-cron": "^3.0.3",
 		"qrcode": "^1.5.4",
 		"redis": "^4.7.0",

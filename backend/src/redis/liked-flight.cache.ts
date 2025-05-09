@@ -4,13 +4,13 @@ import type { RedisClient } from "./redis.client";
 
 export class LikedFlightCache {
 	private readonly ttl: number = HOUR_SECONDS * 3; // 3 hours
-	private readonly keyPrefix = "liked_flights:";
+	private readonly keyPrefix = "liked_flights";
 	private maxLength: number;
 
 	constructor(private redisClient: RedisClient) {}
 
 	private getKey(userID: number): string {
-		return `${this.keyPrefix}${userID}`;
+		return `user:${userID}:${this.keyPrefix}`;
 	}
 
 	public async get(userID: number): Promise<FlightDTO[] | null> {

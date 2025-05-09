@@ -38,7 +38,7 @@ export function initStorage(storagePath: string, redisHost: string, redisPort: n
 	const discountRepo = new DiscountRepository(storage);
 	const bookingRepo = new BookingRepository(storage);
 	const notificationRepo = new NotificationRepository(redisClient);
-	const likedFlightsRepo = new LikedFlightRepository(storage);
+	const likedFlightRepo = new LikedFlightRepository(storage);
 
 	// Create Redis repositories
 	const bookingCache = new BookingCache(redisClient);
@@ -53,7 +53,7 @@ export function initStorage(storagePath: string, redisHost: string, redisPort: n
 		repositories: {
 			userRepo,
 			paymentRepo,
-			likedFlightsRepo,
+			likedFlightRepo,
 			likedFlightCache,
 			cityRepo,
 			airportRepo,

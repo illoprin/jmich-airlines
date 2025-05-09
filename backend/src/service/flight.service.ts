@@ -85,7 +85,7 @@ export class FlightService {
 			arrival_date: new Date(flight.arrival_date),
 			company_id: payload.company_id ?? flight.company_id,
 			price: payload.price ?? flight.price,
-			seats_available: flight.seats_available,
+			seats_available: payload.seats_available ?? flight.seats_available,
 			status: flight.status,
 		};
 

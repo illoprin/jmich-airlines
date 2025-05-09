@@ -11,6 +11,7 @@ import { body } from "express-validator";
 import { applyOptionalFlag } from "../lib/api/validation-chain";
 import { LOGIN_REGEX, SINGLE_UNICODE_WORD_REGEX } from "../lib/service/const";
 import { LikedFlightHandler } from "./liked-flight.handler";
+import { NotificationHandler } from "./notification.handler";
 
 export class UserHandler {
 	private static getChain(optional: boolean = false): ValidationChain[] {
@@ -44,7 +45,7 @@ export class UserHandler {
 		if (!checkValidation(req, res)) return;
 		try {
 			req.dependencies?.userService.register(req.body);
-			res.json(ResponseTypes.ok({}));
+			res.status(201);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -63,10 +64,10 @@ export class UserHandler {
 
 	private static async getByToken(req: Request, res: Response): Promise<void> {
 		try {
-			const user: UserEntry = await req.dependencies.userService.getByID(
+			const user: UserEntry = (await req.dependencies.userService.getByID(
 				req.token_data.id
-			) as UserEntry;
-			res.json(ResponseTypes.ok<UserEntry>(user));
+			)) as UserEntry;
+			res.json(ResponseTypes.ok({ user }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -82,9 +83,11 @@ export class UserHandler {
 				const user = req.dependencies.userService.getPublicDataByID(
 					id
 				) as UserPublicDTO;
-				res.json(ResponseTypes.ok<UserPublicDTO>(user));
+				res.json(ResponseTypes.ok({ user }));
 			} else {
-				const user = await req.dependencies.userService.getByID(id) as UserEntry;
+				const user = (await req.dependencies.userService.getByID(
+					id
+				)) as UserEntry;
 				res.json(ResponseTypes.ok<UserEntry>(user));
 			}
 		} catch (err) {
@@ -93,7 +96,10 @@ export class UserHandler {
 		}
 	}
 
-	private static async updateByToken(req: Request, res: Response): Promise<void> {
+	private static async updateByToken(
+		req: Request,
+		res: Response
+	): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const id = req.token_data.id;
@@ -109,20 +115,21 @@ export class UserHandler {
 				allowRoleChaning
 			);
 			// WARN: return new access token after changing a role or login is bad practice in my opinion
-			token
-				? res.json(ResponseTypes.ok({ token }))
-				: res.json(ResponseTypes.ok({}));
+			token ? res.json(ResponseTypes.ok({ token })) : res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
 		}
 	}
 
-	private static async deleteByToken(req: Request, res: Response): Promise<void> {
+	private static async deleteByToken(
+		req: Request,
+		res: Response
+	): Promise<void> {
 		try {
 			const id = req.token_data.id;
 			await req.dependencies.userService.delete(id);
-			res.json(ResponseTypes.ok({}));
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -133,7 +140,7 @@ export class UserHandler {
 		try {
 			const users: UserEntry[] =
 				req.dependencies.userService.getAll() as UserEntry[];
-			res.json(ResponseTypes.ok({ user: users }));
+			res.json(ResponseTypes.ok({ users }));
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -146,6 +153,8 @@ export class UserHandler {
 		router.use("/payment", PaymentHandler.router());
 		// Use liked flight handler
 		router.use("/liked", LikedFlightHandler.router());
+		// User notification handler
+		router.use("/notification", NotificationHandler.router());
 
 		// Guest routes
 		// PERF
@@ -177,7 +186,6 @@ export class UserHandler {
 		// PERF
 		router.get("/:id", authorizationMiddleware, this.getUserByID);
 
-		
 		return router;
 	}
 }

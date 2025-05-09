@@ -7,6 +7,7 @@ import { Roles } from "../types/repository/user";
 import { body, ValidationChain } from "express-validator";
 import { getForeignKeyValidation } from "../lib/api/validation-chain";
 import { DISCOUNT_REGEX } from "../lib/service/const";
+import { DiscountHandler } from "./discount.handler";
 
 export class BookingHandler {
 	private static getAddBookingChain(): ValidationChain[] {
@@ -58,7 +59,7 @@ export class BookingHandler {
 				payment_id,
 				code || undefined
 			);
-			res.json(ResponseTypes.ok({}));
+			res.status(201);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -102,7 +103,7 @@ export class BookingHandler {
 			const booking_id = parseInt(req.params.id);
 			const { role, id } = req.token_data;
 			await req.dependencies.bookingService.deleteBooking(booking_id, id, role);
-			res.json(ResponseTypes.ok({}));
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -123,7 +124,7 @@ export class BookingHandler {
 				booking_id,
 				status
 			);
-			res.json(ResponseTypes.ok({}));
+			res.status(204);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -145,6 +146,9 @@ export class BookingHandler {
 		const router = Router();
 		// Guest routes
 		router.get("/tranding", this.getTrandingBookings);
+
+		// User discount handler
+		router.use("/discounts", DiscountHandler.router());
 
 		router.get(
 			"/all",

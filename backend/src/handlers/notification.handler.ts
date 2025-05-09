@@ -12,7 +12,7 @@ import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/repository/user";
 
 export class NotificationHandler {
-	private getChain(): ValidationChain[] {
+	private static getChain(): ValidationChain[] {
 		return [
 			body("body")
 				.matches(SOME_WORDS_SINGLE_SPACE_REGEX)
@@ -26,7 +26,7 @@ export class NotificationHandler {
 		];
 	}
 
-	private async getNotificationsForUser(
+	private static async getNotificationsForUser(
 		req: Request,
 		res: Response
 	): Promise<void> {
@@ -41,7 +41,7 @@ export class NotificationHandler {
 		}
 	}
 
-	private async pushNotificationToUser(
+	private static async pushNotificationToUser(
 		req: Request,
 		res: Response
 	): Promise<void> {
@@ -54,16 +54,18 @@ export class NotificationHandler {
 				image: req.body.image,
 			};
 			await req.dependencies.notificationService.push(notification, userID);
-			res.json(ResponseTypes.ok({}));
+			res.status(201);
 		} catch (err) {
 			processServiceError(res, err);
 			return;
 		}
 	}
 
-	public router(): Router {
+	public static router(): Router {
 		const router = Router();
-		router.get("/", this.getNotificationsForUser);
+		// PERF
+		router.get("/", authorizationMiddleware, this.getNotificationsForUser);
+		// PERF
 		router.post(
 			"/:user_id",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],

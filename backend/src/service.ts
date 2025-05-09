@@ -22,7 +22,8 @@ export function initServices(repositories: Repositories, cfg: Config) {
 	);
 	const likedFlightService = new LikedFlightService(
 		repositories.likedFlightRepo,
-		repositories.likedFlightCache
+		repositories.likedFlightCache,
+		repositories.flightRepo
 	);
 	return {
 		userService,

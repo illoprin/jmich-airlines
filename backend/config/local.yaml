@@ -5,9 +5,8 @@ salt: 4 # bcrypt
 secret: "34jfQ" # jwt 
 
 min_required_role: 3 # min required role to get user's personal data
-booking_files_path: "upload/protected/booking"
-user_files_path: "upload/protected/user"
 public_files_path: "upload/public"
+protected_files_path: "upload/protected"
 
 redis_server:
   host: "localhost"

@@ -32,7 +32,7 @@ export class PaymentHandler {
 				user_id: req.token_data.id,
 			};
 			req.dependencies.userService.addPayment(payment);
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -76,7 +76,7 @@ export class PaymentHandler {
 				req.token_data.role,
 				id
 			);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;

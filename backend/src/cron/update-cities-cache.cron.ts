@@ -6,7 +6,7 @@ export function scheduleRefreshCities(
 	cityCache: CityCache,
 	cityService: CityService
 ): void {
-	cron.schedule("0 */15 * * * *", async () => {
+	cron.schedule("0 * * * *", async () => {
 		try {
 			await cityCache.invalidate();
 			await cityService.getAllCities();

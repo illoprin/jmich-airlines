@@ -40,7 +40,7 @@ export class DiscountHandler {
 			const discount: DiscountEntry = req.body;
 			discount.valid_until = new Date(discount.valid_until);
 			req.dependencies.discountService.add(discount);
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -51,7 +51,7 @@ export class DiscountHandler {
 		try {
 			const code = req.params.code;
 			req.dependencies.discountService.removeByCode(code);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;

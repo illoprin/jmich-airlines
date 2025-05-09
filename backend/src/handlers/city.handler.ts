@@ -47,7 +47,7 @@ export class CityHandler {
 				image,
 			};
 			await req.dependencies.cityService.addCity(city);
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -59,7 +59,7 @@ export class CityHandler {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.cityService.updateCityByID(id, req.body);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -81,7 +81,7 @@ export class CityHandler {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.cityService.removeCityByID(id);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -123,7 +123,7 @@ export class CityHandler {
 			};
 
 			await req.dependencies.cityService.addAirport(airport);
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -138,7 +138,7 @@ export class CityHandler {
 				cityID,
 				code
 			);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -155,7 +155,7 @@ export class CityHandler {
 				code,
 				req.body
 			);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;

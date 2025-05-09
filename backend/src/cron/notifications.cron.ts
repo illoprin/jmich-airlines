@@ -8,7 +8,7 @@ export async function scheduleSendFlightNotifications(
 	likedFlightRepo: LikedFlightRepository,
 	notificationService: NotificationService
 ) {
-	cron.schedule("12 * * * *", async () => {
+	cron.schedule("* */12 * * *", async () => {
 		const handlers = [
 			new LowSeatWarningHandler(likedFlightRepo),
 			new ExpiringCheckInHandler(likedFlightRepo),

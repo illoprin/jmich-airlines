@@ -9,23 +9,25 @@ import {
 import { AccessControl } from "../lib/service/access-control";
 import type { BookingRepository } from "../repository/booking.repository";
 import type { DiscountRepository } from "../repository/discount.repository";
-import {
-	type BookingDTO,
-} from "../types/dto/booking";
-import type { TrandingBookingsDTO, BookingQRPayload } from "../types/features/booking";
+import { type BookingDTO } from "../types/dto/booking";
+import type {
+	TrandingBookingsDTO,
+	BookingQRPayload,
+} from "../types/features/booking";
 import { BookingEntry, BookingStatus } from "../types/repository/booking";
 import {
 	InvalidFieldError,
 	RelatedDataError,
 	NotFoundError,
 	PaymentError,
+	ForbiddenError,
 } from "../lib/service/errors";
 import { Roles } from "../types/repository/user";
 import { generateRandomGate } from "../lib/service/random";
-import { saveBufferToFile } from "../lib/service/save-file";
+import { saveBufferToFile, saveFileFromBuffer } from "../lib/service/save-file";
 import { Config } from "../types/internal/config";
 import { CompanyRepository } from "../repository/company.repository";
-import { FlightStatus } from "../types/repository/flight"; 
+import { FlightStatus } from "../types/repository/flight";
 import { PaymentRepository } from "../repository/payment.repository";
 import { BookingCache } from "../redis/booking.cache";
 import { FlightService } from "./flight.service";
@@ -155,14 +157,14 @@ export class BookingService {
 		);
 
 		// 5.1 Save QR Code buffer to file
-		const fileName = saveBufferToFile(
+		const filename = saveBufferToFile(
 			qrBuffer,
-			this.cfg.booking_files_path,
+			this.cfg.protected_files_path,
 			"png"
 		);
-		const qrCodeURL = `http://${this.cfg.http_server.host}:${this.cfg.http_server.port}/upload/booking/${fileName}`;
+		const qrCodeURL = `http://${this.cfg.http_server.host}:${this.cfg.http_server.port}/upload/protected/${filename}`;
 
-		// NOTE: here we can write off funds from user $$$
+		// NOTE: $$$ here we can write off funds from user
 
 		// 6. Create booking entry
 		try {
@@ -268,13 +270,22 @@ export class BookingService {
 		status: BookingStatus
 	): Promise<void> {
 		try {
-			AccessControl.checkAccess<BookingEntry>(
+			const booking = AccessControl.checkAccess<BookingEntry>(
 				userId,
 				userRole,
 				this.cfg.min_required_role,
 				bookingId,
 				(id) => this.bookingRepo.getByID(id)
-			);
+			) as BookingEntry;
+
+			if (booking.status) {
+				if ([BookingStatus.CANCELLED, BookingStatus.COMPLETED].includes(booking.status)) {
+					throw new ForbiddenError("not allowed action");
+				} else if (booking.status == "ACTIVE" && status == "CANCELLED") {
+					console.log(`refund to the client id = ${booking.user_id}`);
+				}
+			}
+
 			this.bookingRepo.updateStatus(bookingId, status);
 			await this.bookingCache.invalidate(userId);
 		} catch (err) {
@@ -313,7 +324,9 @@ export class BookingService {
 		await this.bookingCache.invalidate(bookingId);
 	}
 
-	public async getTrandingBookings(limit: number): Promise<TrandingBookingsDTO[]> {
+	public async getTrandingBookings(
+		limit: number
+	): Promise<TrandingBookingsDTO[]> {
 		const trandingBookingsCached = await this.bookingCache.getTranding();
 		if (!trandingBookingsCached) {
 			const trandingBookings = this.bookingRepo.getTranding(limit);

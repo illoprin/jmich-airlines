@@ -45,7 +45,7 @@ export class UserHandler {
 		if (!checkValidation(req, res)) return;
 		try {
 			req.dependencies?.userService.register(req.body);
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -104,7 +104,6 @@ export class UserHandler {
 		try {
 			const id = req.token_data.id;
 			const allowAccessHeader: string | undefined = req.get("Allow-Access");
-			console.log(allowAccessHeader);
 			let allowRoleChaning: boolean = false;
 			if (allowAccessHeader) {
 				allowRoleChaning = allowAccessHeader === "1" ? true : false;
@@ -115,7 +114,7 @@ export class UserHandler {
 				allowRoleChaning
 			);
 			// WARN: return new access token after changing a role or login is bad practice in my opinion
-			token ? res.json(ResponseTypes.ok({ token })) : res.status(204);
+			token ? res.json(ResponseTypes.ok({ token })) : res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -129,7 +128,7 @@ export class UserHandler {
 		try {
 			const id = req.token_data.id;
 			await req.dependencies.userService.delete(id);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;

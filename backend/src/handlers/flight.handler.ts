@@ -59,7 +59,7 @@ export class FlightHandler {
 				price,
 				seats_available,
 			});
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -92,7 +92,7 @@ export class FlightHandler {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.flightService.updateGeneral(id, req.body);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -103,7 +103,7 @@ export class FlightHandler {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.flightService.removeByID(id);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -142,7 +142,7 @@ export class FlightHandler {
 			const id = parseInt(req.params.id);
 			const status: FlightStatus = req.body.status;
 			await req.dependencies.flightService.updateStatus(id, status);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;

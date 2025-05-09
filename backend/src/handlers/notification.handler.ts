@@ -54,7 +54,7 @@ export class NotificationHandler {
 				image: req.body.image,
 			};
 			await req.dependencies.notificationService.push(notification, userID);
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;

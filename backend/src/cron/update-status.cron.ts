@@ -6,7 +6,7 @@ export function scheduleUpdateStatus(
 	flightService: FlightService,
 	bookingService: BookingService
 ) {
-	cron.schedule("0 * * * *", () => {
+	cron.schedule("30 * * * *", () => {
 		try {
 			const completedFlights = flightService.completeExpired();
 			const completedBookings = bookingService.completeExpired();

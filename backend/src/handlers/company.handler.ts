@@ -33,7 +33,7 @@ export class CompanyHandler {
 				logo,
 				baggage_rule_id,
 			});
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -75,7 +75,7 @@ export class CompanyHandler {
 		try {
 			const id = parseInt(req.params.id);
 			req.dependencies.companyService.updateCompanyByID(id, req.body);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -86,7 +86,7 @@ export class CompanyHandler {
 		try {
 			const id = parseInt(req.params.id);
 			req.dependencies.companyService.removeCompanyByID(id);
-			res.status(204);
+			res.status(204).send();
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -101,7 +101,7 @@ export class CompanyHandler {
 				max_free_weight,
 				price_per_kg,
 			});
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -112,7 +112,7 @@ export class CompanyHandler {
 		try {
 			const id = parseInt(req.params.id);
 			req.dependencies.companyService.updateBaggageRuleByID(id, req.body);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;

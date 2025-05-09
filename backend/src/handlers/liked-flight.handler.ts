@@ -22,7 +22,7 @@ export class LikedFlightHandler {
 			const userID = req.token_data.id;
 			const flightID = parseInt(req.params.flight_id);
 			await req.dependencies.likedFlightService.likeFlight(userID, flightID);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 		}
@@ -36,7 +36,7 @@ export class LikedFlightHandler {
 			const userID = req.token_data.id;
 			const flightID = parseInt(req.params.flight_id);
 			await req.dependencies.likedFlightService.unlikeFlight(userID, flightID);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 		}

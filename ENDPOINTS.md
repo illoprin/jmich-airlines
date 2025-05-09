@@ -10,17 +10,22 @@
 
 ## General
 
+Total count of endpoints is: **51**
+
 ### Booking Routes
 
 | Method | Endpoint       | Description                | Status      |
 |--------|----------------|----------------------------|-------------|
-| GET    | /booking/tranding | Get trending bookings     | Not Implemented (501) |
+| GET    | /booking/tranding | Get trending bookings     |  |
 | GET    | /booking/:id          | Get booking by ID                    | Authorization              |
 | POST   | /booking/             | Create new booking                   | Authorization, Validation  |
 | GET    | /booking/             | Get user's bookings                  | Authorization              |
 | PUT    | /booking/status/:id   | Update booking status                | Authorization              |
 | GET    | /booking/all          | Get all bookings (paginated)        | Authorization, Admin Role       |
 | DELETE | /booking/:id          | Delete booking                      | Authorization, Admin Role       |
+| POST    | /booking/discount | Add new discount code     | Authorization, Moderator role, Validation |
+| POST    | /booking/discount/validate/:code | Validate discount code     | Authorization |
+| DELETE    | /booking/discount/:code | Delete discount code     | Authorization, Moderator Role |
 
 ### City Routes
 
@@ -51,7 +56,6 @@
 
 ## Flight Routes
 
-### Guest Routes
 | Method | Endpoint              | Description                          |
 |--------|-----------------------|--------------------------------------|
 | POST   | /flight/search        | Search flights                      |
@@ -67,23 +71,26 @@
 
 | Method | Endpoint              | Description                          | Requirements               |
 |--------|-----------------------|--------------------------------------|----------------------------|
-| POST   | /payment/             | Add payment method                  | Authorization, Validation  |
-| GET    | /payment/             | Get user's payment methods          | Authorization              |
-| GET    | /payment/:id          | Get payment method by ID            | Authorization              |
-| PUT    | /payment/:id          | Update payment method               | Authorization, Validation  |
-| DELETE | /payment/:id          | Delete payment method               | Authorization              |
+| POST   | /user/payment/             | Add payment method                  | Authorization, Validation  |
+| GET    | /user/payment/             | Get user's payment methods          | Authorization              |
+| GET    | /user/payment/:id          | Get payment method by ID            | Authorization              |
+| DELETE | /user/payment/:id          | Delete payment method               | Authorization              |
 
 ## User Routes
 
-### Guest Routes
 | Method | Endpoint              | Description                          | Requirements               |
 |--------|-----------------------|--------------------------------------|----------------------------|
 | POST   | /user/                | Register new user                   | Validation                |
 | POST   | /user/login           | Login user                          |                            |
+| POST    | /user/liked/:flight_id  | Add flight to user's likes       | Authorization       |
+| POST    | /user/notification  | Get user's notifications             | Authorization       |
+| POST    | /user/notification/:user_id  | Send notification to user             | Authorization, Moderator role       |
+| GET    | /user/liked             | Get user's liked flights          | Authorization       |
+| DELETE    | /user/liked/:flight_id  | Delete flight from user's likes | Authorization       |
 | GET    | /user/                | Get current user data               | Authorization              |
 | PUT    | /user/                | Update current user                 | Authorization, Validation  |
 | DELETE | /user/                | Delete current user                 | Authorization              |
-| GET    | /user/:id             | Get user by ID                      | Authorization              |
+| GET    | /user/:id             | Get user public data by ID          | Authorization              |
 | GET    | /user/all             | Get all users                       | Authorization, Admin Role       |
 
 
@@ -107,6 +114,7 @@
 {
 	"flight_id": 123,
 	"seats": 2,
+	"payment_id": 1,
 	"baggage_weight": 15,
 	"code": "SUMMER2023"
 }
@@ -118,18 +126,11 @@
 
 #### POST /city/
 **Requires:** Admin Role  
-**Validation:**
-```json
-{
-	"name": "string (SINGLE_UNICODE_WORD_REGEX)",
-	"image": "string (file path)"
-}
-```
 **Example:**
 ```json
 {
 	"name": "Москва",
-	"image": "/uploads/cities/moscow.jpg"
+	"image": "/upload/moscow.jpg"
 }
 ```
 

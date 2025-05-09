@@ -59,7 +59,7 @@ export class BookingHandler {
 				payment_id,
 				code || undefined
 			);
-			res.status(201);
+			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -103,7 +103,7 @@ export class BookingHandler {
 			const booking_id = parseInt(req.params.id);
 			const { role, id } = req.token_data;
 			await req.dependencies.bookingService.deleteBooking(booking_id, id, role);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -124,7 +124,7 @@ export class BookingHandler {
 				booking_id,
 				status
 			);
-			res.status(204);
+			res.status(204).send();
 		} catch (err) {
 			processServiceError(res, err);
 			return;
@@ -157,7 +157,6 @@ export class BookingHandler {
 		);
 
 		// Auth routes
-		router.get("/:id", [authorizationMiddleware], this.getBookingByID);
 		router.post(
 			"/",
 			[authorizationMiddleware],
@@ -165,8 +164,9 @@ export class BookingHandler {
 			this.addBooking
 		);
 		router.get("/", [authorizationMiddleware], this.getBookingsByToken);
+		router.get("/:id", [authorizationMiddleware], this.getBookingByID);
 		router.put(
-			"/status/:id",
+			"/:id/status",
 			[authorizationMiddleware],
 			this.updateBookingStatus
 		);

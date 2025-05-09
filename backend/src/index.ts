@@ -1,12 +1,13 @@
 import { readConfig } from "./config/config";
-import type { Config } from "./types/config.type";
+import type { Config } from "./types/internal/config";
 import { App } from "./app";
 import { initRouter } from "./router";
 import { initStorage } from "./storage";
 import { initServices } from "./service";
 import { scheduleUpdateStatus } from "./cron/update-status.cron";
 import { scheduleInvalidateDiscounts } from "./cron/invalidate-discounts.cron";
-import { scheduleRefreshCities } from "./cron/update-cities-cache";
+import { scheduleRefreshCities } from "./cron/update-cities-cache.cron";
+import { scheduleIncreasePrice } from "./cron/increase-price.cron";
 
 async function main() {
 	// Load config
@@ -31,6 +32,7 @@ async function main() {
 	scheduleUpdateStatus(services.flightService, services.bookingService);
 	scheduleInvalidateDiscounts(services.discountService);
 	scheduleRefreshCities(storage.repositories.cityCache, services.cityService);
+	scheduleIncreasePrice(services.flightService);
 
 	// Create app
 	const app = new App(services, cfg, router);

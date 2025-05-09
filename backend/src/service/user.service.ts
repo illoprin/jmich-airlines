@@ -188,6 +188,8 @@ export class UserService {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
 					throw new InvalidFieldError(`invalid field '${err.field}'`);
+				} else if (err.type == StorageErrorType.UNIQUE) {
+					throw new NotUniqueError("this user already has this card");
 				}
 			} else {
 				throw err;
@@ -203,7 +205,7 @@ export class UserService {
 		return AccessControl.checkAccess<PaymentEntry>(
 			userID,
 			userRole,
-			Roles.Admin,
+			Roles.Admin + 1, // HACK: prevent payments access to admin
 			id,
 			(id) => this.paymentRepo.getByID(id)
 		);
@@ -214,7 +216,7 @@ export class UserService {
 		AccessControl.checkAccess<PaymentEntry>(
 			userID,
 			userRole,
-			Roles.Admin,
+			Roles.Admin + 1, // HACK: prevent payments access to admin
 			id,
 			(id) => this.paymentRepo.getByID(id)
 		);

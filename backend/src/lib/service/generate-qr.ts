@@ -1,7 +1,6 @@
-import { PassThrough } from "stream";
-import { BookingQRPayload } from "../../types/booking.type";
+import type { BookingQRPayload } from "../../types/features/booking";
 import QRCode from "qrcode";
-import { QRCodeGenerationError } from "../../types/service.type";
+import { QRCodeGenerationError } from "./errors";
 
 export function getPayloadString({
 	user_firstname: ufs,

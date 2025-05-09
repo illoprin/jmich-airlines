@@ -13,6 +13,9 @@ import { BookingCache } from "./redis/booking.cache";
 import { FlightCache } from "./redis/flight.cache";
 import { UserCache } from "./redis/user.cache";
 import { CityCache } from "./redis/city.cache";
+import { NotificationRepository } from "./redis/notification.repository";
+import { LikedFlightRepository } from "./repository/liked-flight.repository";
+import { LikedFlightCache } from "./redis/liked-flight.cache";
 
 export function initStorage(storagePath: string, redisHost: string, redisPort: number): any {
 	// Connect to storage
@@ -34,12 +37,15 @@ export function initStorage(storagePath: string, redisHost: string, redisPort: n
 	const flightRepo = new FlightRepository(storage);
 	const discountRepo = new DiscountRepository(storage);
 	const bookingRepo = new BookingRepository(storage);
+	const notificationRepo = new NotificationRepository(redisClient);
+	const likedFlightsRepo = new LikedFlightRepository(storage);
 
 	// Create Redis repositories
 	const bookingCache = new BookingCache(redisClient);
 	const flightCache = new FlightCache(redisClient);
 	const userCache = new UserCache(redisClient);
 	const cityCache = new CityCache(redisClient);
+	const likedFlightCache = new LikedFlightCache(redisClient);
 
 	return {
 		storage,
@@ -47,6 +53,8 @@ export function initStorage(storagePath: string, redisHost: string, redisPort: n
 		repositories: {
 			userRepo,
 			paymentRepo,
+			likedFlightsRepo,
+			likedFlightCache,
 			cityRepo,
 			airportRepo,
 			baggageRuleRepo,
@@ -57,7 +65,8 @@ export function initStorage(storagePath: string, redisHost: string, redisPort: n
 			bookingCache,
 			flightCache,
 			userCache,
-			cityCache
+			cityCache,
+			notificationRepo
 		},
 	};
 }

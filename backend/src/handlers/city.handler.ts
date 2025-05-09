@@ -1,8 +1,8 @@
 import { checkValidation, ResponseTypes } from "../lib/api/response";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/user.type";
-import { AirportEntry, CityEntry } from "../types/city.type";
+import { Roles } from "../types/repository/user";
+import { AirportEntry, CityEntry } from "../types/repository/city";
 import { Request, Response, Router } from "express";
 import { processServiceError } from "../lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
@@ -18,7 +18,9 @@ import {
 export class CityHandler {
 	private static getCityChain(optional: boolean = false): ValidationChain[] {
 		const validators = [
-			body("name").matches(SINGLE_UNICODE_WORD_REGEX),
+			body("name")
+				.matches(SINGLE_UNICODE_WORD_REGEX)
+				.withMessage("city name is a single word, allowed hyphen"),
 			getFilepathValidation("image"),
 		];
 		return applyOptionalFlag(validators, optional);
@@ -26,13 +28,17 @@ export class CityHandler {
 
 	private static getAirportChain(optional: boolean = false): ValidationChain[] {
 		const validators = [
-			body("name").matches(SOME_WORDS_SINGLE_SPACE_REGEX),
-			body("code").matches(/^[A-Z]{3}$/g),
+			body("name")
+				.matches(SOME_WORDS_SINGLE_SPACE_REGEX)
+				.withMessage("invalid name"),
+			body("code")
+				.matches(/^[A-Z]{3}$/g)
+				.withMessage("invalid code"),
 		];
 		return applyOptionalFlag(validators, optional);
 	}
 
-	private static addCity(req: Request, res: Response): void {
+	private static async addCity(req: Request, res: Response): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const { name, image } = req.body;
@@ -40,7 +46,7 @@ export class CityHandler {
 				name,
 				image,
 			};
-			req.dependencies.cityService.addCity(city);
+			await req.dependencies.cityService.addCity(city);
 			res.json(ResponseTypes.ok({}));
 		} catch (err) {
 			processServiceError(res, err);
@@ -48,7 +54,7 @@ export class CityHandler {
 		}
 	}
 
-	private static async updateCity(req: Request, res: Response) {
+	private static async updateCity(req: Request, res: Response): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const id = parseInt(req.params.id);
@@ -60,7 +66,7 @@ export class CityHandler {
 		}
 	}
 
-	private static async getCityByID(req: Request, res: Response) {
+	private static async getCityByID(req: Request, res: Response): Promise<void> {
 		try {
 			const id = parseInt(req.params.id);
 			const city = await req.dependencies.cityService.getCityByID(id);
@@ -71,7 +77,7 @@ export class CityHandler {
 		}
 	}
 
-	private static async removeCityByID(req: Request, res: Response) {
+	private static async removeCityByID(req: Request, res: Response): Promise<void> {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.cityService.removeCityByID(id);
@@ -82,7 +88,7 @@ export class CityHandler {
 		}
 	}
 
-	private static async getAllCities(req: Request, res: Response) {
+	private static async getAllCities(req: Request, res: Response): Promise<void> {
 		try {
 			const cities = await req.dependencies.cityService.getAllCities();
 			res.json(ResponseTypes.ok({ cities }));
@@ -104,7 +110,7 @@ export class CityHandler {
 		}
 	}
 
-	private static async addCityAirport(req: Request, res: Response) {
+	private static async addCityAirport(req: Request, res: Response): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const { name, code } = req.body;
@@ -124,7 +130,7 @@ export class CityHandler {
 		}
 	}
 
-	private static async removeCityAirport(req: Request, res: Response) {
+	private static async removeCityAirport(req: Request, res: Response): Promise<void> {
 		try {
 			const cityID = parseInt(req.params.id);
 			const code = req.params.code;
@@ -139,7 +145,7 @@ export class CityHandler {
 		}
 	}
 
-	private static async updateAirport(req: Request, res: Response) {
+	private static async updateAirport(req: Request, res: Response): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const cityID = parseInt(req.params.id);
@@ -160,40 +166,49 @@ export class CityHandler {
 		const router = Router();
 
 		// Guest routes
+		// PERF
 		router.get("/", this.getAllCities);
+		// PERF
 		router.get("/:id", this.getCityByID); // Returns city DTO
+		// PERF
 		router.get("/:id/airports", this.getCityAirports); // Returns city airports
 
 		// Admin
+		// PERF
 		router.post(
 			"/",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getCityChain(),
 			this.addCity
 		);
+		// PERF
 		router.put(
 			"/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getCityChain(true),
 			this.updateCity
 		);
+		// PERF
 		router.delete(
 			"/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.removeCityByID
 		);
-		
+
+		// PERF
 		router.post(
 			"/:id/airport",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getAirportChain(),
 			this.addCityAirport
 		);
+		// PERF
 		router.delete(
 			"/:id/airport/:code",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.removeCityAirport
 		);
+		// PERF
 		router.put(
 			"/:id/airport/:code",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],

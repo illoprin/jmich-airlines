@@ -1,4 +1,4 @@
-import type { UserEntry } from "../../types/user.type";
+import type { UserEntry } from "../../types/repository/user";
 import * as jwt from "jsonwebtoken";
 
 export function createToken(candidate: UserEntry, secret: string): string {

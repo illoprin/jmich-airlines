@@ -1,10 +1,10 @@
 import { Request, Response, Router } from "express";
 import { checkValidation, ResponseTypes } from "../lib/api/response";
 import { processServiceError } from "../lib/api/process-error";
-import { BaggageRuleEntry, CompanyEntry } from "../types/company.type";
+import { BaggageRuleEntry, CompanyEntry } from "../types/repository/company";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/user.type";
+import { Roles } from "../types/repository/user";
 import { body, ValidationChain } from "express-validator";
 import {
 	applyOptionalFlag,
@@ -127,28 +127,33 @@ export class CompanyHandler {
 		router.get("/", this.getCompanies);
 
 		// Admin routes
+		// PERF
 		router.post(
 			"/",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getChain(),
 			this.addCompany
 		);
+		// PERF
 		router.put(
 			"/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getChain(true),
 			this.updateCompany
 		);
+		// PERF
 		router.delete(
 			"/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.removeCompany
 		);
+		// PERF
 		router.post(
 			"/rule",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.addRule
 		);
+		// PERF
 		router.put(
 			"/rule/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],

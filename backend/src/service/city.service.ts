@@ -22,9 +22,10 @@ export class CityService {
 		private airportRepo: AirportRepository
 	) {}
 
-	public addCity(city: CityEntry): bigint {
+	public async addCity(city: CityEntry): Promise<bigint> {
 		try {
 			const lastID = this.cityRepo.add(city);
+			await this.cityCache.invalidate();
 			return lastID;
 		} catch (err) {
 			if (err instanceof StorageError) {

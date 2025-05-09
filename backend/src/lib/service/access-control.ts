@@ -1,11 +1,11 @@
 import { Request } from "express";
-import { Roles } from "../../types/user.type";
+import { Roles } from "../../types/repository/user";
 import type { Entry } from "../repository/base.repository";
 import {
 	AuthorizationError,
 	ForbiddenError,
 	NotFoundError,
-} from "../../types/service.type";
+} from "./errors";
 
 export class AccessControl {
 	/**
@@ -32,12 +32,14 @@ export class AccessControl {
 		}
 
 		// Grant access if user has sufficient privileges
-		if (minRequiredRole >= userRole) {
+		if (userRole >= minRequiredRole) {
+			console.log("Access control check: Grant access");
 			return entity;
 		}
 
 		// Check ownership for regular users
 		const ownerId = this.getEntityOwnerId(entity);
+		console.log("Access control check: ownerID - ", ownerId, " userID - ", userID);
 		if (ownerId === userID) {
 			return entity;
 		}

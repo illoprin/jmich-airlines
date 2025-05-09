@@ -7,7 +7,7 @@ import {
 	NotUniqueError,
 	PaymentError,
 	RelatedDataError,
-} from "../../types/service.type";
+} from "../service/errors";
 import { ResponseTypes } from "./response";
 
 export function processServiceError(res: Response, error: any): void {
@@ -26,6 +26,7 @@ export function processServiceError(res: Response, error: any): void {
 	} else if (error instanceof InvalidFieldError) {
 		res.status(400).json(ResponseTypes.error(error.message));
 	} else {
+		console.log(error);
 		res.status(500).json(ResponseTypes.internalError());
 	}
 }

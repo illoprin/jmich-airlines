@@ -1,8 +1,7 @@
-import { writeFile, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import path from "node:path";
-import QRCode from "qrcode";
 import { v4 as uuidv4 } from "uuid";
-import { FileSaveError } from "../../types/service.type";
+import { FileSaveError } from "./errors";
 import { File } from "node:buffer";
 
 export function saveBufferToFile(

@@ -1,7 +1,7 @@
 import { HOUR_MILLISECONDS } from "./const";
-import { AirportEntry } from "../../types/city.type";
-import { CompanyEntry } from "../../types/company.type";
-import { FlightEntry } from "../../types/flight.type";
+import type { AirportEntry } from "../../types/repository/city"; 
+import type { CompanyEntry } from "../../types/repository/company";
+import type { FlightEntry } from "../../types/repository/flight"; 
 import { generateRandomRouteCode, randomIndex } from "./random";
 
 export function randomFlight(

@@ -104,7 +104,7 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
 		return lastID as bigint;
 	}
 
-	public getLikedFlightsDTOByUserID(userID: number): FlightDTO[] | null {
+	public getAllByUserID(userID: number): FlightDTO[] | null {
 		const query = this.getFlightDTOQuery(`WHERE ${this.getTableName}.user_id = ?`);
 		const params = [userID];
 
@@ -121,14 +121,14 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
 		return liked_flights;
 	}
 
-	public checkFlightUserFavour(userID: number, flightID: number): boolean {
+	public isFlightLikedByUser(userID: number, flightID: number): boolean {
 		const res = this.storage.get(`--sql
 			SELECT 1 FROM ${this.getTableName()} WHERE user_id = ? AND flight_id = ?
 		`, [userID, flightID]);
 		return res ? true : false;
 	}
 
-	public deleteByUserIDAndFlightID(userID: number, flightID: number): number {
+	public removeByUserAndFlight(userID: number, flightID: number): number {
 		const { changes } = this.storage.run(`--sql
 			DELETE FROM ${this.getTableName()} WHERE user_id = ? AND flight_id = ?
 		`, [userID, flightID]);

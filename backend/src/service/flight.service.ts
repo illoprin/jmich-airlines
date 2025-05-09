@@ -13,13 +13,16 @@ import {
 } from "../lib/service/errors";
 import type { CompanyEntry } from "../types/repository/company";
 import type { AirportEntry } from "../types/repository/city";
-import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from '../lib/service/const'
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from "../lib/service/const";
 import { randomFlight } from "../lib/service/random-flight";
 import { FlightCache } from "../redis/flight.cache";
 import type { FlightSearchPayload } from "../types/handler/flight";
 
 export class FlightService {
-	constructor(private flightRepo: FlightRepository, private flightCache: FlightCache) {}
+	constructor(
+		private flightRepo: FlightRepository,
+		private flightCache: FlightCache
+	) {}
 
 	/**
 	 * Create new flight
@@ -78,13 +81,23 @@ export class FlightService {
 				payload.departure_airport_id ?? flight.departure_airport_id,
 			arrival_airport_id:
 				payload.arrival_airport_id ?? flight.arrival_airport_id,
-			departure_date: payload.departure_date ?? new Date(flight.departure_date),
-			arrival_date: payload.arrival_date ?? new Date(flight.arrival_date),
+			departure_date: new Date(flight.departure_date),
+			arrival_date: new Date(flight.arrival_date),
 			company_id: payload.company_id ?? flight.company_id,
 			price: payload.price ?? flight.price,
 			seats_available: flight.seats_available,
 			status: flight.status,
 		};
+
+		// WARN: its a shit code
+		if (payload.departure_date) {
+			edited.departure_date = new Date(payload.departure_date)
+		}
+		if (payload.arrival_date) {
+			edited.arrival_date = new Date(payload.arrival_date);
+		}
+		///////////////////////
+		
 		try {
 			this.flightRepo.update(edited);
 			await this.flightCache.invalidate(id);
@@ -121,11 +134,13 @@ export class FlightService {
 
 		try {
 			this.flightRepo.update(flight);
-			await this.flightCache.invalidate(id); 
+			await this.flightCache.invalidate(id);
 		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.CHECK) {
-					throw new InvalidFieldError(`invalid field '${err.field.split(' ')[0]}'`);
+					throw new InvalidFieldError(
+						`invalid field '${err.field.split(" ")[0]}'`
+					);
 				}
 			} else {
 				throw err;
@@ -198,6 +213,12 @@ export class FlightService {
 		airports: AirportEntry[],
 		companies: CompanyEntry[]
 	): Error[] {
+		if (airports.length == 0 || companies.length == 0) {
+			throw new RelatedDataError(
+				"it is not possible to create flights until there are records in the airport and company tables"
+			);
+		}
+
 		console.log(
 			"Generating random flights:\n" +
 				"Quantity: %d\n" +
@@ -210,7 +231,7 @@ export class FlightService {
 			maxPrice
 		);
 		let errors: Error[] = [];
-		const flightsPerDay = Math.ceil(daysRange / quantity);
+		const flightsPerDay = Math.ceil(quantity / daysRange);
 		let currentDay = 0;
 		for (let i = 0; i < quantity; i++) {
 			const startTime =
@@ -278,9 +299,9 @@ export class FlightService {
 			}
 		}
 	}
-	
+
 	public completeExpired(): number {
-		return this.flightRepo.completeExpired(FlightStatus.COMPLETED);;
+		return this.flightRepo.completeExpired(FlightStatus.COMPLETED);
 	}
 
 	public increasePrice(hoursBefore: number, amount: number): number {

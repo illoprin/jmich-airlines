@@ -20,6 +20,7 @@ export class PaymentRepository extends BaseRepository<PaymentEntry> {
 				-- card cvv
 				cvv TEXT NOT NULL CHECK(length(cvv) == 3),
 				-- delete payment entry if user deletes
+				UNIQUE(user_id, number),
 				FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 			);
 		`,

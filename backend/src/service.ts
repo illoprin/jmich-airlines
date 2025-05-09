@@ -1,4 +1,4 @@
-import { Config } from "./types/config.type";
+import { Config } from "./types/internal/config";
 import { Repositories } from "./storage";
 import { UserService } from "./service/user.service";
 import { FlightService } from "./service/flight.service";
@@ -6,6 +6,8 @@ import { BookingService } from "./service/booking.service";
 import { CompanyService } from "./service/company.service";
 import { CityService } from "./service/city.service";
 import { DiscountService } from "./service/discount.service";
+import { NotificationService } from "./service/notification.service";
+import { LikedFlightService } from "./service/liked-flight.service";
 
 export function initServices(repositories: Repositories, cfg: Config) {
 	const flightService = new FlightService(
@@ -18,9 +20,14 @@ export function initServices(repositories: Repositories, cfg: Config) {
 		repositories.paymentRepo,
 		cfg
 	);
+	const likedFlightService = new LikedFlightService(
+		repositories.likedFlightRepo,
+		repositories.likedFlightCache
+	);
 	return {
 		userService,
 		flightService,
+		notificationService: new NotificationService(repositories.notificationRepo),
 		bookingService: new BookingService(
 			repositories.bookingRepo,
 			repositories.bookingCache,
@@ -41,6 +48,7 @@ export function initServices(repositories: Repositories, cfg: Config) {
 			repositories.airportRepo
 		),
 		discountService: new DiscountService(repositories.discountRepo),
+		likedFlightService,
 		cfg,
 	};
 }

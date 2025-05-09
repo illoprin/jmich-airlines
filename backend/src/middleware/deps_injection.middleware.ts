@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import type { MiddlewareFunc } from "../types/middlewaree.type";
+import type { MiddlewareFunc } from "../types/internal/middleware";
 import { Dependencies } from "../service";
 
 declare global {

@@ -1,13 +1,10 @@
 import { Request, Response, Router } from "express";
 import { checkValidation, ResponseTypes } from "../lib/api/response";
-import type {
-	FlightEntry,
-	FlightSearchPayload,
-	FlightStatus,
-} from "../types/flight.type";
+import type { FlightEntry, FlightStatus } from "../types/repository/flight";
+import type { FlightSearchPayload } from "../types/handler/flight";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/user.type";
+import { Roles } from "../types/repository/user";
 import { processServiceError } from "../lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
 import {
@@ -70,12 +67,12 @@ export class FlightHandler {
 
 	private static addRandomFlights(req: Request, res: Response): void {
 		try {
-			const { quantity, days_range, max_duration, max_price } = req.body;
+			const { quantity, days, max_duration, max_price } = req.body;
 			const airports = req.dependencies.cityService.getAllAirports();
 			const companies = req.dependencies.companyService.getAllCompanies();
 			const errs = req.dependencies.flightService.addRandom(
 				quantity ?? 100,
-				days_range ?? 30,
+				days ?? 30,
 				max_duration ?? 5,
 				max_price ?? 10_000,
 				airports,
@@ -89,7 +86,7 @@ export class FlightHandler {
 		return;
 	}
 
-	private static async updateFlight(req: Request, res: Response) {
+	private static async updateFlight(req: Request, res: Response): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const id = parseInt(req.params.id);
@@ -101,7 +98,7 @@ export class FlightHandler {
 		}
 	}
 
-	private static async deleteFlight(req: Request, res: Response) {
+	private static async deleteFlight(req: Request, res: Response): Promise<void> {
 		try {
 			const id = parseInt(req.params.id);
 			await req.dependencies.flightService.removeByID(id);
@@ -115,7 +112,9 @@ export class FlightHandler {
 	private static searchFlights(req: Request, res: Response): void {
 		try {
 			const payload: FlightSearchPayload = req.body;
-			payload.departure_date = new Date(req.body.departure_date as string);
+			// WARN: shitcode
+			if (req.body.departure_date)
+				payload.departure_date = new Date(req.body.departure_date as string);
 			payload.max = parseInt(req.query.limit as string);
 			payload.page = parseInt(req.query.page as string);
 			const flights = req.dependencies.flightService.search(payload);
@@ -126,7 +125,7 @@ export class FlightHandler {
 		}
 	}
 
-	private static async getFlightByID(req: Request, res: Response) {
+	private static async getFlightByID(req: Request, res: Response): Promise<void> {
 		try {
 			const id = parseInt(req.params.id);
 			const flight = await req.dependencies.flightService.getByID(id);
@@ -137,7 +136,7 @@ export class FlightHandler {
 		}
 	}
 
-	private static async updateFlightStatus(req: Request, res: Response) {
+	private static async updateFlightStatus(req: Request, res: Response): Promise<void> {
 		try {
 			const id = parseInt(req.params.id);
 			const status: FlightStatus = req.body.status;
@@ -153,7 +152,7 @@ export class FlightHandler {
 		try {
 			const max = parseInt(req.query.limit as string) || 10;
 			const page = parseInt(req.query.page as string) || 0;
-			const status =  (req.params.status as string).toUpperCase();
+			const status = (req.params.status as string ?? "active").toUpperCase();
 			const flights = req.dependencies.flightService.getAll(max, page, status);
 			res.json(ResponseTypes.ok({ flights }));
 		} catch (err) {
@@ -167,44 +166,54 @@ export class FlightHandler {
 
 		// Guest routes
 		// NOTE: I use post method for search so that url can contain query params
+		// PERF
 		router.post("/search", this.searchFlights);
+		// PERF
+		router.post(
+			"/random",
+			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
+			this.addRandomFlights
+		);
+		// PERF
+		router.get(
+			"/all/:status",
+			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
+			this.getAllFlights
+		);
+		// PERF
 		router.get("/:id", this.getFlightByID);
 
 		// Moderator routes
+		// PERF
 		router.post(
 			"/",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.getChain(),
 			this.addFlight
 		);
+		// PERF
 		router.put(
 			"/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.getChain(true),
 			this.updateFlight
 		);
+		// PERF
 		router.put(
 			"/:id/status",
 			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.updateFlightStatus
 		);
-		router.get(
-			"/admin/all/:status",
-			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
-			this.getAllFlights
-		);
+		
 
 		// Admin routes
+		// PERF
 		router.delete(
 			"/:id",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.deleteFlight
 		);
-		router.post(
-			"/admin/random",
-			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
-			this.addRandomFlights
-		);
+		
 
 		return router;
 	}

@@ -1,4 +1,5 @@
-import type { UserEntry, UserPublicDTO } from "../types/user.type";
+import type { UserEntry } from "../types/repository/user";
+import type { UserPublicDTO } from "../types/dto/user";
 import { BaseRepository } from "../lib/repository/base.repository";
 
 export class UserRepository extends BaseRepository<UserEntry> {
@@ -47,7 +48,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				INSERT INTO ${this.getTableName()}
 					(login, firstname, secondname, email, password, phone, role, level)
 				VALUES
-					(?, ?, ?, ?, ?, ?, ?)
+					(?, ?, ?, ?, ?, ?, ?, ?)
 			`,
 			[login, firstname, secondname, email, password, phone, role, level]
 		);
@@ -103,8 +104,8 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				avatarpath,
 				password,
 				phone,
-				role,
 				level,
+				role,
 				id,
 			]
 		);

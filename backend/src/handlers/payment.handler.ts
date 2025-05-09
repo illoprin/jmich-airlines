@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { checkValidation, ResponseTypes } from "../lib/api/response";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
-import type { PaymentEntry } from "../types/payment.type";
+import type { PaymentEntry } from "../types/repository/payment";
 import { processServiceError } from "../lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
 import { applyOptionalFlag } from "../lib/api/validation-chain";
@@ -83,22 +83,15 @@ export class PaymentHandler {
 		}
 	}
 
-	private static updatePaymentByID(req: Request, res: Response): void {
-		if (!checkValidation(req, res)) return;
-		res.status(501).json(ResponseTypes.error("not implemented"));
-	}
-
 	public static router(): Router {
 		const router = Router();
+		// PERF
 		router.post("/", authorizationMiddleware, this.getChain(), this.addPayment);
+		// PERF
 		router.get("/", authorizationMiddleware, this.getPayments);
+		// PERF
 		router.get("/:id", authorizationMiddleware, this.getPaymentByID);
-		router.put(
-			"/:id",
-			authorizationMiddleware,
-			this.getChain(true),
-			this.updatePaymentByID
-		);
+		// PERF
 		router.delete("/:id", authorizationMiddleware, this.deletePaymentByID);
 		return router;
 	}

@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import cors from "cors";
-import { Config } from "./types/config.type";
+import { Config } from "./types/internal/config";
 import { loggerMiddleware } from "./middleware/logger.middleware";
 import { authorizationMiddleware } from "./middleware/authorization.middleware";
 import { dependencyInjectionMiddleware } from "./middleware/deps_injection.middleware";

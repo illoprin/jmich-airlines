@@ -1,10 +1,9 @@
 import { Request, Response, Router } from "express";
 import { processServiceError } from "../lib/api/process-error";
 import { checkValidation, ResponseTypes } from "../lib/api/response";
-import type { BookingDTO } from "../types/booking.type";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/user.type";
+import { Roles } from "../types/repository/user";
 import { body, ValidationChain } from "express-validator";
 import { getForeignKeyValidation } from "../lib/api/validation-chain";
 import { DISCOUNT_REGEX } from "../lib/service/const";

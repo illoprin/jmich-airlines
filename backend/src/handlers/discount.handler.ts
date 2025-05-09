@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { processServiceError } from "../lib/api/process-error";
 import { ResponseTypes } from "../lib/api/response";
-import { DiscountEntry } from "../types/discount.type";
+import { DiscountEntry } from "../types/repository/discount";
 
 export class DiscountHandler {
 	private validateDiscount(req: Request, res: Response): void {

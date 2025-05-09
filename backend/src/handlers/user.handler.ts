@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { checkValidation, ResponseTypes } from "../lib/api/response";
-import { Roles, type UserPublicDTO, type UserEntry } from "../types/user.type";
+import { Roles, type UserEntry } from "../types/repository/user";
+import type { UserPublicDTO } from "../types/dto/user";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
 import { processServiceError } from "../lib/api/process-error";
@@ -9,6 +10,7 @@ import { ValidationChain } from "express-validator";
 import { body } from "express-validator";
 import { applyOptionalFlag } from "../lib/api/validation-chain";
 import { LOGIN_REGEX, SINGLE_UNICODE_WORD_REGEX } from "../lib/service/const";
+import { LikedFlightHandler } from "./liked-flight.handler";
 
 export class UserHandler {
 	private static getChain(optional: boolean = false): ValidationChain[] {
@@ -75,6 +77,7 @@ export class UserHandler {
 		try {
 			const id: number = parseInt(req.params.id);
 			const reqUserID: number = req.token_data.id;
+			// HACK: prevent access to protected data for admin
 			if (reqUserID !== id) {
 				const user = req.dependencies.userService.getPublicDataByID(
 					id
@@ -141,32 +144,40 @@ export class UserHandler {
 		const router = Router();
 		// Use payment routes
 		router.use("/payment", PaymentHandler.router());
+		// Use liked flight handler
+		router.use("/liked", LikedFlightHandler.router());
 
 		// Guest routes
+		// PERF
 		router.post("/", this.getChain(), this.registerUser);
+		// PERF
 		router.post("/login", this.login);
 
-		// Auth private routes
-		router.get("/", authorizationMiddleware, this.getByToken);
-		router.put(
-			"/",
-			authorizationMiddleware,
-			this.getChain(true),
-			this.updateByToken
-		);
-		router.delete("/", authorizationMiddleware, this.deleteByToken);
-
-		// Auth routes
-		router.get("/:id", authorizationMiddleware, this.getUserByID);
-
 		// Admin routes
+		// PERF
 		router.get(
 			"/all",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getAll
 		);
 
+		// Auth private routes
+		// PERF
+		router.get("/", authorizationMiddleware, this.getByToken);
+		// PERF
+		router.put(
+			"/",
+			authorizationMiddleware,
+			this.getChain(true),
+			this.updateByToken
+		);
+		// PERF
+		router.delete("/", authorizationMiddleware, this.deleteByToken);
 
+		// PERF
+		router.get("/:id", authorizationMiddleware, this.getUserByID);
+
+		
 		return router;
 	}
 }

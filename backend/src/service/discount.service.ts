@@ -1,6 +1,6 @@
 import { DiscountRepository } from "../repository/discount.repository";
-import { DiscountEntry } from "../types/discount.type";
-import { InvalidFieldError, NotFoundError } from "../types/service.type";
+import { DiscountEntry } from "../types/repository/discount";
+import { InvalidFieldError, NotFoundError } from "../lib/service/errors";
 
 export class DiscountService {
 	constructor(private discountRepo: DiscountRepository) {}

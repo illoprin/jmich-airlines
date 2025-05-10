@@ -10,6 +10,7 @@ import { scheduleInvalidateDiscounts } from "./cron/invalidate-discounts.cron";
 import { scheduleRefreshCities } from "./cron/update-cities-cache.cron";
 import { scheduleIncreasePrice } from "./cron/increase-price.cron";
 import { scheduleSendFlightNotifications } from "./cron/notifications.cron";
+import { loadSwagger } from './swagger/load';
 
 async function main() {
 	// Load config
@@ -37,8 +38,11 @@ async function main() {
 	scheduleIncreasePrice(services.flightService);
 	scheduleSendFlightNotifications(storage.repositories.likedFlightRepo, services.notificationService);
 
+	// Load swagger docs
+	const swaggerDocument = loadSwagger("./config/openapi.yaml");
+
 	// Create app
-	const app = new App(services, cfg, router);
+	const app = new App(services, cfg, router, swaggerDocument);
 	app.start();
 }
 

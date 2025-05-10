@@ -186,11 +186,7 @@ export class FlightService {
 			payload.page
 		);
 
-		if (!flights) {
-			return [];
-		}
-		flights = this.findCheapest(flights);
-		return flights;
+		return flights ? this.findCheapest(flights) : [];
 	}
 
 	/**

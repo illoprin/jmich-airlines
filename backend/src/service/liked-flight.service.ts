@@ -1,10 +1,10 @@
-import { FlightRepository } from "@/repository/flight.repository";
-import { InvalidFieldError, NotFoundError, RelatedDataError } from "../lib/service/errors";
-import { LikedFlightCache } from "../redis/liked-flight.cache";
-import { LikedFlightRepository } from "../repository/liked-flight.repository";
-import { FlightDTO } from "../types/dto/flight";
-import { FlightStatus } from "@/types/repository/flight";
-import { StorageError, StorageErrorType } from "@/lib/repository/storage-error";
+import {FlightRepository} from "@/repository/flight.repository";
+import {InvalidFieldError, NotFoundError, RelatedDataError} from "../lib/service/errors";
+import {LikedFlightCache} from "../redis/liked-flight.cache";
+import {LikedFlightRepository} from "../repository/liked-flight.repository";
+import {FlightDTO} from "../types/dto/flight";
+import {FlightStatus} from "@/types/repository/flight";
+import {StorageError, StorageErrorType} from "@/lib/repository/storage-error";
 
 export class LikedFlightService {
 	constructor(
@@ -13,6 +13,10 @@ export class LikedFlightService {
 		private flightRepo: FlightRepository
 	) {}
 
+	/**
+	 * Get all user's liked flight
+	 * @param userID - ID of user
+	 */
 	public async getUserLikedFlights(userID: number): Promise<FlightDTO[]> {
 		const cached = await this.likedFlightCache.get(userID);
 		if (cached) return cached;
@@ -22,6 +26,11 @@ export class LikedFlightService {
 		return flights;
 	}
 
+	/**
+	 * Add flight to liked by id
+	 * @param userID - ID of user
+	 * @param flightID - ID of light
+	 */
 	public async likeFlight(userID: number, flightID: number): Promise<void> {
 		// Check is it active flight
 		const flight = this.flightRepo.getByID(flightID);
@@ -30,9 +39,9 @@ export class LikedFlightService {
 		if (flight.status != FlightStatus.ACTIVE)
 			throw new InvalidFieldError("this flight is inactive");
 		try {
-			this.likedFlightRepo.add({ user_id: userID, flight_id: flightID });
+			this.likedFlightRepo.add({user_id: userID, flight_id: flightID});
 			await this.likedFlightCache.invalidate(userID);
-		} catch(err) {
+		} catch (err) {
 			if (err instanceof StorageError) {
 				if (err.type == StorageErrorType.FOREIGN_KEY) {
 					throw new RelatedDataError("invalid user id foreign key");

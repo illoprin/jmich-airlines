@@ -25,6 +25,8 @@ export function initServices(repositories: Repositories, cfg: Config) {
 		repositories.likedFlightCache,
 		repositories.flightRepo
 	);
+	const discountService = new DiscountService(repositories.discountRepo);
+	const companyService = new CompanyService(repositories.companyRepo, repositories.baggageRuleRepo);
 	return {
 		userService,
 		flightService,
@@ -32,23 +34,20 @@ export function initServices(repositories: Repositories, cfg: Config) {
 		bookingService: new BookingService(
 			repositories.bookingRepo,
 			repositories.bookingCache,
-			repositories.discountRepo,
+			discountService,
 			flightService,
 			userService,
-			repositories.companyRepo,
+			companyService,
 			repositories.paymentRepo,
 			cfg
 		),
-		companyService: new CompanyService(
-			repositories.companyRepo,
-			repositories.baggageRuleRepo
-		),
+		companyService,
 		cityService: new CityService(
 			repositories.cityRepo,
 			repositories.cityCache,
 			repositories.airportRepo
 		),
-		discountService: new DiscountService(repositories.discountRepo),
+		discountService,
 		likedFlightService,
 		cfg,
 	};

@@ -1,5 +1,6 @@
 export interface TrandingBookingsDTO {
 	popularity: number;
+	flight_id: number;
 	departure_city_name: string;
 	departure_city_image: string;
 	departure_airport_code: string;

@@ -159,6 +159,7 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 		return `--sql
 			SELECT
 				count(flight.id) as popularity,
+				flight.id as flight_id,
 				dc.name as departure_city_name,
 				dc.image as departure_city_image,
 				da.code as departure_airport_code,
@@ -326,7 +327,7 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 		return changes;
 	}
 
-	public getTranding(limit: number): TrandingBookingsDTO[] | null {
+	public getTrending(limit: number): TrandingBookingsDTO[] | null {
 		const query = this.getTrandingQuery();
 		const params: number[] = [limit];
 		const tranding = this.storage.all<TrandingBookingsDTO>(query, params);

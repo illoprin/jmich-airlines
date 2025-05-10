@@ -4,7 +4,7 @@ import { checkValidation, ResponseTypes } from "../lib/api/response";
 import { authorizationMiddleware } from "../middleware/authorization.middleware";
 import { roleMiddleware } from "../middleware/role.middleware";
 import { Roles } from "../types/repository/user";
-import { body, ValidationChain } from "express-validator";
+import { body, check, ValidationChain } from "express-validator";
 import { getForeignKeyValidation } from "../lib/api/validation-chain";
 import { DISCOUNT_REGEX } from "../lib/service/const";
 import { DiscountHandler } from "./discount.handler";
@@ -46,19 +46,39 @@ export class BookingHandler {
 		}
 	}
 
+	private static async calculatePrice(
+		req: Request,
+		res: Response
+	): Promise<void> {
+		try {
+			const { flight_id, seats, code, baggage_weight } = req.body;
+			const { id: user_id } = req.token_data;
+			const { details } = await req.dependencies.bookingService.calculatePrice(
+				user_id,
+				flight_id,
+				baggage_weight,
+				seats,
+				code
+			);
+			res.json(ResponseTypes.ok({ details }));
+		} catch (err) {
+			processServiceError(res, err);
+		}
+	}
+
 	private static async addBooking(req: Request, res: Response): Promise<void> {
 		if (!checkValidation(req, res)) return;
 		try {
 			const { flight_id, seats, code, baggage_weight, payment_id } = req.body;
 			const { id: user_id } = req.token_data;
-			await req.dependencies.bookingService.add(
+			await req.dependencies.bookingService.add({
 				user_id,
 				flight_id,
 				seats,
 				baggage_weight,
 				payment_id,
-				code || undefined
-			);
+				code,
+			});
 			res.status(201).send();
 		} catch (err) {
 			processServiceError(res, err);
@@ -72,7 +92,9 @@ export class BookingHandler {
 	): Promise<void> {
 		try {
 			const { id } = req.token_data;
-			const bookings = await req.dependencies.bookingService.getUserBookings(id);
+			const bookings = await req.dependencies.bookingService.getUserBookings(
+				id
+			);
 			res.json(ResponseTypes.ok({ bookings }));
 		} catch (err) {
 			processServiceError(res, err);
@@ -131,12 +153,15 @@ export class BookingHandler {
 		}
 	}
 
-	private static async getTrandingBookings(req: Request, res: Response): Promise<void> {
+	private static async getTrandingBookings(
+		req: Request,
+		res: Response
+	): Promise<void> {
 		try {
 			const limit = parseInt(req.params.limit ?? 10);
-			const tranding = await req.dependencies.bookingService.getTrandingBookings(limit);
+			const tranding = await req.dependencies.bookingService.getTrending(limit);
 			res.json(ResponseTypes.ok({ tranding }));
-		} catch(err) {
+		} catch (err) {
 			processServiceError(res, err);
 			return;
 		}
@@ -154,6 +179,11 @@ export class BookingHandler {
 			"/all",
 			[authorizationMiddleware, roleMiddleware(Roles.Admin)],
 			this.getAllBookings
+		);
+		router.post(
+			"/price",
+			[authorizationMiddleware],
+			this.calculatePrice
 		);
 
 		// Auth routes

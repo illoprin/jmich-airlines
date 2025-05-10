@@ -1,0 +1,1156 @@
+openapi: 3.0.4
+info:
+  title: Jmich Airlines API
+  description: API for search and purchase cheap flight tickets
+  version: 1.9.3
+servers:
+  - url: http://localhost:8000
+    description: Development server
+tags:
+  - name: Booking
+    description: Booking operations
+  - name: City
+    description: City operations
+  - name: Company
+    description: Company operations
+  - name: Flight
+    description: Flight operations
+  - name: Payment
+    description: Payment operations
+  - name: User
+    description: User operations
+paths:
+  /booking/tranding:
+    get:
+      tags: [Booking]
+      summary: Get trending bookings
+      responses:
+        "204":
+          description: Success
+  /booking/{id}:
+    get:
+      tags: [Booking]
+      summary: Get booking by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+    delete:
+      tags: [Booking]
+      summary: Delete booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /booking/:
+    post:
+      tags: [Booking]
+      summary: Create new booking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [flight_id, seats]
+              properties:
+                flight_id:
+                  type: integer
+                seats:
+                  type: integer
+                  minimum: 1
+                baggage_weight:
+                  type: number
+                  minimum: 0
+                code:
+                  type: string
+      responses:
+        "201":
+          description: Booking created
+    get:
+      tags: [Booking]
+      summary: Get user's bookings
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+  /booking/status/{id}:
+    put:
+      tags: [Booking]
+      summary: Update booking status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /booking/all:
+    get:
+      tags: [Booking]
+      summary: Get all bookings (paginated)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /booking/discount:
+    post:
+      tags: [Booking]
+      summary: Add new discount code
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, amount, valid_until]
+              properties:
+                code:
+                  type: string
+                amount:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                valid_until:
+                  type: string
+                  format: date
+      responses:
+        "201":
+          description: Discount created
+  /booking/discount/validate/{code}:
+    post:
+      tags: [Booking]
+      summary: Validate discount code
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+  /booking/discount/{code}:
+    delete:
+      tags: [Booking]
+      summary: Delete discount code
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+  /city/:
+    get:
+      tags: [City]
+      summary: Get all cities
+      responses:
+        "200":
+          description: Success
+    post:
+      tags: [City]
+      summary: Add new city
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, image]
+              properties:
+                name:
+                  type: string
+                image:
+                  type: string
+      responses:
+        "201":
+          description: City created
+  /city/{id}:
+    get:
+      tags: [City]
+      summary: Get city by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+    put:
+      tags: [City]
+      summary: Update city
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                image:
+                  type: string
+      responses:
+        "200":
+          description: Success
+    delete:
+      tags: [City]
+      summary: Remove city
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /city/{id}/airports:
+    get:
+      tags: [City]
+      summary: Get airports for a city
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /city/{id}/airport:
+    post:
+      tags: [City]
+      summary: Add airport to city
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, code]
+              properties:
+                name:
+                  type: string
+                code:
+                  type: string
+                  pattern: "^[A-Z]{3}$"
+      responses:
+        "201":
+          description: Airport added
+  /city/{id}/airport/{code}:
+    delete:
+      tags: [City]
+      summary: Remove airport from city
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+    put:
+      tags: [City]
+      summary: Update airport
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                code:
+                  type: string
+                  pattern: "^[A-Z]{3}$"
+      responses:
+        "200":
+          description: Success
+  /company/:
+    post:
+      tags: [Company]
+      summary: Add new company
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, logo, baggage_rule_id]
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 255
+                logo:
+                  type: string
+                baggage_rule_id:
+                  type: integer
+      responses:
+        "201":
+          description: Company created
+    get:
+      tags: [Company]
+      summary: Get all companies
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+  /company/{id}:
+    get:
+      tags: [Company]
+      summary: Get company by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+    put:
+      tags: [Company]
+      summary: Update company
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 255
+                logo:
+                  type: string
+                baggage_rule_id:
+                  type: integer
+      responses:
+        "200":
+          description: Success
+    delete:
+      tags: [Company]
+      summary: Remove company
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /company/{id}/rule:
+    get:
+      tags: [Company]
+      summary: Get company's baggage rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /company/rule:
+    post:
+      tags: [Company]
+      summary: Add baggage rule
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [max_free_weight, price_per_kg]
+              properties:
+                max_free_weight:
+                  type: number
+                price_per_kg:
+                  type: number
+      responses:
+        "201":
+          description: Rule created
+  /company/rule/{id}:
+    put:
+      tags: [Company]
+      summary: Update baggage rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [max_free_weight, price_per_kg]
+              properties:
+                max_free_weight:
+                  type: number
+                price_per_kg:
+                  type: number
+      responses:
+        "200":
+          description: Success
+  /flight/search:
+    post:
+      tags: [Flight]
+      summary: Search flights
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                departure_airport_id:
+                  type: integer
+                arrival_airport_id:
+                  type: integer
+                departure_date:
+                  type: string
+                  format: date
+                seats:
+                  type: integer
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlightSearchResponse"
+  /flight/{id}:
+    get:
+      tags: [Flight]
+      summary: Get flight by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlightResponse"
+    put:
+      tags: [Flight]
+      summary: Update flight
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                [
+                  departure_airport_id,
+                  arrival_airport_id,
+                  company_id,
+                  departure_date,
+                  arrival_date,
+                  route_code,
+                  price,
+                  seats_available,
+                ]
+              properties:
+                departure_airport_id:
+                  type: integer
+                arrival_airport_id:
+                  type: integer
+                company_id:
+                  type: integer
+                departure_date:
+                  type: string
+                  format: date-time
+                arrival_date:
+                  type: string
+                  format: date-time
+                route_code:
+                  type: string
+                  pattern: "^[A-Z][0-9]{3}$"
+                price:
+                  type: number
+                  minimum: 1
+                seats_available:
+                  type: integer
+                  minimum: 0
+      responses:
+        "200":
+          description: Success
+    delete:
+      tags: [Flight]
+      summary: Delete flight
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /flight/:
+    post:
+      tags: [Flight]
+      summary: Add new flight
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                [
+                  departure_airport_id,
+                  arrival_airport_id,
+                  company_id,
+                  departure_date,
+                  arrival_date,
+                  route_code,
+                  price,
+                  seats_available,
+                ]
+              properties:
+                departure_airport_id:
+                  type: integer
+                arrival_airport_id:
+                  type: integer
+                company_id:
+                  type: integer
+                departure_date:
+                  type: string
+                  format: date-time
+                arrival_date:
+                  type: string
+                  format: date-time
+                route_code:
+                  type: string
+                  pattern: "^[A-Z][0-9]{3}$"
+                price:
+                  type: number
+                  minimum: 1
+                seats_available:
+                  type: integer
+                  minimum: 0
+      responses:
+        "201":
+          description: Flight created
+  /flight/{id}/status:
+    put:
+      tags: [Flight]
+      summary: Update flight status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /flight/all/{status}:
+    get:
+      tags: [Flight]
+      summary: Get all flights (paginated)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /flight/random:
+    post:
+      tags: [Flight]
+      summary: Add random flights
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Random flights added
+  /user/payment/:
+    post:
+      tags: [Payment]
+      summary: Add payment method
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [number, expires, cvv]
+              properties:
+                number:
+                  type: string
+                  pattern: '^\d{16}$'
+                expires:
+                  type: string
+                  pattern: '^\d{4}$'
+                cvv:
+                  type: string
+                  pattern: '^\d{3}$'
+      responses:
+        "201":
+          description: Payment method added
+    get:
+      tags: [Payment]
+      summary: Get user's payment methods
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+  /user/payment/{id}:
+    get:
+      tags: [Payment]
+      summary: Get payment method by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+    delete:
+      tags: [Payment]
+      summary: Delete payment method
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /user/:
+    post:
+      tags: [User]
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [login, password, firstname, secondname, phone, email]
+              properties:
+                login:
+                  type: string
+                  minLength: 4
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 4
+                  maxLength: 255
+                firstname:
+                  type: string
+                secondname:
+                  type: string
+                phone:
+                  type: string
+                  pattern: '^\d{10}$'
+                email:
+                  type: string
+                  format: email
+      responses:
+        "201":
+          description: User registered
+    get:
+      tags: [User]
+      summary: Get current user data
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+    put:
+      tags: [User]
+      summary: Update current user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  minLength: 4
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 4
+                  maxLength: 255
+                firstname:
+                  type: string
+                secondname:
+                  type: string
+                phone:
+                  type: string
+                  pattern: '^\d{10}$'
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Success
+    delete:
+      tags: [User]
+      summary: Delete current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+  /user/login:
+    post:
+      tags: [User]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [login, password]
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  token:
+                    type: string
+  /user/liked/{flight_id}:
+    post:
+      tags: [User]
+      summary: Add flight to user's likes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: flight_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+    delete:
+      tags: [User]
+      summary: Delete flight from user's likes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: flight_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /user/liked:
+    get:
+      tags: [User]
+      summary: Get user's liked flights
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+  /user/notification:
+    post:
+      tags: [User]
+      summary: Get user's notifications
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+  /user/notification/{user_id}:
+    post:
+      tags: [User]
+      summary: Send notification to user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, body]
+              properties:
+                title:
+                  type: string
+                body:
+                  type: string
+                image:
+                  type: string
+                  format: url
+      responses:
+        "200":
+          description: Success
+  /user/{id}:
+    get:
+      tags: [User]
+      summary: Get user public data by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+  /user/all:
+    get:
+      tags: [User]
+      summary: Get all users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success
+components:
+  schemas:
+    BookingResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        bookings:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              user_id:
+                type: integer
+              baggage_weight:
+                type: number
+              qr_code:
+                type: string
+              created:
+                type: string
+                format: date-time
+              seats:
+                type: integer
+              cost:
+                type: number
+              status:
+                type: string
+              flight:
+                $ref: "#/components/schemas/FlightDetails"
+    FlightDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        route_code:
+          type: string
+        departure_city:
+          $ref: "#/components/schemas/CityWithAirport"
+        arrival_city:
+          $ref: "#/components/schemas/CityWithAirport"
+        company:
+          $ref: "#/components/schemas/CompanyWithRule"
+        departure_date:
+          type: string
+          format: date-time
+        arrival_date:
+          type: string
+          format: date-time
+        price:
+          type: number
+        seats_available:
+          type: integer
+        status:
+          type: string
+    CityWithAirport:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        image:
+          type: string
+        airport:
+          $ref: "#/components/schemas/AirportDetails"
+    AirportDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+    CompanyWithRule:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        logo:
+          type: string
+        baggage_rule:
+          $ref: "#/components/schemas/BaggageRule"
+    BaggageRule:
+      type: object
+      properties:
+        max_free_weight:
+          type: number
+        price_per_kg:
+          type: number
+    FlightSearchResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        flights:
+          type: array
+          items:
+            $ref: "#/components/schemas/FlightDetails"
+    FlightResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        flight:
+          $ref: "#/components/schemas/FlightDetails"
+    UserResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+            login:
+              type: string
+            firstname:
+              type: string
+            secondname:
+              type: string
+            phone:
+              type: string
+            email:
+              type: string
+            password:
+              type: string
+            avatarpath:
+              type: string
+            role:
+              type: integer
+            level:
+              type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

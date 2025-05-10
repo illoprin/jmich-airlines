@@ -22,6 +22,9 @@ export class CityService {
 		private airportRepo: AirportRepository
 	) {}
 
+	/**
+	 * Store new city
+	 */
 	public async addCity(city: CityEntry): Promise<bigint> {
 		try {
 			const lastID = this.cityRepo.add(city);
@@ -39,6 +42,9 @@ export class CityService {
 		}
 	}
 
+	/**
+	 * Get city by id
+	 */
 	public async getCityByID(id: number): Promise<CityEntry> {
 		const cachedEntries = await this.cityCache.getAll();
 		const cachedEntry = cachedEntries?.find((city) => city.id == id);
@@ -52,6 +58,9 @@ export class CityService {
 		return cachedEntry;
 	}
 
+	/**
+	 * Get all cities
+	 */
 	public async getAllCities(): Promise<CityDTO[]> {
 		// Check existence of data in cache
 		const cachedCities = await this.cityCache.getAll();
@@ -68,6 +77,11 @@ export class CityService {
 		return cachedCities;
 	}
 
+	/**
+	 * Update city by id
+	 * @param payload - fields and values to update
+	 * @param id - id of city
+	 */
 	public async updateCityByID(id: number, payload: any): Promise<void> {
 		const city = this.cityRepo.getByID(id);
 		if (!city) {
@@ -127,11 +141,18 @@ export class CityService {
 		}
 	}
 
+	/**
+	 * Returns airports related to this city
+	 * @param city_id - ID of city
+	 */
 	public getAirportsByCityID(city_id: number): AirportEntry[] {
 		const entries = this.airportRepo.getByCityID(city_id);
 		return entries ?? [];
 	}
 
+	/**
+	 * Get airport entry by code
+	 */
 	public getAirportByCode(code: string): AirportEntry {
 		const entry = this.airportRepo.getByCode(code);
 		if (!entry) {
@@ -140,6 +161,13 @@ export class CityService {
 		return entry;
 	}
 
+	/**
+	 * Update airport by city id and airport code
+	 * Checks airport "owning" by this city
+	 * @param payload - fields and values to update
+	 * @param code - airport code
+	 * @param city_id - id of city
+	 */
 	public async updateAirportByCodeAndCityID(
 		city_id: number,
 		code: string,

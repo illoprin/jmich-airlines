@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import fileUpload from "express-fileupload";
 import cors from "cors";
+import swaggerUi from 'swagger-ui-express'
 import { Config } from "./types/internal/config";
 import { loggerMiddleware } from "./middleware/logger.middleware";
 import { authorizationMiddleware } from "./middleware/authorization.middleware";
@@ -11,18 +12,19 @@ import { UploadHandler } from "./handlers/upload.handler";
 
 export class App {
 	private app: express.Express;
-	constructor(dependencies: Dependencies, private cfg: Config, router: Router) {
+
+	constructor(dependencies: Dependencies, private cfg: Config, router: Router, swaggerDocument: any) {
 		this.app = express();
 		// Allow to parse json from request body
 		this.app.use(express.json());
-		// Add possability to upload files
+		// Make passably uploading files
 		this.app.use(fileUpload());
 		// Add logger for request and response
 		this.app.use(loggerMiddleware);
 		// Add dependencies
 		this.app.use(dependencyInjectionMiddleware(dependencies));
 		this.app.use(cors(createCorsOptions(cfg)));
-		// Add possability to view static
+		// Make passably to view static files
 		this.app.use("/upload", express.static(`./${cfg.public_files_path}`));
 		this.app.use(
 			"/upload/protected",
@@ -46,8 +48,9 @@ export class App {
 			)
 		);
 		router.use("/send", uploadRouter);
+		router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
-		// Add master router to api routes
+		// Add Master router to api routes
 		this.app.use("/api", router);
 
 		this.app.get("/ping", (req, res) => {

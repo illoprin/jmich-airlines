@@ -178,7 +178,6 @@ export class FlightHandler {
 		// PERF
 		router.get(
 			"/all/:status",
-			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
 			this.getAllFlights
 		);
 		// PERF

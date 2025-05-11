@@ -1,0 +1,13 @@
+{
+  "useTabs": false,
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "vueIndentScriptAndStyle": true,
+  "bracketSameLine": false,
+  "printWidth": 70,
+  "proseWrap": "always",
+
+  "plugins": ["prettier-plugin-multiline-arrays"],
+  "multilineArraysWrapThreshold": 1
+}

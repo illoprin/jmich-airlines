@@ -13,4 +13,7 @@ backend/coverage
 # frontend app
 frontend/node_modules
 frontend/dist
+frontend/.env.local
 frontend/.idea
+
+html.layout

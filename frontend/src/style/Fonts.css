@@ -1,0 +1,40 @@
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Thin.otf');
+  font-weight: 100;
+}
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Light.otf');
+  font-weight: 300;
+}
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Regular.otf');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Medium.otf');
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Semibold.otf');
+  font-weight: 600;
+}
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Bold.otf');
+  font-weight: 700;
+}
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Black.otf');
+  font-weight: 900;
+}
+@font-face {
+  font-family: 'sf';
+  src: url('../assets/fonts/SF-Pro-Display-Heavy.otf');
+  font-weight: 950;
+}

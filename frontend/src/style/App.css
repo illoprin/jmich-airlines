@@ -1,0 +1,18 @@
+* {
+  --index: calc(1vw + 1vh);
+}
+
+body {
+  font-family: 'sf';
+  font-size: calc(var(--index) * 1.12);
+
+  background: #0a73cd;
+  background: linear-gradient(
+    343deg,
+    rgba(10, 115, 205, 1) 9%,
+    rgba(38, 183, 242, 1) 100%
+  );
+  max-width: 100vw;
+  min-height: 100vh;
+  color: #fff;
+}

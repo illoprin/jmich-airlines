@@ -3,27 +3,36 @@ import {
   createWebHistory,
   type RouteRecordRaw,
 } from 'vue-router';
+import { GuestRoutes, AuthRoutes, AdminRoutes } from '@/router/routes.ts';
 import SearchPage from '@/views/SearchPage.vue';
 import AccountPage from '@/views/AccountPage.vue';
 import AuthorizationPage from '@/views/AuthorizationPage.vue';
 import BookingPage from '@/views/BookingPage.vue';
-import { AUTH_ROUTES, GUEST_ROUTES } from '@/router/routes.ts';
+import TrendingFlight from '@/views/TrendingFlightPage.vue';
 
 const routes: RouteRecordRaw[] = [
   {
-    path     : GUEST_ROUTES.SEARCH_PAGE,
+     ...GuestRoutes.Search,
     component: SearchPage,
   },
   {
-    path     : GUEST_ROUTES.AUTHORIZATION_PAGE,
+    ...GuestRoutes.TrendingFlight,
+    component: TrendingFlight,
+  },
+  {
+    ...GuestRoutes.Authorization,
     component: AuthorizationPage,
   },
   {
-    path     : AUTH_ROUTES.ACCOUNT_PAGE,
+    ...AuthRoutes.AccountPage,
     component: AccountPage,
   },
   {
-    path     : AUTH_ROUTES.BOOKING_PAGE,
+    ...AuthRoutes.BookingPage,
+    component: BookingPage,
+  },
+  {
+    ...AdminRoutes.AdminPanelPage,
     component: BookingPage,
   },
 ];

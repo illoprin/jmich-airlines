@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-import { GUEST_ROUTES } from "@/router/routes.ts";
+import { GuestRoutes } from "@/router/routes.ts";
 import JmichLogoWide from '@/assets/icons/jmich-logo-wide.svg';
 
 </script>
@@ -9,7 +9,7 @@ import JmichLogoWide from '@/assets/icons/jmich-logo-wide.svg';
   <div class="d-flex justify-content-between align-items-center mb-4">
     <img :src="JmichLogoWide" alt="Jmich.Airlines logo">
     <RouterLink
-      :to="GUEST_ROUTES.AUTHORIZATION_PAGE"
+      :to="GuestRoutes.Authorization.path"
       class="auth-link"
     >
       Авторизация

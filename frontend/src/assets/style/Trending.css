@@ -1,0 +1,101 @@
+.hot-tour-card,
+.destination-card {
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  color: white;
+  box-shadow: 0 0 0 #00000000;
+  transition: transform 300ms, box-shadow 350ms, background 300ms;
+}
+
+.hot-tour-card {
+  min-height: 50vh;
+  padding: 2rem;
+}
+
+.hot-tour-card:hover,
+.destination-card:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+  box-shadow: 0 10px 60px var(--glass-panel-shadow);
+}
+
+.destination-card {
+  min-height: 180px;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.2rem;
+  font-weight: 500;
+}
+
+.hot-tour__image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+
+  object-fit: contain;
+  transition: opacity 800ms;
+  will-change: opacity;
+
+  
+  mix-blend-mode: normal;
+
+  opacity: 0;
+}
+
+.hot-tour__image.visible {
+  opacity: 1;
+}
+
+.hot-tour__gradient {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom, transparent, var(--black-transparent)
+  );
+}
+
+
+.calendar-badge {
+  display: block;
+  position: relative;
+  text-align: center;
+  background-color: #F0F0F0;
+  padding: 0;
+  margin: 0;
+  user-select: none;
+  border-bottom-left-radius: 0.4em;
+  border-bottom-right-radius: 0.4em;
+  border-radius: 0.4em;
+  min-width: 50px;
+}
+
+.calendar-badge-top {
+  display: block;
+  width: 100%;
+  border-top-left-radius: 0.4em;
+  border-top-right-radius: 0.4em;
+  padding: 0.4em 0.3em;
+  font-size: 0.8em;
+  line-height: 1;
+  text-align: center;
+  background-color: #EC3B3B;
+}
+
+.calendar-badge-bottom {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  font-size: 1.2em;
+  line-height: 1;
+  color: #000;
+}

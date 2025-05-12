@@ -2,21 +2,21 @@
 import AppHeader from "@/layouts/AppHeader.vue";
 import { useRoute } from "vue-router";
 import { computed } from "vue";
-import { GUEST_ROUTES } from "@/router/routes.ts";
+import { GuestRoutes } from "@/router/routes.ts";
+import AppFooter from "@/layouts/AppFooter.vue";
 
 const route = useRoute();
 
 const isAuth = computed<boolean>(() =>
-  route.fullPath.includes(GUEST_ROUTES.AUTHORIZATION_PAGE)
+  route.fullPath.includes(GuestRoutes.Authorization.path)
 );
 
 </script>
 
 <template>
-  <div class="container p-4">
-    <AppHeader v-if="!isAuth" />
-    <RouterView />
-  </div>
+  <AppHeader v-if="!isAuth" />
+  <RouterView />
+  <AppFooter v-if="!isAuth"/>
 </template>
 
 <style scoped></style>

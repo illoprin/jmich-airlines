@@ -1,4 +1,4 @@
 export enum AuthorizationPageModes {
-  Registration  = "registration",
-  Authorization = "authorization"
+  Registration  = "#registration",
+  Authorization = "#authorization"
 }

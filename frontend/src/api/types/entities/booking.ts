@@ -18,16 +18,16 @@ export interface Booking {
   status: BookingStatus;
 }
 
-export interface TrendingBooking {
+export interface TrendingFlight {
   popularity: number;
   flight_id: number;
   departure_city_name: string;
   departure_city_image: string;
   departure_airport_code: string;
-  departure_date: Date;
+  departure_date: string;
   arrival_city_name: string;
   arrival_city_image: string;
   arrival_airport_code: string;
-  arrival_date: Date;
+  arrival_date: string;
   price: number;
 }

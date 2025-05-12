@@ -1,6 +1,6 @@
 import { mockPayment, mockUser } from "@/api/mocks/user.ts";
 import type { UserLoginPayload } from "@/api/types/requests/user.ts";
-import { UserLoginError, UserTokenError } from "@/lib/api/errors.ts";
+import { UserLoginError, UserTokenError } from "@/api/errors";
 import type { Payment } from "@/api/types/entities/payment.ts";
 import type { User } from "@/api/types/entities/user.ts";
 

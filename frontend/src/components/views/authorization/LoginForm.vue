@@ -1,24 +1,53 @@
 <script setup lang="ts">
+import type { UserLoginPayload } from '@/api/types/requests/user';
+import GlassInput from '@/components/UI/GlassInput.vue';
+import GlassInputWithValidation from '@/components/UI/GlassInputWithValidation.vue';
 
-import { GUEST_ROUTES } from "@/router/routes.ts";
-import { AuthorizationPageModes } from "@/types/hash/authorization.ts";
+const props = defineProps<{
+  form: UserLoginPayload;
+  errors: Record<string, string | null>;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:form', value: UserLoginPayload): void;
+}>();
+
+const handleInput = (
+  fieldName: keyof UserLoginPayload,
+  value: string | number,
+) => {
+  emit('update:form', {
+    ...props.form,
+    [fieldName]: value,
+  });
+};
+
 </script>
 
 <template>
-  <h2>
-    Login
-  </h2>
-  <RouterLink
-    :to="{
-      path: GUEST_ROUTES.AUTHORIZATION_PAGE,
-      hash: '#' + AuthorizationPageModes.Registration
-    }"
-  >
-    Registration
-  </RouterLink>
+  <div>
+    <strong class="fs-4 d-block mb-4">
+      С возвращением
+    </strong>
+
+    <GlassInputWithValidation
+      type="text"
+      className="mb-3"
+      placeholder="Логин"
+      @input="(e: Event) => handleInput('login', (e.target as HTMLInputElement).value)"
+      :error="errors['login'] as any"
+    />
+
+    <GlassInputWithValidation
+      type="password"
+      className="mb-3"
+      placeholder="Пароль"
+      @input="(e: Event) => handleInput('password', (e.target as HTMLInputElement).value)"
+      :error="errors['password'] as any"
+    />
+
+  </div>
 
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

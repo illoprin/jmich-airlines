@@ -3,10 +3,7 @@ const GUEST_ROUTES = {
   AUTHORIZATION_PAGE: '/auth',
 };
 
-export enum AuthorizationPageModes {
-  Registration  = "registration",
-  Authorization = "authorization"
-}
+
 
 const AUTH_ROUTES = {
   BOOKING_PAGE: '/booking',

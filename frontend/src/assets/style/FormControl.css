@@ -1,0 +1,22 @@
+
+.form-glass {
+  padding: 0.93rem 1.9rem;
+  font-size: 0.9rem;
+  color: #fff;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  outline: none;
+  caret-color: #fff;
+}
+
+.form-glass::placeholder {
+  color: rgba(255, 255, 255, .5);
+}
+
+.form-glass:focus {
+  outline: none;
+
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.278);
+  border: 2px solid rgba(255, 255, 255, 0.475);
+  color: #fff;
+}

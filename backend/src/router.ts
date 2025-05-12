@@ -6,13 +6,13 @@ import { CityHandler } from "./handlers/city.handler";
 import { CompanyHandler } from "./handlers/company.handler";
 
 export function initRouter(): Router {
-	const router = Router();
+  const router = Router();
 
-	router.use("/user", UserHandler.router());
-	router.use("/flight", FlightHandler.router());
-	router.use("/booking", BookingHandler.router());
-	router.use("/city", CityHandler.router());
-	router.use("/company", CompanyHandler.router());
+  router.use("/user", UserHandler.router());
+  router.use("/flight", FlightHandler.router());
+  router.use("/booking", BookingHandler.router());
+  router.use("/city", CityHandler.router());
+  router.use("/company", CompanyHandler.router());
 
-	return router;
+  return router;
 }

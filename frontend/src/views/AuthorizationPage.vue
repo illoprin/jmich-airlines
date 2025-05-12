@@ -5,7 +5,7 @@ import RegistrationForm from "@/components/views/authorization/RegistrationForm.
 
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { AuthorizationPageModes, GUEST_ROUTES } from "@/router/routes.ts";
+import { AuthorizationPageModes } from "@/types/hash/authorization";
 
 const route = useRoute();
 

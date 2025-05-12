@@ -1,22 +1,22 @@
 import { type BookingEntry, BookingStatus } from "../types/repository/booking";
 import type { BookingDTO } from "../types/dto/booking";
-import { TrandingBookingsDTO } from "../types/features/booking"
+import { TrandingBookingsDTO } from "../types/features/booking";
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
 import { FlightStatus } from "../types/repository/flight";
 
 export class BookingRepository extends BaseRepository<BookingEntry> {
-	public getTableName(): string {
-		return "booking";
-	}
+  public getTableName(): string {
+    return "booking";
+  }
 
-	private getJSONFieldName(): string {
-		return "booking_json";
-	}
+  private getJSONFieldName(): string {
+    return "booking_json";
+  }
 
-	protected create(): void {
-		this.storage.run(
-			`--sql
+  protected create(): void {
+    this.storage.run(
+      `--sql
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
 				flight_id INTEGER NOT NULL,
@@ -32,55 +32,55 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 				FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 			)
 		`,
-			[]
-		);
+      [],
+    );
 
-		this.storage.run(
-			`--sql
+    this.storage.run(
+      `--sql
 				CREATE INDEX IF NOT EXISTS idx_booking_user ON ${this.getTableName()}(user_id)
 			`,
-			[]
-		);
+      [],
+    );
 
-		this.storage.run(
-			`--sql
+    this.storage.run(
+      `--sql
 				CREATE INDEX IF NOT EXISTS idx_booking_flight ON ${this.getTableName()}(flight_id)
 			`,
-			[]
-		);
-	}
+      [],
+    );
+  }
 
-	public add({
-		flight_id,
-		user_id,
-		baggage_weight,
-		qr_code,
-		created,
-		seats,
-		cost,
-	}: BookingEntry): bigint {
-		const { lastID } = this.storage.run(
-			`--sql
+  public add({
+    flight_id,
+    user_id,
+    baggage_weight,
+    qr_code,
+    created,
+    seats,
+    cost,
+  }: BookingEntry): bigint {
+    const { lastID } = this.storage.run(
+      `--sql
 			INSERT INTO ${this.getTableName()}
 				(flight_id, user_id, baggage_weight, qr_code, seats, created, cost)
 			VALUES
 				(?, ?, ?, ?, ?, ?, ?)
 		`,
-			[
-				flight_id,
-				user_id,
-				baggage_weight,
-				qr_code,
-				seats,
-				created.toISOString(),
-				cost,
-			]
-		);
-		return lastID as bigint;
-	}
+      [
+        flight_id,
+        user_id,
+        baggage_weight,
+        qr_code,
+        seats,
+        created.toISOString(),
+        cost,
+      ],
+    );
+    return lastID as bigint;
+  }
 
-	private getDTOQuery(whereClause: string, usePagination: boolean) {
-		return `--sql
+  private getDTOQuery(whereClause: string, usePagination: boolean) {
+    return `--sql
 			SELECT json_object(
 				'id', booking.id,
 				'user_id', booking.user_id,
@@ -153,10 +153,10 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 			ORDER BY flight.departure_date DESC
 			${usePagination ? "LIMIT ? OFFSET ?" : ""}
 		`;
-	}
+  }
 
-	private getTrandingQuery(): string {
-		return `--sql
+  private getTrandingQuery(): string {
+    return `--sql
 			SELECT
 				count(flight.id) as popularity,
 				flight.id as flight_id,
@@ -196,115 +196,115 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 				count(flight.id) DESC
 			LIMIT ? 
 		`;
-	}
+  }
 
-	public getDTORow(row: any): any {
-		row.flight.departure_date = new Date(row.flight.departure_date);
-		row.flight.arrival_date = new Date(row.flight.arrival_date);
-		row.created = new Date(row.created);
-		return row;
-	}
+  public getDTORow(row: any): any {
+    row.flight.departure_date = new Date(row.flight.departure_date);
+    row.flight.arrival_date = new Date(row.flight.arrival_date);
+    row.created = new Date(row.created);
+    return row;
+  }
 
-	public getDTOByUserID(
-		user_id: number,
-		max?: number,
-		page?: number
-	): BookingDTO[] | null {
-		const whereClause = `WHERE ${this.getTableName()}.user_id = ?`;
-		let params: any[] = [user_id];
+  public getDTOByUserID(
+    user_id: number,
+    max?: number,
+    page?: number,
+  ): BookingDTO[] | null {
+    const whereClause = `WHERE ${this.getTableName()}.user_id = ?`;
+    let params: any[] = [user_id];
 
-		let pagination = false;
-		if (max && page) {
-			pagination = true;
-			params.push(max, page * max);
-		}
+    let pagination = false;
+    if (max && page) {
+      pagination = true;
+      params.push(max, page * max);
+    }
 
-		const rows = this.storage.all<any>(
-			this.getDTOQuery(whereClause, pagination),
-			params
-		);
+    const rows = this.storage.all<any>(
+      this.getDTOQuery(whereClause, pagination),
+      params,
+    );
 
-		if (!rows) {
-			return null;
-		}
+    if (!rows) {
+      return null;
+    }
 
-		const dtos = parseJSONArray<BookingDTO>(
-			rows,
-			this.getJSONFieldName(),
-			(dto) => this.getDTORow(dto)
-		);
+    const dtos = parseJSONArray<BookingDTO>(
+      rows,
+      this.getJSONFieldName(),
+      (dto) => this.getDTORow(dto),
+    );
 
-		return dtos;
-	}
+    return dtos;
+  }
 
-	public getDTOByID(id: number): BookingDTO | null {
-		const row = this.storage.get<any>(
-			this.getDTOQuery(`WHERE ${this.getTableName()}.id = ?`, false),
-			[id]
-		);
-		if (!row) {
-			return null;
-		}
-		const booking: BookingDTO = JSON.parse(row[this.getJSONFieldName()]);
-		return this.getDTORow(booking);
-	}
+  public getDTOByID(id: number): BookingDTO | null {
+    const row = this.storage.get<any>(
+      this.getDTOQuery(`WHERE ${this.getTableName()}.id = ?`, false),
+      [id],
+    );
+    if (!row) {
+      return null;
+    }
+    const booking: BookingDTO = JSON.parse(row[this.getJSONFieldName()]);
+    return this.getDTORow(booking);
+  }
 
-	public updateStatus(id: number, status: BookingStatus): number {
-		const { changes } = this.storage.run(
-			`--sql
+  public updateStatus(id: number, status: BookingStatus): number {
+    const { changes } = this.storage.run(
+      `--sql
 			UPDATE ${this.getTableName()} SET status = ? WHERE id = ? 
 			`,
-			[status, id]
-		);
-		return changes;
-	}
+      [status, id],
+    );
+    return changes;
+  }
 
-	public getDTOAll(max?: number, page?: number): BookingDTO[] | null {
-		let params: any[] = [];
+  public getDTOAll(max?: number, page?: number): BookingDTO[] | null {
+    let params: any[] = [];
 
-		let pagination = false;
-		if (max != undefined && page != undefined) {
-			pagination = true;
-			params.push(max, page * max);
-		}
+    let pagination = false;
+    if (max != undefined && page != undefined) {
+      pagination = true;
+      params.push(max, page * max);
+    }
 
-		const rows = this.storage.all<any>(this.getDTOQuery("", true), params);
+    const rows = this.storage.all<any>(this.getDTOQuery("", true), params);
 
-		if (!rows) {
-			return null;
-		}
+    if (!rows) {
+      return null;
+    }
 
-		const dtos = parseJSONArray<BookingDTO>(
-			rows,
-			this.getJSONFieldName(),
-			(dto) => this.getDTORow(dto)
-		);
+    const dtos = parseJSONArray<BookingDTO>(
+      rows,
+      this.getJSONFieldName(),
+      (dto) => this.getDTORow(dto),
+    );
 
-		return dtos;
-	}
+    return dtos;
+  }
 
-	public getByUserID(user_id: number): BookingEntry[] | null {
-		const entries = this.storage.all<BookingEntry>(
-			`--sql
+  public getByUserID(user_id: number): BookingEntry[] | null {
+    const entries = this.storage.all<BookingEntry>(
+      `--sql
 			SELECT * FROM ${this.getTableName()} WHERE user_id = ?
 		`,
-			[user_id]
-		);
-		return entries;
-	}
+      [user_id],
+    );
+    return entries;
+  }
 
-	public getByFlightID(flight_id: number): BookingEntry[] | null {
-		const entries = this.storage.all<BookingEntry>(
-			`--sql
+  public getByFlightID(flight_id: number): BookingEntry[] | null {
+    const entries = this.storage.all<BookingEntry>(
+      `--sql
 			SELECT * FROM ${this.getTableName()} WHERE flight_id = ?
 		`,
-			[flight_id]
-		);
-		return entries;
-	}
+      [flight_id],
+    );
+    return entries;
+  }
 
-	public completeExpired(statusToSet: BookingStatus): number {
-		const query = `--sql
+  public completeExpired(statusToSet: BookingStatus): number {
+    const query = `--sql
 			UPDATE ${this.getTableName()} SET
 				status = ?
 			WHERE flight_id IN (
@@ -318,19 +318,19 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 			AND
 				status = ?
 		`;
-		const { changes } = this.storage.run(query, [
-			statusToSet,
-			FlightStatus.CANCELLED,
-			FlightStatus.COMPLETED,
-			BookingStatus.ACTIVE
-		]);
-		return changes;
-	}
+    const { changes } = this.storage.run(query, [
+      statusToSet,
+      FlightStatus.CANCELLED,
+      FlightStatus.COMPLETED,
+      BookingStatus.ACTIVE,
+    ]);
+    return changes;
+  }
 
-	public getTrending(limit: number): TrandingBookingsDTO[] | null {
-		const query = this.getTrandingQuery();
-		const params: number[] = [limit];
-		const tranding = this.storage.all<TrandingBookingsDTO>(query, params);
-		return tranding;
-	}
+  public getTrending(limit: number): TrandingBookingsDTO[] | null {
+    const query = this.getTrandingQuery();
+    const params: number[] = [limit];
+    const tranding = this.storage.all<TrandingBookingsDTO>(query, params);
+    return tranding;
+  }
 }

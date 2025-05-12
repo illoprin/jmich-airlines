@@ -6,15 +6,15 @@
  * @returns structured dto
  */
 export function parseJSONArray<T>(
-	rows: any[],
-	fieldName: string,
-	callback: (dto: any) => T = (dto) => dto
+  rows: any[],
+  fieldName: string,
+  callback: (dto: any) => T = (dto) => dto,
 ): T[] {
-	const dtos: T[] = [];
-	for (const row of rows) {
-		const raw = JSON.parse(row[fieldName]);
-		const dto = callback(raw) as T;
-		dtos.push(dto);
-	}
-	return dtos;
+  const dtos: T[] = [];
+  for (const row of rows) {
+    const raw = JSON.parse(row[fieldName]);
+    const dto = callback(raw) as T;
+    dtos.push(dto);
+  }
+  return dtos;
 }

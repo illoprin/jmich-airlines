@@ -17,58 +17,60 @@ import { NotificationRepository } from "./redis/notification.repository";
 import { LikedFlightRepository } from "./repository/liked-flight.repository";
 import { LikedFlightCache } from "./redis/liked-flight.cache";
 
-export function initStorage(storagePath: string, redisHost: string, redisPort: number): any {
-	// Connect to storage
-	const storage: Storage = new Storage(storagePath);
-	console.log("storage loaded from path:", storagePath);
+export function initStorage(
+  storagePath: string,
+  redisHost: string,
+  redisPort: number,
+): any {
+  // Connect to storage
+  const storage: Storage = new Storage(storagePath);
+  console.log("storage loaded from path:", storagePath);
 
-	// Connect to Redis server
-	const redisClient = new RedisClient(
-		redisHost, redisPort
-	);
+  // Connect to Redis server
+  const redisClient = new RedisClient(redisHost, redisPort);
 
-	// Create storage repositories
-	const userRepo = new UserRepository(storage);
-	const paymentRepo = new PaymentRepository(storage);
-	const cityRepo = new CityRepository(storage);
-	const airportRepo = new AirportRepository(storage);
-	const baggageRuleRepo = new BaggageRuleRepository(storage);
-	const companyRepo = new CompanyRepository(storage);
-	const flightRepo = new FlightRepository(storage);
-	const discountRepo = new DiscountRepository(storage);
-	const bookingRepo = new BookingRepository(storage);
-	const notificationRepo = new NotificationRepository(redisClient);
-	const likedFlightRepo = new LikedFlightRepository(storage);
+  // Create storage repositories
+  const userRepo = new UserRepository(storage);
+  const paymentRepo = new PaymentRepository(storage);
+  const cityRepo = new CityRepository(storage);
+  const airportRepo = new AirportRepository(storage);
+  const baggageRuleRepo = new BaggageRuleRepository(storage);
+  const companyRepo = new CompanyRepository(storage);
+  const flightRepo = new FlightRepository(storage);
+  const discountRepo = new DiscountRepository(storage);
+  const bookingRepo = new BookingRepository(storage);
+  const notificationRepo = new NotificationRepository(redisClient);
+  const likedFlightRepo = new LikedFlightRepository(storage);
 
-	// Create Redis repositories
-	const bookingCache = new BookingCache(redisClient);
-	const flightCache = new FlightCache(redisClient);
-	const userCache = new UserCache(redisClient);
-	const cityCache = new CityCache(redisClient);
-	const likedFlightCache = new LikedFlightCache(redisClient);
+  // Create Redis repositories
+  const bookingCache = new BookingCache(redisClient);
+  const flightCache = new FlightCache(redisClient);
+  const userCache = new UserCache(redisClient);
+  const cityCache = new CityCache(redisClient);
+  const likedFlightCache = new LikedFlightCache(redisClient);
 
-	return {
-		storage,
-		redisClient,
-		repositories: {
-			userRepo,
-			paymentRepo,
-			likedFlightRepo,
-			likedFlightCache,
-			cityRepo,
-			airportRepo,
-			baggageRuleRepo,
-			companyRepo,
-			flightRepo,
-			discountRepo,
-			bookingRepo,
-			bookingCache,
-			flightCache,
-			userCache,
-			cityCache,
-			notificationRepo
-		},
-	};
+  return {
+    storage,
+    redisClient,
+    repositories: {
+      userRepo,
+      paymentRepo,
+      likedFlightRepo,
+      likedFlightCache,
+      cityRepo,
+      airportRepo,
+      baggageRuleRepo,
+      companyRepo,
+      flightRepo,
+      discountRepo,
+      bookingRepo,
+      bookingCache,
+      flightCache,
+      userCache,
+      cityCache,
+      notificationRepo,
+    },
+  };
 }
 
 export type Repositories = ReturnType<typeof initStorage>["repositories"];

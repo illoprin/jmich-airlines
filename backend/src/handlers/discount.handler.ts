@@ -9,79 +9,79 @@ import { body, ValidationChain } from "express-validator";
 import { getDateValidation } from "@/lib/api/validation-chain";
 
 export class DiscountHandler {
-	private static getChain(): ValidationChain[] {
-		return [
-			body("code")
-				.matches(/^[a-zA-Z0-9-]+$/g)
-				.withMessage(
-					"discount code must not contain spaces or other special chars"
-				),
-			body("amount")
-				.isFloat({ min: 0, max: 1 })
-				.withMessage("discount amount must be a number between 0 and 1"),
-			getDateValidation("valid_until"),
-		];
-	}
+  private static getChain(): ValidationChain[] {
+    return [
+      body("code")
+        .matches(/^[a-zA-Z0-9-]+$/g)
+        .withMessage(
+          "discount code must not contain spaces or other special chars",
+        ),
+      body("amount")
+        .isFloat({ min: 0, max: 1 })
+        .withMessage("discount amount must be a number between 0 and 1"),
+      getDateValidation("valid_until"),
+    ];
+  }
 
-	private static validateDiscount(req: Request, res: Response): void {
-		const code = req.params.code;
-		try {
-			const discount = req.dependencies.discountService.getDiscountByCode(code);
-			res.json(ResponseTypes.ok({ discount }));
-		} catch (err) {
-			processServiceError(res, err);
-			return;
-		}
-	}
+  private static validateDiscount(req: Request, res: Response): void {
+    const code = req.params.code;
+    try {
+      const discount = req.dependencies.discountService.getDiscountByCode(code);
+      res.json(ResponseTypes.ok({ discount }));
+    } catch (err) {
+      processServiceError(res, err);
+      return;
+    }
+  }
 
-	private static addDiscount(req: Request, res: Response): void {
-		if (!checkValidation(req, res)) return;
-		try {
-			const discount: DiscountEntry = req.body;
-			discount.valid_until = new Date(discount.valid_until);
-			req.dependencies.discountService.add(discount);
-			res.status(201).send();
-		} catch (err) {
-			processServiceError(res, err);
-			return;
-		}
-	}
+  private static addDiscount(req: Request, res: Response): void {
+    if (!checkValidation(req, res)) return;
+    try {
+      const discount: DiscountEntry = req.body;
+      discount.valid_until = new Date(discount.valid_until);
+      req.dependencies.discountService.add(discount);
+      res.status(201).send();
+    } catch (err) {
+      processServiceError(res, err);
+      return;
+    }
+  }
 
-	private static removeDiscountByCode(req: Request, res: Response): void {
-		try {
-			const code = req.params.code;
-			req.dependencies.discountService.removeByCode(code);
-			res.status(204).send();
-		} catch (err) {
-			processServiceError(res, err);
-			return;
-		}
-	}
+  private static removeDiscountByCode(req: Request, res: Response): void {
+    try {
+      const code = req.params.code;
+      req.dependencies.discountService.removeByCode(code);
+      res.status(204).send();
+    } catch (err) {
+      processServiceError(res, err);
+      return;
+    }
+  }
 
-	public static router(): Router {
-		const router = Router();
+  public static router(): Router {
+    const router = Router();
 
-		// PERF
-		router.post(
-			"/validate/:code",
-			authorizationMiddleware,
-			this.validateDiscount
-		);
+    // PERF
+    router.post(
+      "/validate/:code",
+      authorizationMiddleware,
+      this.validateDiscount,
+    );
 
-		// PERF
-		router.post(
-			"/",
-			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
-			this.getChain(),
-			this.addDiscount
-		);
-		// PERF
-		router.delete(
-			"/:code",
-			[authorizationMiddleware, roleMiddleware(Roles.Moderator)],
-			this.removeDiscountByCode
-		);
+    // PERF
+    router.post(
+      "/",
+      [authorizationMiddleware, roleMiddleware(Roles.Moderator)],
+      this.getChain(),
+      this.addDiscount,
+    );
+    // PERF
+    router.delete(
+      "/:code",
+      [authorizationMiddleware, roleMiddleware(Roles.Moderator)],
+      this.removeDiscountByCode,
+    );
 
-		return router;
-	}
+    return router;
+  }
 }

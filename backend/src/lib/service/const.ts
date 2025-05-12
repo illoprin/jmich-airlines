@@ -5,4 +5,5 @@ export const FILE_PATH_REGEX = /^\/upload\/[a-z0-9_\-\/]+\.[a-z]{2,4}$/g;
 export const LOGIN_REGEX = /^[A-Za-z-_\d+]+$/g;
 export const DISCOUNT_REGEX = /^[0-9a-zA-Z_-]+$/g;
 export const SINGLE_UNICODE_WORD_REGEX = /^[\p{L}-]+$/gu;
-export const SOME_WORDS_SINGLE_SPACE_REGEX = /^[\p{L}\p{M}]+(?:[\s][\p{L}\p{M}.\-']+)*$/ug;
+export const SOME_WORDS_SINGLE_SPACE_REGEX =
+  /^[\p{L}\p{M}]+(?:[\s][\p{L}\p{M}.\-']+)*$/gu;

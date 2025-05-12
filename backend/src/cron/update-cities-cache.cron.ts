@@ -3,15 +3,15 @@ import { CityService } from "../service/city.service";
 import cron from "node-cron";
 
 export function scheduleRefreshCities(
-	cityCache: CityCache,
-	cityService: CityService
+  cityCache: CityCache,
+  cityService: CityService,
 ): void {
-	cron.schedule("0 * * * *", async () => {
-		try {
-			await cityCache.invalidate();
-			await cityService.getAllCities();
-		} catch (err) {
-			console.error(`failed to refetch cities cache ${(err as Error).message}`);
-		}
-	});
+  cron.schedule("0 * * * *", async () => {
+    try {
+      await cityCache.invalidate();
+      await cityService.getAllCities();
+    } catch (err) {
+      console.error(`failed to refetch cities cache ${(err as Error).message}`);
+    }
+  });
 }

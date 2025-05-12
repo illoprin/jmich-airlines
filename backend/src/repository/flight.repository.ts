@@ -1,25 +1,25 @@
 import { BaseRepository } from "../lib/repository/base.repository";
 import { parseJSONArray } from "../lib/repository/parse";
 import { FlightEntry, FlightStatus } from "../types/repository/flight";
-import { FlightDTO } from "../types/dto/flight"
+import { FlightDTO } from "../types/dto/flight";
 
 export class FlightRepository extends BaseRepository<FlightEntry> {
-	public getTableName(): string {
-		return "flight";
-	}
+  public getTableName(): string {
+    return "flight";
+  }
 
-	public getCacheKey(): string {
-		return "flight_";
-	}
+  public getCacheKey(): string {
+    return "flight_";
+  }
 
-	private getJSONFieldName(): string {
-		return "flight_json";
-	}
+  private getJSONFieldName(): string {
+    return "flight_json";
+  }
 
-	protected create() {
-		// Create table
-		this.storage.run(
-			`--sql
+  protected create() {
+    // Create table
+    this.storage.run(
+      `--sql
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()}(
 				id INTEGER PRIMARY KEY,
 				route_code TEXT NOT NULL UNIQUE CHECK(route_code GLOB '[A-Z][0-9][0-9][0-9]'),
@@ -37,29 +37,29 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				FOREIGN KEY(company_id) REFERENCES company(id) ON DELETE SET NULL
 			);
 			`,
-			[]
-		);
+      [],
+    );
 
-		// Create indexes for search optimization
-		this.storage.run(
-			`CREATE INDEX IF NOT EXISTS idx_flight_departure ON ${this.getTableName()}(departure_airport_id, status)`,
-			[]
-		);
-		this.storage.run(
-			`CREATE INDEX IF NOT EXISTS idx_flight_arrival ON ${this.getTableName()}(arrival_airport_id, status)`,
-			[]
-		);
-		this.storage.run(
-			`CREATE INDEX IF NOT EXISTS idx_flight_dates ON ${this.getTableName()}(departure_date, status)`,
-			[]
-		);
-	}
+    // Create indexes for search optimization
+    this.storage.run(
+      `CREATE INDEX IF NOT EXISTS idx_flight_departure ON ${this.getTableName()}(departure_airport_id, status)`,
+      [],
+    );
+    this.storage.run(
+      `CREATE INDEX IF NOT EXISTS idx_flight_arrival ON ${this.getTableName()}(arrival_airport_id, status)`,
+      [],
+    );
+    this.storage.run(
+      `CREATE INDEX IF NOT EXISTS idx_flight_dates ON ${this.getTableName()}(departure_date, status)`,
+      [],
+    );
+  }
 
-	private getDTOQuery(
-		whereClause: string,
-		usePagination: boolean = false
-	): string {
-		return `--sql
+  private getDTOQuery(
+    whereClause: string,
+    usePagination: boolean = false,
+  ): string {
+    return `--sql
 			SELECT json_object(
 				'id', flight.id,
 				'route_code', flight.route_code,
@@ -119,10 +119,10 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			ORDER BY flight.departure_date ASC
 			${usePagination ? "LIMIT ? OFFSET ?" : ""}
 		`;
-	}
+  }
 
-	private getIncreasePriceQuery(): string {
-		return `--sql
+  private getIncreasePriceQuery(): string {
+    return `--sql
 			UPDATE
 				flight
 			SET
@@ -133,42 +133,42 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 				status = 'ACTIVE'
 			AND
 				seats_available > 0
-		`
-	}
+		`;
+  }
 
-	private getDTORow(row: any): any {
-		row.departure_date = new Date(row.departure_date);
-		row.arrival_date = new Date(row.arrival_date);
-		return row;
-	}
+  private getDTORow(row: any): any {
+    row.departure_date = new Date(row.departure_date);
+    row.arrival_date = new Date(row.arrival_date);
+    return row;
+  }
 
-	public add(flight: FlightEntry): bigint {
-		const { lastID } = this.storage.run(
-			`--sql
+  public add(flight: FlightEntry): bigint {
+    const { lastID } = this.storage.run(
+      `--sql
 			INSERT INTO ${this.getTableName()}
 				(route_code, departure_airport_id, arrival_airport_id, departure_date, 
 				arrival_date, company_id, seats_available, price)
 			VALUES
 				(?, ?, ?, ?, ?, ?, ?, ?)
 			`,
-			[
-				flight.route_code,
-				flight.departure_airport_id,
-				flight.arrival_airport_id,
-				flight.departure_date.toISOString(),
-				flight.arrival_date.toISOString(),
-				flight.company_id,
-				flight.seats_available,
-				flight.price,
-			]
-		);
-		return lastID as bigint;
-	}
+      [
+        flight.route_code,
+        flight.departure_airport_id,
+        flight.arrival_airport_id,
+        flight.departure_date.toISOString(),
+        flight.arrival_date.toISOString(),
+        flight.company_id,
+        flight.seats_available,
+        flight.price,
+      ],
+    );
+    return lastID as bigint;
+  }
 
-	public update(flight: FlightEntry): number {
-		// TODO: delete redis cache
-		const { changes } = this.storage.run(
-			`--sql
+  public update(flight: FlightEntry): number {
+    // TODO: delete redis cache
+    const { changes } = this.storage.run(
+      `--sql
 			UPDATE ${this.getTableName()} SET
 					route_code = ?,
 					departure_airport_id = ?,
@@ -182,147 +182,147 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
 			WHERE
 					id = ?
 			`,
-			[
-				flight.route_code,
-				flight.departure_airport_id,
-				flight.arrival_airport_id,
-				flight.departure_date.toISOString(),
-				flight.arrival_date.toISOString(),
-				flight.company_id,
-				flight.seats_available,
-				flight.price,
-				flight.status,
-				flight.id,
-			]
-		);
-		return changes;
-	}
+      [
+        flight.route_code,
+        flight.departure_airport_id,
+        flight.arrival_airport_id,
+        flight.departure_date.toISOString(),
+        flight.arrival_date.toISOString(),
+        flight.company_id,
+        flight.seats_available,
+        flight.price,
+        flight.status,
+        flight.id,
+      ],
+    );
+    return changes;
+  }
 
-	/**
-	 * Search active flights by criteria
-	 */
-	public searchActiveFlights(
-		departureAirportId?: number,
-		arrivalAirportId?: number,
-		departureDate?: Date,
-		minSeatsAvailable: number = 1,
-		max?: number,
-		page?: number
-	): FlightDTO[] | null {
-		// Build WHERE conditions dynamically based on provided parameters
-		const conditions: string[] = [`${this.getTableName()}.status = 'ACTIVE'`];
-		const params: any[] = [];
+  /**
+   * Search active flights by criteria
+   */
+  public searchActiveFlights(
+    departureAirportId?: number,
+    arrivalAirportId?: number,
+    departureDate?: Date,
+    minSeatsAvailable: number = 1,
+    max?: number,
+    page?: number,
+  ): FlightDTO[] | null {
+    // Build WHERE conditions dynamically based on provided parameters
+    const conditions: string[] = [`${this.getTableName()}.status = 'ACTIVE'`];
+    const params: any[] = [];
 
-		if (departureAirportId !== undefined) {
-			conditions.push(`${this.getTableName()}.departure_airport_id = ?`);
-			params.push(departureAirportId);
-		}
+    if (departureAirportId !== undefined) {
+      conditions.push(`${this.getTableName()}.departure_airport_id = ?`);
+      params.push(departureAirportId);
+    }
 
-		if (arrivalAirportId !== undefined) {
-			conditions.push(`${this.getTableName()}.arrival_airport_id = ?`);
-			params.push(arrivalAirportId);
-		}
+    if (arrivalAirportId !== undefined) {
+      conditions.push(`${this.getTableName()}.arrival_airport_id = ?`);
+      params.push(arrivalAirportId);
+    }
 
-		if (departureDate !== undefined) {
-			const dateStr = departureDate.toISOString().split("T")[0];
-			conditions.push(`date(${this.getTableName()}.departure_date) >= date(?)`);
-			params.push(dateStr);
-		}
+    if (departureDate !== undefined) {
+      const dateStr = departureDate.toISOString().split("T")[0];
+      conditions.push(`date(${this.getTableName()}.departure_date) >= date(?)`);
+      params.push(dateStr);
+    }
 
-		conditions.push(`${this.getTableName()}.seats_available >= ?`);
-		params.push(minSeatsAvailable);
+    conditions.push(`${this.getTableName()}.seats_available >= ?`);
+    params.push(minSeatsAvailable);
 
-		const whereClause =
-			conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-		let pagination = false;
-		if (max && page) {
-			pagination = true;
-			params.push(max, max * page);
-		}
+    let pagination = false;
+    if (max && page) {
+      pagination = true;
+      params.push(max, max * page);
+    }
 
-		const query = this.getDTOQuery(whereClause, pagination);
-		const rows = this.storage.all<any>(query, params);
+    const query = this.getDTOQuery(whereClause, pagination);
+    const rows = this.storage.all<any>(query, params);
 
-		if (!rows) {
-			return null;
-		}
-		const dtos = parseJSONArray<FlightDTO>(
-			rows,
-			this.getJSONFieldName(),
-			(row) => this.getDTORow(row)
-		);
-		return dtos;
-	}
+    if (!rows) {
+      return null;
+    }
+    const dtos = parseJSONArray<FlightDTO>(
+      rows,
+      this.getJSONFieldName(),
+      (row) => this.getDTORow(row),
+    );
+    return dtos;
+  }
 
-	public getDTOByID(id: number): FlightDTO | null {
-		const whereClause = `WHERE ${this.getTableName()}.id = ?`;
-		const params = [id];
-		const row = this.storage.get<any>(this.getDTOQuery(whereClause), params);
+  public getDTOByID(id: number): FlightDTO | null {
+    const whereClause = `WHERE ${this.getTableName()}.id = ?`;
+    const params = [id];
+    const row = this.storage.get<any>(this.getDTOQuery(whereClause), params);
 
-		if (!row) {
-			return null;
-		}
-		const dto: FlightDTO = this.getDTORow(
-			JSON.parse(row[this.getJSONFieldName()])
-		);
-		return dto;
-	}
+    if (!row) {
+      return null;
+    }
+    const dto: FlightDTO = this.getDTORow(
+      JSON.parse(row[this.getJSONFieldName()]),
+    );
+    return dto;
+  }
 
-	public getDTOAll(
-		max: number,
-		page: number,
-		status: string = "ACTIVE"
-	): FlightDTO[] | null {
-		const rows = this.storage.all<any>(
-			this.getDTOQuery("WHERE status = ?", true),
-			[status, max, page * max]
-		);
-		if (!rows) {
-			return null;
-		}
-		const dtos = parseJSONArray<FlightDTO>(
-			rows,
-			this.getJSONFieldName(),
-			(row) => this.getDTORow(row)
-		);
-		return dtos;
-	}
+  public getDTOAll(
+    max: number,
+    page: number,
+    status: string = "ACTIVE",
+  ): FlightDTO[] | null {
+    const rows = this.storage.all<any>(
+      this.getDTOQuery("WHERE status = ?", true),
+      [status, max, page * max],
+    );
+    if (!rows) {
+      return null;
+    }
+    const dtos = parseJSONArray<FlightDTO>(
+      rows,
+      this.getJSONFieldName(),
+      (row) => this.getDTORow(row),
+    );
+    return dtos;
+  }
 
-	/**
-	 * Update available seats count
-	 */
-	public updateSeats(id: number, seatsChange: number): number {
-		const { changes } = this.storage.run(
-			`--sql
+  /**
+   * Update available seats count
+   */
+  public updateSeats(id: number, seatsChange: number): number {
+    const { changes } = this.storage.run(
+      `--sql
 			UPDATE ${this.getTableName()}
 			SET seats_available = seats_available + ?
 			WHERE id = ? AND seats_available + ? >= 0
 			`,
-			[seatsChange, id, seatsChange]
-		);
-		return changes;
-	}
+      [seatsChange, id, seatsChange],
+    );
+    return changes;
+  }
 
-	public completeExpired(statusToSet: FlightStatus): number {
-		const query = `--sql
+  public completeExpired(statusToSet: FlightStatus): number {
+    const query = `--sql
 			UPDATE ${this.getTableName()} SET status = ?
 			WHERE
 				datetime(departure_date) <= datetime('now')
 			AND
 				status = ?
 		`;
-		const { changes } = this.storage.run(query, [
-			statusToSet,
-			FlightStatus.ACTIVE,
-		]);
-		return changes;
-	}
+    const { changes } = this.storage.run(query, [
+      statusToSet,
+      FlightStatus.ACTIVE,
+    ]);
+    return changes;
+  }
 
-	public increasePrice(hoursBefore: number, amount: number): number {
-		const query = this.getIncreasePriceQuery();
-		const params = [amount, hoursBefore];
-		const { changes } = this.storage.run(query, params);
-		return changes;
-	}
+  public increasePrice(hoursBefore: number, amount: number): number {
+    const query = this.getIncreasePriceQuery();
+    const params = [amount, hoursBefore];
+    const { changes } = this.storage.run(query, params);
+    return changes;
+  }
 }

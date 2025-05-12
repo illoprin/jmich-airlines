@@ -5,15 +5,15 @@ import type { LikedFlightEventPayload } from "../types/features/notification";
 import type { LikedFlightEntry } from "../types/repository/liked-flight";
 
 export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
-	public getTableName(): string {
-		return "liked_flight";
-	}
-	public getJSONFieldName(): string {
-		return "liked_flight_json";
-	}
+  public getTableName(): string {
+    return "liked_flight";
+  }
+  public getJSONFieldName(): string {
+    return "liked_flight_json";
+  }
 
-	private getFlightDTOQuery(whereClause: string): string {
-		return `--sql
+  private getFlightDTOQuery(whereClause: string): string {
+    return `--sql
 			SELECT json_object(
 				'id', flight.id,
 				'route_code', flight.route_code,
@@ -80,12 +80,12 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
 			-- order by departure date from lower to max
 			ORDER BY flight.departure_date ASC
 		`;
-	}
+  }
 
-	public create(): void {
-		// Create table
-		this.storage.run(
-			`--sql
+  public create(): void {
+    // Create table
+    this.storage.run(
+      `--sql
 			CREATE TABLE IF NOT EXISTS ${this.getTableName()} (
 				id INTEGER PRIMARY KEY,
 				user_id INTEGER NOT NULL,
@@ -95,68 +95,68 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
 				FOREIGN KEY (flight_id) REFERENCES flight(id) ON DELETE CASCADE
 			)
 		`,
-			[]
-		);
-	}
+      [],
+    );
+  }
 
-	public add({ user_id, flight_id }: LikedFlightEntry): bigint {
-		const { lastID } = this.storage.run(
-			`--sql
+  public add({ user_id, flight_id }: LikedFlightEntry): bigint {
+    const { lastID } = this.storage.run(
+      `--sql
 			INSERT OR IGNORE INTO ${this.getTableName()}(user_id, flight_id)
 			VALUES
 				(?, ?)
 		`,
-			[user_id, flight_id]
-		);
-		return lastID as bigint;
-	}
+      [user_id, flight_id],
+    );
+    return lastID as bigint;
+  }
 
-	public getAllByUserID(userID: number): FlightDTO[] | null {
-		const query = this.getFlightDTOQuery(
-			`WHERE ${this.getTableName()}.user_id = ?`
-		);
-		const params = [userID];
+  public getAllByUserID(userID: number): FlightDTO[] | null {
+    const query = this.getFlightDTOQuery(
+      `WHERE ${this.getTableName()}.user_id = ?`,
+    );
+    const params = [userID];
 
-		const rows = this.storage.all<any>(query, params);
-		if (!rows) {
-			return [];
-		}
+    const rows = this.storage.all<any>(query, params);
+    if (!rows) {
+      return [];
+    }
 
-		const liked_flights = parseJSONArray<FlightDTO>(
-			rows,
-			this.getJSONFieldName(),
-			(dto) => {
-				dto.departure_date = new Date(dto.departure_date);
-				dto.arrival_date = new Date(dto.arrival_date);
-				return dto;
-			}
-		);
-		return liked_flights;
-	}
+    const liked_flights = parseJSONArray<FlightDTO>(
+      rows,
+      this.getJSONFieldName(),
+      (dto) => {
+        dto.departure_date = new Date(dto.departure_date);
+        dto.arrival_date = new Date(dto.arrival_date);
+        return dto;
+      },
+    );
+    return liked_flights;
+  }
 
-	public isFlightLikedByUser(userID: number, flightID: number): boolean {
-		const res = this.storage.get(
-			`--sql
+  public isFlightLikedByUser(userID: number, flightID: number): boolean {
+    const res = this.storage.get(
+      `--sql
 			SELECT 1 FROM ${this.getTableName()} WHERE user_id = ? AND flight_id = ?
 		`,
-			[userID, flightID]
-		);
-		return res ? true : false;
-	}
+      [userID, flightID],
+    );
+    return res ? true : false;
+  }
 
-	public removeByUserAndFlight(userID: number, flightID: number): number {
-		const { changes } = this.storage.run(
-			`--sql
+  public removeByUserAndFlight(userID: number, flightID: number): number {
+    const { changes } = this.storage.run(
+      `--sql
 			DELETE FROM ${this.getTableName()} WHERE user_id = ? AND flight_id = ?
 		`,
-			[userID, flightID]
-		);
-		return changes;
-	}
+      [userID, flightID],
+    );
+    return changes;
+  }
 
-	public getFlightsWithLowSeats(): LikedFlightEventPayload[] | null {
-		return this.storage.all<LikedFlightEventPayload>(
-			`--sql
+  public getFlightsWithLowSeats(): LikedFlightEventPayload[] | null {
+    return this.storage.all<LikedFlightEventPayload>(
+      `--sql
 		SELECT
 			l.user_id, f.route_code, dc.name AS departure_city_name, ac.name AS arrival_city_name, c.logo AS company_logo
 		FROM
@@ -169,13 +169,15 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
 		LEFT JOIN company c ON f.company_id = c.id
 		WHERE f.seats_available <= 15
 	`,
-			[]
-		);
-	}
+      [],
+    );
+  }
 
-	public getFlightsWithExpiringRegistration(): LikedFlightEventPayload[] | null {
-		return this.storage.all<LikedFlightEventPayload>(
-			`--sql
+  public getFlightsWithExpiringRegistration():
+    | LikedFlightEventPayload[]
+    | null {
+    return this.storage.all<LikedFlightEventPayload>(
+      `--sql
 		SELECT
 			l.user_id, f.route_code, dc.name AS departure_city_name, ac.name AS arrival_city_name, c.logo AS company_logo
 		FROM
@@ -188,7 +190,7 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
 		LEFT JOIN company c ON f.company_id = c.id
 		WHERE datetime(f.departure_date) <= datetime('now', '+12 hours')
 	`,
-			[]
-		);
-	}
+      [],
+    );
+  }
 }

@@ -1,5 +1,6 @@
-import type { City } from '@/service/api/types/entities/city.ts';
-import type { Company } from '@/service/api/types/entities/company.ts';
+import type { Company } from "@/api/types/entities/company.ts";
+import type { City } from "@/api/types/entities/city.ts";
+
 
 export enum FlightStatus {
   Active = 'ACTIVE',

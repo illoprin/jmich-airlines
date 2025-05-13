@@ -1,4 +1,5 @@
 export enum AuthorizationPageModes {
   Registration  = "#registration",
-  Authorization = "#authorization"
+  Authorization = "#authorization",
+  AuthAfterReg = "#authafterreg"
 }

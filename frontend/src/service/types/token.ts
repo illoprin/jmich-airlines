@@ -1,4 +1,4 @@
-import type { UserRole } from "@/service/api/types/entities/user.ts";
+import type { UserRole } from "@/api/types/entities/user";
 
 export interface TokenData {
   id: number; // ID of user

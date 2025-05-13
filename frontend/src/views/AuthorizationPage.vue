@@ -1,5 +1,37 @@
+<style scoped>
+@media screen and (max-width: 1080px) {
+  .auth-panel {
+    width: 100% !important;
+    flex-flow: column nowrap !important;
+    gap: 2rem !important;
+  }
+}
+
+.auth-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 40%;
+  transition: flex-direcrion 300ms, gap 300ms, width 300ms;
+  will-change: flex-direction, gap, width;
+}
+
+.auth-panel.mode-auth {
+  flex-flow: column nowrap;
+  gap: 2rem;
+}
+
+.auth-panel.mode-reg {
+  width: 70%;
+  flex-flow: row nowrap;
+  gap: 10rem;
+}
+</style>
+
 <template>
-  <div class="container auth-panel" :class="mode === AuthorizationPageModes.Registration ? 'mode-reg' : 'mode-auth'">
+  <div class="container vh-100 auth-panel"
+    :class="mode === AuthorizationPageModes.Registration ? 'mode-reg' : 'mode-auth'">
     <JmichLogo />
     <div class="panel-tabs">
 
@@ -17,8 +49,12 @@
 
       <div class="glass glass-border glass-panel w-100 text-center">
 
+        <strong class="fs-4 d-block mb-4">
+          {{ title }}
+        </strong>
+
         <LoginForm v-model:form="loginForm" :errors="loginErrors"
-          v-if="mode === AuthorizationPageModes.Authorization" />
+          v-if="mode === AuthorizationPageModes.Authorization || mode === AuthorizationPageModes.AuthAfterReg" />
 
         <RegistrationForm v-model:form="regForm" :errors="regErrors" v-else />
 
@@ -27,13 +63,24 @@
             На главную
           </GlassButtonSmall>
           <GlassButtonSmall @click="handleSubmit">
-            {{ mode == AuthorizationPageModes.Authorization ? 'Войти' : 'Зарегистрироваться' }}
+            {{ buttonTitle }}
           </GlassButtonSmall>
         </div>
 
       </div>
     </div>
   </div>
+
+  <ModalBase v-model:visible="authErrorModal">
+    <template v-slot:title>
+      Ошибка авторизации
+    </template>
+    <template v-slot:contents>
+      <p>
+        {{ authErrorMessage }}
+      </p>
+    </template>
+  </ModalBase>
 
 </template>
 
@@ -46,17 +93,50 @@ import RegistrationForm from "@/components/views/authorization/RegistrationForm.
 import JmichLogo from "@/components/UI/JmichLogo.vue";
 import type { UserLoginPayload, UserRegistrationPayload } from "@/api/types/requests/user";
 import GlassButtonSmall from "@/components/UI/GlassButtonSmall.vue";
-import { GuestRoutes } from "@/router/routes";
+import { AuthRoutes, GuestRoutes } from "@/router/routes";
 import { useValidation, type ValidationSchema } from "@/composable/useValidation";
 import { emailRegex, generalLatinRegex, oneUnicodeWordRegex, phoneRegex } from "@/utils/regex";
+import { AccountPageModes } from "@/types/hash/account";
+import { useUserStore } from "@/store/userStore";
+import ModalBase from "@/components/shared/ModalBase.vue";
+
 
 const route = useRoute();
 const router = useRouter();
+const user = useUserStore();
 
 const mode = computed<string>(() => {
   const hash = route.hash || AuthorizationPageModes.Registration;
   return hash;
 });
+
+const authErrorModal = ref<boolean>(false);
+const authErrorMessage = ref<string>("");
+
+const title = computed<string>(() => {
+  switch (mode.value) {
+    case AuthorizationPageModes.Registration:
+      return 'Расскажите о себе';
+    case AuthorizationPageModes.Authorization:
+      return 'С возвращением';
+    case AuthorizationPageModes.AuthAfterReg:
+      return 'Теперь давайте войдём в аккаунт';
+  }
+  return '';
+});
+
+const buttonTitle = computed<string>(() => {
+  switch (mode.value) {
+    case AuthorizationPageModes.Registration:
+      return 'Зарегистрироваться';
+    case AuthorizationPageModes.Authorization:
+      return 'Войти';
+    case AuthorizationPageModes.AuthAfterReg:
+      return 'Вперёд!';
+  }
+  return '';
+});
+
 
 const loginSchema: ValidationSchema<UserLoginPayload> = {
   login: {
@@ -112,22 +192,47 @@ const {
   validate: validateReg
 } = useValidation<UserRegistrationPayload>(regSchema);
 
-const submitLoginForm = () => {
-  if (!validateLogin(loginForm.value)) {
+const submitLoginForm = async () => {
+  const formData: UserLoginPayload = { ...loginForm.value };
+  if (!validateLogin(formData)) {
     return;
   }
-  console.log(loginForm.value);
+  console.log(formData);
+  try {
+    await user.login(formData);
+    router.push({
+      name: AuthRoutes.AccountPage.name,
+      hash: AccountPageModes.Profile
+    });
+  } catch(err) {
+    authErrorMessage.value = (err as Error).message;
+    authErrorModal.value = true;
+  }
 }
 
-const submitRegForm = () => {
-  if (!validateReg(regForm.value)) {
+const submitRegForm = async () => {
+  const formData: UserRegistrationPayload = {
+    ...regForm.value
+  }
+  if (!validateReg(formData)) {
     return;
   }
-  console.log(regForm.value);
+  try {
+    await user.register(formData);
+    router.push({
+      name: GuestRoutes.Authorization.name,
+      hash: AuthorizationPageModes.AuthAfterReg
+    });
+  } catch (err) {
+    authErrorMessage.value = (err as Error).message;
+    authErrorModal.value = true;
+  }
 }
 
 const handleSubmit = () => {
-  if (mode.value === AuthorizationPageModes.Authorization) {
+  if (mode.value === AuthorizationPageModes.Authorization
+    || mode.value === AuthorizationPageModes.AuthAfterReg
+  ) {
     submitLoginForm();
   } else {
     submitRegForm();
@@ -135,45 +240,16 @@ const handleSubmit = () => {
 };
 
 const switchToReg = () => {
-  router.push(
-    { name: GuestRoutes.Authorization.name, hash: AuthorizationPageModes.Registration }
-  );
+  router.push({
+    name: GuestRoutes.Authorization.name,
+    hash: AuthorizationPageModes.Registration
+  });
 };
 
 const switchToAuth = () => {
-  router.push(
-    { name: GuestRoutes.Authorization.name, hash: AuthorizationPageModes.Authorization }
-  );
+  router.push({
+    name: GuestRoutes.Authorization.name,
+    hash: AuthorizationPageModes.Authorization
+  });
 }
 </script>
-
-<style scoped>
-@media screen and (max-width: 1080px) {
-  .auth-panel {
-    width: 100% !important;
-    flex-flow: column nowrap !important;
-    gap: 2rem !important;
-  }
-}
-
-.auth-panel {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  width: 40%;
-  transition: flex-direcrion 300ms, gap 300ms, width 300ms;
-  will-change: flex-direction, gap, width;
-}
-
-.auth-panel.mode-auth {
-  flex-flow: column nowrap;
-  gap: 2rem;
-}
-
-.auth-panel.mode-reg {
-  width: 70%;
-  flex-flow: row nowrap;
-  gap: 10rem;
-}
-</style>

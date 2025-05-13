@@ -182,8 +182,8 @@ export class FlightService {
       payload.arrival_airport_id,
       payload.departure_date,
       payload.seats,
-      payload.max,
-      payload.page,
+      isNaN(payload.max) ? 10 : payload.max,
+      isNaN(payload.page) ? 10 : payload.page
     );
 
     return flights ? this.findCheapest(flights) : [];

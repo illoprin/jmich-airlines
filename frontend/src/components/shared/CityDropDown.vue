@@ -79,7 +79,7 @@ onBeforeUnmount(() => {
         >
           <img
             :src="MapPinIcon"
-            class="small-icon"
+            class="sm-icon option"
             alt="map-pin"
           >
           {{ city.name }}
@@ -96,7 +96,7 @@ onBeforeUnmount(() => {
         >
           <img
             :src="AirportIcon"
-            class="small-icon"
+            class="sm-icon option"
             alt="airport"
           >
           {{ airport.name }}
@@ -112,15 +112,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.glass-dropdown-subelement {
-  padding-left: 2rem;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-.small-icon {
-  margin-right: 0.2rem;
-}
+
 .city-dropdown__airport-code {
   margin-left: auto;
 }

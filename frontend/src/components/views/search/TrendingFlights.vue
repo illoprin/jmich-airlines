@@ -3,6 +3,7 @@ import type { TrendingFlight } from '@/api/types/entities/booking';
 import HotTourCard from '@/components/views/search/components/HotTourCard.vue';
 import HotTourMain from '@/components/views/search/components/HotTourMain.vue';
 import '@/assets/style/Trending.css'
+import GlassPanelHeader from '@/components/shared/GlassPanelHeader.vue';
 
 const props = defineProps<{
   hotTours: TrendingFlight[] | undefined
@@ -17,20 +18,28 @@ const props = defineProps<{
       <!-- Hot Tour -->
       <div class="col-lg-7 d-flex flex-column">
 
-        <div class="text-start">
-          <h4 class="fw-bold mb-2">ГОРЯЧИЕ ТУРЫ</h4>
-          <p class="text-white-50">Миллионы мух не могут ошибаться</p>
-        </div>
+        <GlassPanelHeader>
+          <template v-slot:header>
+            ГОРЯЧИЕ ТУРЫ
+          </template>
+          <template v-slot:subheader>
+            Миллионы мух не могут ошибаться
+          </template>
+        </GlassPanelHeader>
 
         <HotTourMain :flight="hotTours[0]"/>
       </div>
 
       <!-- More Routes -->
       <div class="col-lg-5">
-        <div class="text-end">
-          <h4 class="fw-bold mb-2">ЕЩЁ БОЛЬШЕ МАРШРУТОВ</h4>
-          <p class="text-white-50">Выбрали на основе ваших поездок</p>
-        </div>
+        <GlassPanelHeader align="end">
+          <template v-slot:header>
+            ЕЩЁ БОЛЬШЕ МАРШРУТОВ
+          </template>
+          <template v-slot:subheader>
+            Выбрали на основе ваших поездок
+          </template>
+        </GlassPanelHeader>
         <div class="row g-3 justify-content-end">
           <div
             class="col-5"

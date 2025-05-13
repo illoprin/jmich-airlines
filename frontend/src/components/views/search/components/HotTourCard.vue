@@ -2,8 +2,9 @@
 import type { TrendingFlight } from '@/api/types/entities/booking';
 import { formatPrice } from '@/lib/format/formatPrice';
 import { GuestRoutes } from '@/router/routes';
+import { BASE_API } from '@/store/store';
 
-const props = defineProps<{
+defineProps<{
   flight: TrendingFlight
 }>();
 
@@ -15,7 +16,7 @@ const props = defineProps<{
     :style="`
       background-image:
         linear-gradient(to bottom, transparent, var(--black-transparent)),
-      url(${flight.arrival_city_image});
+      url(${BASE_API}${flight.arrival_city_image});
     `"
     @click="
       $router.push(

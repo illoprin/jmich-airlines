@@ -15,18 +15,23 @@ const Months_RU: Record<number, string> = {
 
 interface DateParsed {
   seconds: number;
-  minutes: number;
+  minutes: string;
   hours: number;
   days: number;
   month: number;
   year: number;
 }
 
+function parseISO8601(dateString: string): Date | null {
+  const date = new Date(dateString)
+  return !isNaN(date.getTime()) ? date : null;
+}
+
 function parseDate(dateString: string): DateParsed {
   const date = new Date(dateString);
   return {
     seconds: date.getSeconds(),
-    minutes: date.getMinutes(),
+    minutes: String(date.getMinutes()).padStart(2, "0"),
     hours: date.getHours(),
     days: date.getDate(),
     month: date.getMonth() + 1,
@@ -34,4 +39,4 @@ function parseDate(dateString: string): DateParsed {
   }
 }
 
-export { type DateParsed, parseDate, Months_RU }
+export { type DateParsed, parseDate, Months_RU, parseISO8601 }

@@ -1,4 +1,8 @@
 export interface Option {
-  title: string;
   value: string;
+  title: string;
+  selectable: boolean;
+  classes?: string
+  icon?: any;
+  suboptions?: Option[];
 }

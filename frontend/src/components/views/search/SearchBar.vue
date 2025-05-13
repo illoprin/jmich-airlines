@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
 import GlowButton from '@/components/UI/GlowButton.vue';
-import GlassDropDown from '@/components/UI/GlassDropDown.vue';
-import type { Option } from '@/types/ui/option.ts';
 import type { FlightSearchPayload } from '@/api/types/requests/flight';
 import CityDropDown from '@/components/shared/CityDropDown.vue';
 import { useFetching } from '@/composable/useFetching';
 import type { Airport, City } from '@/api/types/entities/city';
-import { CityService } from '@/service/CityService';
 import GlassDateInput from '@/components/UI/GlassDateInput.vue';
+import { useCities } from '@/store/cityStore';
 
 const props = defineProps<{
   onSubmit: (searchFormData: FlightSearchPayload) => void;
 }>();
 
-const cities = ref<City[] | undefined>(undefined);
+const citiesHook = useCities();
+const cities = ref<City[] | null>(null);
 const formData = reactive<FlightSearchPayload>({});
 
 const {
@@ -22,7 +21,7 @@ const {
   isLoading: isLoadingCities,
   error: citiesFetchingError,
 } = useFetching(async () => {
-  const result = await CityService.getCities();
+  const result = await citiesHook.fetchCities();
   cities.value = result;
 });
 
@@ -31,8 +30,8 @@ const handleSubmit = () => {
   props.onSubmit(formData);
 }
 
-onMounted(async () => {
-  await fetchCities();
+onMounted(() => {
+  fetchCities();
 });
 
 function selectDepartureAirport(airport: Airport) {

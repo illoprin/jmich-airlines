@@ -2,6 +2,7 @@ import {
   FlightStatus,
   type Flight,
 } from '@/api/types/entities/flight';
+import { BASE_API } from '@/store/store';
 
 export const mockFlights: Flight[] = [
   {
@@ -10,7 +11,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 13,
       name: 'Анталья',
-      image: '/upload/antalya.jpg',
+      image: `/upload/antalya.jpg`,
       airport: {
         id: 25,
         code: 'DLM',
@@ -20,7 +21,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 7,
       name: 'Париж',
-      image: '/upload/paris.jpg',
+      image: `/upload/paris.jpg`,
       airport: {
         id: 16,
         code: 'ORY',
@@ -30,7 +31,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 9,
       name: 'Smartavia',
-      logo: '/upload/smartavia.png',
+      logo: `/upload/smartavia.png`,
       baggage_rule: {
         max_free_weight: 9,
         price_per_kg: 3900,
@@ -48,7 +49,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 13,
       name: 'Анталья',
-      image: '/upload/antalya.jpg',
+      image: `/upload/antalya.jpg`,
       airport: {
         id: 24,
         code: 'GZP',
@@ -58,7 +59,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 5,
       name: 'Горно-Алтайск',
-      image: '/upload/altay.jpg',
+      image: `/upload/altay.jpg`,
       airport: {
         id: 8,
         code: 'RGK',
@@ -68,7 +69,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 5,
       name: 'Nordwind Airlines',
-      logo: '/upload/nordwind.png',
+      logo: `/upload/nordwind.png`,
       baggage_rule: {
         max_free_weight: 9,
         price_per_kg: 3900,
@@ -86,7 +87,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 15,
       name: 'Пекин',
-      image: '/upload/beijing.jpg',
+      image: `/upload/beijing.jpg`,
       airport: {
         id: 28,
         code: 'PKX',
@@ -96,7 +97,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 6,
       name: 'Нью-Йорк',
-      image: '/upload/newyork.jpg',
+      image: `/upload/newyork.jpg`,
       airport: {
         id: 9,
         code: 'LGA',
@@ -106,7 +107,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 1,
       name: 'Аэрофлот',
-      logo: '/upload/aeroflot.png',
+      logo: `/upload/aeroflot.png`,
       baggage_rule: {
         max_free_weight: 5,
         price_per_kg: 3000,
@@ -117,6 +118,7 @@ export const mockFlights: Flight[] = [
     price: 4748.75,
     seats_available: 185,
     status: FlightStatus.Active,
+    cheapest: true,
   },
   {
     id: 1396,
@@ -124,7 +126,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 3,
       name: 'Дубай',
-      image: '/upload/dubai.jpg',
+      image: `/upload/dubai.jpg`,
       airport: {
         id: 6,
         code: 'DWC',
@@ -134,7 +136,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 18,
       name: 'Сеул',
-      image: '/upload/seoul.jpg',
+      image: `/upload/seoul.jpg`,
       airport: {
         id: 31,
         code: 'GMP',
@@ -144,7 +146,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 5,
       name: 'Nordwind Airlines',
-      logo: '/upload/nordwind.png',
+      logo: `/upload/nordwind.png`,
       baggage_rule: {
         max_free_weight: 9,
         price_per_kg: 3900,
@@ -162,7 +164,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 8,
       name: 'Вашингтон',
-      image: '/upload/washington.jpg',
+      image: `/upload/washington.jpg`,
       airport: {
         id: 13,
         code: 'IAD',
@@ -172,7 +174,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 3,
       name: 'Дубай',
-      image: '/upload/dubai.jpg',
+      image: `/upload/dubai.jpg`,
       airport: {
         id: 6,
         code: 'DWC',
@@ -182,7 +184,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 3,
       name: 'Россия',
-      logo: '/upload/russia.png',
+      logo: `/upload/russia.png`,
       baggage_rule: {
         max_free_weight: 5,
         price_per_kg: 3000,
@@ -193,6 +195,7 @@ export const mockFlights: Flight[] = [
     price: 7352.5,
     seats_available: 17,
     status: FlightStatus.Active,
+    cheapest: true,
   },
   {
     id: 39,
@@ -200,7 +203,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 4,
       name: 'Волгоград',
-      image: '/upload/volgograd.jpg',
+      image: `/upload/volgograd.jpg`,
       airport: {
         id: 7,
         code: 'VOG',
@@ -210,7 +213,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 6,
       name: 'Нью-Йорк',
-      image: '/upload/newyork.jpg',
+      image: `/upload/newyork.jpg`,
       airport: {
         id: 11,
         code: 'JFK',
@@ -220,7 +223,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 6,
       name: 'Победа',
-      logo: '/upload/pobeda.png',
+      logo: `/upload/pobeda.png`,
       baggage_rule: {
         max_free_weight: 2,
         price_per_kg: 1200,
@@ -238,7 +241,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 2,
       name: 'Москва',
-      image: '/upload/moskow.jpg',
+      image: `/upload/moskow.jpg`,
       airport: {
         id: 2,
         code: 'DME',
@@ -248,7 +251,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 16,
       name: 'Берлин',
-      image: '/upload/berlin.jpg',
+      image: `/upload/berlin.jpg`,
       airport: {
         id: 29,
         code: 'BER',
@@ -258,7 +261,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 6,
       name: 'Победа',
-      logo: '/upload/pobeda.png',
+      logo: `/upload/pobeda.png`,
       baggage_rule: {
         max_free_weight: 2,
         price_per_kg: 1200,
@@ -276,7 +279,7 @@ export const mockFlights: Flight[] = [
     departure_city: {
       id: 15,
       name: 'Пекин',
-      image: '/upload/beijing.jpg',
+      image: `/upload/beijing.jpg`,
       airport: {
         id: 28,
         code: 'PKX',
@@ -286,7 +289,7 @@ export const mockFlights: Flight[] = [
     arrival_city: {
       id: 18,
       name: 'Сеул',
-      image: '/upload/seoul.jpg',
+      image: `/upload/seoul.jpg`,
       airport: {
         id: 32,
         code: 'SEL',
@@ -296,7 +299,7 @@ export const mockFlights: Flight[] = [
     company: {
       id: 1,
       name: 'Аэрофлот',
-      logo: '/upload/aeroflot.png',
+      logo: `/upload/aeroflot.png`,
       baggage_rule: {
         max_free_weight: 5,
         price_per_kg: 3000,

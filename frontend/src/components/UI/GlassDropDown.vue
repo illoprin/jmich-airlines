@@ -1,80 +1,108 @@
-<script setup lang="ts">
-import type { Option } from "@/types/ui/option.ts";
-import { onBeforeUnmount, onMounted, ref } from "vue";
-
-const props = defineProps<{
-  options: Option[],
-  onSelect: (selected: Option) => void,
-}>();
-
-const selectedOption = ref<Option | null>(null);
-
-const isOpen = ref<boolean>(false);
-
-// needs to check click target
-const dropdownRef = ref<HTMLElement | null>(null);
-
-function handleSelect(selected: Option) {
-  selectedOption.value = selected;
-  props.onSelect(selected);
-  isOpen.value = false;
-}
-
-function handleClickOutside(event: MouseEvent) {
-  if (isOpen.value) {
-    if (
-      dropdownRef.value &&
-      !dropdownRef.value.contains(event.target as Node)
-    ) {
-      isOpen.value = false;
-    }
-  }
-}
-
-// Handle click outside - add event listener
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside)
-})
-
-// Handle click outside - remove event listener
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside)
-});
-</script>
-
 <template>
-
-  <div
-    class="flex-fill"
-    style="position: relative"
-    ref="dropdownRef"
+  <ul
+    class="glass glass-border glass-dropdown-list"
+    v-if="visible"
   >
-    <button
-      class="glass w-100 glass-border form-glass text-start"
-      @click="() => isOpen = !isOpen"
-    >
-      <slot v-if="!selectedOption" />
-      <span v-else>{{ selectedOption.title }}</span>
-    </button>
-
-    <ul
-      class="glass glass-border glass-dropdown-list"
-      v-if="isOpen"
+    <div
+      v-for="(option, optionIndex) in options"
+      :key="option.value"
     >
       <li
-        v-for="(option, index) in options"
-        :key="option.value"
         class="glass-dropdown-element"
-        :class="index === options.length - 1 ? 'last' :
-          index === 0 ? 'first' : '' "
-        @click="handleSelect(option)"
+        :class="resolveOptCls(option, optionIndex)"
+        @click="() => option.selectable ? handleSelect(option) : ('')"
+        :disabled="(!option.selectable)"
       >
+        <img
+          v-if="option.icon"
+          :src="option.icon"
+          class="sm-icon option"
+          alt="map-pin"
+        >
         {{ option.title }}
       </li>
-    </ul>
-
-  </div>
+      <li
+        v-if="option.suboptions"
+        class="glass-dropdown-element glass-dropdown-subelement"
+        v-for="(suboption, suboptionIndex) in option.suboptions"
+        :class="resolveSubOptCls(suboption, optionIndex, suboptionIndex, option.suboptions.length)"
+        :key="suboption.value"
+        @click="() => suboption.selectable ? handleSelect(suboption) : ('')"
+        :disabled="(!suboption.selectable)"
+      >
+        <img
+          v-if="suboption.icon"
+          :src="suboption.icon"
+          class="sm-icon option"
+          alt="airport"
+        >
+        {{ suboption.title }}
+      </li>
+    </div>
+  </ul>
 </template>
+
+<script setup lang="ts">
+import type { Option } from '@/types/ui/option';
+import { onBeforeUnmount, onMounted } from 'vue';
+
+const props = defineProps<{
+  visible: boolean;
+  options: Option[];
+  root: HTMLElement | undefined;
+  onSelect: (option: Option) => void;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:visible', value: boolean): void
+}>();
+
+const handleSelect = (option: Option) => {
+  emit('update:visible', false);
+  props.onSelect(option);
+};
+
+const resolveOptCls = (option: Option, index: number) => {
+  const prefix = option.classes ?? '';
+  if (index == 0)
+    return prefix + ' first';
+  else if (index == props.options.length - 1)
+    return prefix + ' last'
+  else
+    return prefix;
+};
+
+const resolveSubOptCls = (
+  option: Option, index: number, subIndex: number, subLen: number
+) => {
+  const prefix = option.classes ?? '';
+  if (subIndex === subLen - 1 && index === props.options.length - 1)
+    return prefix + ' last';
+  else
+    return prefix;
+};
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (props.root !== undefined ) {
+    if (
+      !props.root.contains(event.target as Node)
+      && props.visible
+    ) {
+      console.log("clicked outside");
+      emit('update:visible', false);
+    }
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+</script>
 
 <style scoped>
 

@@ -1,7 +1,3 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
   <button
     class="glass-border glass-button"
@@ -10,6 +6,10 @@
     <slot />
   </button>
 </template>
+
+<script setup lang="ts">
+
+</script>
 
 <style scoped>
 

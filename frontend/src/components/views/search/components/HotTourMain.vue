@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { TrendingFlight } from '@/api/types/entities/booking';
 import { formatPrice } from '@/lib/format/formatPrice';
-import { Months_RU, parseDate } from '@/lib/parse/parseDate';
+import { Months_RU, parseDate } from '@/lib/date/parseDate';
 import { GuestRoutes } from '@/router/routes';
+import { BASE_API } from '@/store/store';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -42,12 +43,12 @@ onBeforeUnmount(() => {
     "
   >
     <img
-      :src="flight.departure_city_image"
+      :src="`${BASE_API}${flight.departure_city_image}`"
       class="hot-tour__image"
       :class="currentImage == flight.departure_city_image ? 'visible' : ''"
     >
     <img
-      :src="flight.arrival_city_image"
+      :src="`${BASE_API}${flight.arrival_city_image}`"
       class="hot-tour__image"
       :class="currentImage == flight.arrival_city_image ? 'visible' : ''"
     >

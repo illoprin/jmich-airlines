@@ -6,11 +6,16 @@ const GuestRoutes = {
 
 const AuthRoutes = {
   BookingPage: {name: "booking", path: "/booking/:id"},
-  AccountPage: {name: "account", path: "/account/"},
+  AccountPage: {name: "account", path: "/account"},
 };
+
+const NotFoundRoute = {
+  name: 'not-found',
+  path: '/notfound'
+}
 
 const AdminRoutes = {
   AdminPanelPage: {name: "admin-panel", path: "/admin"},
 };
 
-export { GuestRoutes, AuthRoutes, AdminRoutes };
+export { NotFoundRoute, GuestRoutes, AuthRoutes, AdminRoutes };

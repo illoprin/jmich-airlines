@@ -25,10 +25,6 @@ const handleInput = (
 </script>
 
 <template>
-  <div>
-    <strong class="fs-4 d-block mb-4">
-      Расскажите о себе
-    </strong>
 
     <GlassInputWithValidation
       type="text"
@@ -72,7 +68,6 @@ const handleInput = (
       @input="(e: Event) => handleInput('password', (e.target as HTMLInputElement).value)"
       :error="errors['password'] as any"
     />
-  </div>
 </template>
 
 <style scoped></style>

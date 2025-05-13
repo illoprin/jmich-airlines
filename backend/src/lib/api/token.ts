@@ -11,7 +11,7 @@ export function createToken(candidate: UserEntry, secret: string): string {
     },
     secret,
     {
-      expiresIn: "24h",
+      expiresIn: "30d",
     },
   );
 }

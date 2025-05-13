@@ -119,11 +119,14 @@ export class FlightHandler {
   private static searchFlights(req: Request, res: Response): void {
     try {
       const payload: FlightSearchPayload = req.body;
+      
       // WARN: shitcode
       if (req.body.departure_date)
         payload.departure_date = new Date(req.body.departure_date as string);
+      
       payload.max = parseInt(req.query.limit as string);
       payload.page = parseInt(req.query.page as string);
+
       const flights = req.dependencies.flightService.search(payload);
       res.json(ResponseTypes.ok({ flights }));
     } catch (err) {

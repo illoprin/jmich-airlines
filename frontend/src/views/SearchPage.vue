@@ -1,21 +1,42 @@
 <script setup lang="ts">
-
+import { FlightAPI } from "@/api/FlightAPI";
 import type { TrendingFlight } from "@/api/types/entities/booking";
+import type { Flight } from "@/api/types/entities/flight";
+import type { FlightSearchPayload } from "@/api/types/requests/flight";
 import SearchBar from "@/components/views/search/SearchBar.vue";
 import SearchedFlights from "@/components/views/search/SearchedFlights.vue";
 import TrendingFlights from "@/components/views/search/TrendingFlights.vue";
 import { useFetching } from "@/composable/useFetching";
 import { BookingService } from "@/service/BookingService";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
-function searchSubmit(data: any): void {
-  console.log(data);
+async function searchSubmit(data: FlightSearchPayload) {
+  searchQuery.value = data;
+  await searchFlights();
 }
 
 const trendingFlights = ref<TrendingFlight[] | undefined>(undefined);
+const searchedFlights = ref<Flight[] | undefined>(undefined);
+const searchQuery = ref<FlightSearchPayload>({});
+const isAnyFlights = computed<boolean>(() => 
+  (searchedFlights.value !== undefined
+  && Object.keys(searchedFlights.value as any).length > 0)
+);
 
-const { fetchData: fetchTrending, isLoading: isLoadingTrending } = useFetching(async () => {
+const {
+  fetchData: fetchTrending,
+  isLoading: isLoadingTrending
+} = useFetching(async () => {
   trendingFlights.value = await BookingService.getTrendingFlights();
+});
+
+const {
+  fetchData: searchFlights,
+  isLoading: isLoadingFlights,
+} = useFetching(async () => {
+  searchedFlights.value = await FlightAPI.searchFlights(
+    searchQuery.value
+  );
 });
 
 onMounted(() => {
@@ -33,10 +54,16 @@ onMounted(() => {
     <SearchBar :on-submit="searchSubmit" />
 
     <!-- Hot Tours -->
-    <TrendingFlights :hotTours="trendingFlights" v-if="!isLoadingTrending" />
+    <TrendingFlights
+      :hotTours="trendingFlights"
+      v-if="trendingFlights && !isAnyFlights"
+    />
 
     <!-- Flights -->
-    <SearchedFlights />
+    <SearchedFlights
+      v-if="searchedFlights && isAnyFlights"
+      :flights="searchedFlights"
+    />
   </div>
 </template>
 

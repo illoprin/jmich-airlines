@@ -1,12 +1,10 @@
 import type { City } from "@/api/types/entities/city.ts";
-import { BASE_API } from "@/store/store";
-
 
 export const mockCities: City[] = [
   {
     id: 0,
     name: "Москва",
-    image: `${BASE_API}/upload/moskow.jpg`,
+    image: `/upload/moskow.jpg`,
     airports: [
       {
         id: 0,
@@ -28,7 +26,7 @@ export const mockCities: City[] = [
   {
     id: 1,
     name: "Самара",
-    image: `${BASE_API}/upload/city_default.jpg`,
+    image: `/upload/city_default.jpg`,
     airports: [
       {
         id: 3,
@@ -40,7 +38,7 @@ export const mockCities: City[] = [
   {
     id: 2,
     name: "Париж",
-    image: `${BASE_API}/upload/paris.jpg`,
+    image: `/upload/paris.jpg`,
     airports: [
       {
         id: 4,

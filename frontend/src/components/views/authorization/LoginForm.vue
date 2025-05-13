@@ -25,10 +25,7 @@ const handleInput = (
 </script>
 
 <template>
-  <div>
-    <strong class="fs-4 d-block mb-4">
-      С возвращением
-    </strong>
+    
 
     <GlassInputWithValidation
       type="text"
@@ -46,7 +43,6 @@ const handleInput = (
       :error="errors['password'] as any"
     />
 
-  </div>
 
 </template>
 

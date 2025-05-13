@@ -10,20 +10,25 @@
   --selection-color: #0098f2;
 
   --glass-text-transparent: rgba(255, 255, 255, 0.61);
-  --glass-panel: rgba(255, 255, 255, 0.18);
+  --glass-panel: rgba(255, 255, 255, 0.123);
   --glass-panel-hover: rgba(255, 255, 255, 0.24);
   --glass-panel-active: rgba(255, 255, 255, 0.329);
-  --glass-stroke: rgba(255, 255, 255, 0.22);
+  --glass-stroke: rgba(255, 255, 255, 0.247);
   --glass-stroke-light: rgba(255, 255, 255, 0.1);
   --glass-panel-shadow: rgba(0, 0, 0, 0.4);
   
   --black-transparent: rgba(0, 0, 0, 0.8);
 }
 
+#app {
+  padding: 2.5rem;
+  min-height: 100vh;
+}
+
 body {
   font-family: 'sf', sans-serif;
 
-  background: #0a73cd;
+  background: var(--bg-body-primary-1);
   background: linear-gradient(
     343deg,
     var(--bg-body-primary-1) 9%,
@@ -32,6 +37,17 @@ body {
   color: #fff;
   max-width: 100vw;
   min-height: 100vh;
+}
+
+span {
+  display: block;
+}
+
+hr {
+  display: block;
+  border: 2px solid var(--glass-stroke);
+  display: block;
+  margin: 0;
 }
 
 @media screen and (max-width: 1080px) {
@@ -55,11 +71,6 @@ body {
   border-radius: 1rem;
 }
 
-.container {
-  min-height: 100vh;
-  height: fit-content;
-}
-
 h1 {
   letter-spacing: -2px;
 }
@@ -67,6 +78,12 @@ h1 {
 .logo-row {
   width: 15rem;
   height: 15rem;
+}
+.header-logo {
+  filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.2));
+}
+.header-logo:hover {
+  cursor: pointer;
 }
 
 .glass-panel {
@@ -126,12 +143,10 @@ h1 {
   will-change: background-color;
   transition: background-color 300ms;
 }
+
 .glass-button-sm:hover {
   background-color: var(--glass-panel-hover);
 }
-
-
-
 
 .panel-tabs {
   display: flex;
@@ -166,9 +181,14 @@ h1 {
   background-color: var(--glass-panel-active);
 }
 
-.small-icon {
+.sm-icon {
   width: 1rem;
   height: 1rem;
+}
+
+.md-icon {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
 .badge-price {

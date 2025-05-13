@@ -1,15 +1,23 @@
-import { mockPayment, mockUser } from "@/api/mocks/user.ts";
-import type { UserLoginPayload } from "@/api/types/requests/user.ts";
-import { UserLoginError, UserTokenError } from "@/api/errors";
-import type { Payment } from "@/api/types/entities/payment.ts";
-import type { User } from "@/api/types/entities/user.ts";
+import {
+  mockPayment,
+  mockToken,
+  mockUser,
+  mockUsers,
+} from '@/api/mocks/user.ts';
+import type {
+  UserLoginPayload,
+  UserRegistrationPayload,
+} from '@/api/types/requests/user.ts';
+import type { Payment } from '@/api/types/entities/payment.ts';
+import type { User } from '@/api/types/entities/user.ts';
+import { UserTokenError } from '@/lib/service/errors';
 
 export class UserAPI {
-  public static async getCurrentUser(token: string): Promise<User | null> {
-    if (token) {
+  public static async getCurrentUser(token: string): Promise<User> {
+    if (token) { 
       return mockUser;
     } else {
-      return null;
+      throw new UserTokenError('Токен протух');
     }
   }
 
@@ -18,19 +26,67 @@ export class UserAPI {
    * @param payload - user login data
    * @return JWT Access Token
    */
-  public static async loginUser(payload: UserLoginPayload): Promise<string> {
-    if (payload.login && payload.password) {
-      return "abc123";
+  public static async loginUser(
+    payload: UserLoginPayload,
+  ): Promise<string> {
+    if (
+      mockUsers.find(
+        user => payload.login === user.login && payload.password === payload.password
+      )
+    ) {
+      return mockToken;
     } else {
-      throw new UserLoginError("invalid fields");
+      // TODO: show message from server
+      throw new Error('invalid fields');
     }
   }
 
-  public static async getUserPayments(token: string): Promise<Payment> {
+  public static async registerUser(
+    payload: UserRegistrationPayload,
+  ): Promise<void> {
+    // registered!
+  }
+
+  /**
+   * Generate actual access token
+   * @param token - current token
+   * @return New access token
+   */
+  public static async verifyUser(token: string): Promise<string> {
+    // always verified
+    return mockToken;
+  }
+
+
+
+  public static async updateCurrentUser(
+    token: string,
+    payload: any,
+  ): Promise<void> {
+    
+  }
+
+  public static async removeUser(
+    token: string
+  ): Promise<void> {
+
+  }
+
+  public static async getUserPayments(
+    token: string,
+  ): Promise<Payment> {
     if (token) {
       return mockPayment;
     } else {
-      throw new UserTokenError("invalid token");
+      // TODO: show message from server
+      throw new Error('invalid token');
     }
+  }
+
+  public static async removeUserPayment(
+    token: string,
+    paymentID: number
+  ): Promise<void> {
+
   }
 }

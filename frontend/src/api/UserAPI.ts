@@ -1,7 +1,7 @@
 import {
   mockPayment,
+  mockRules,
   mockToken,
-  mockUser,
   mockUsers,
 } from '@/api/mocks/user.ts';
 import type {
@@ -11,11 +11,12 @@ import type {
 import type { Payment } from '@/api/types/entities/payment.ts';
 import type { User } from '@/api/types/entities/user.ts';
 import { UserTokenError } from '@/lib/service/errors';
+import type { UserLevelDiscountRule } from '@/api/types/entities/discount';
 
 export class UserAPI {
   public static async getCurrentUser(token: string): Promise<User> {
-    if (token) { 
-      return mockUser;
+    if (token) {
+      return mockUsers[0];
     } else {
       throw new UserTokenError('Токен протух');
     }
@@ -31,7 +32,9 @@ export class UserAPI {
   ): Promise<string> {
     if (
       mockUsers.find(
-        user => payload.login === user.login && payload.password === payload.password
+        (user) =>
+          payload.login === user.login &&
+          payload.password === payload.password,
       )
     ) {
       return mockToken;
@@ -53,40 +56,38 @@ export class UserAPI {
    * @return New access token
    */
   public static async verifyUser(token: string): Promise<string> {
+    if (!token || token === '')
+      throw new UserTokenError('user is unauthorized');
     // always verified
     return mockToken;
   }
 
-
-
   public static async updateCurrentUser(
     token: string,
     payload: any,
-  ): Promise<void> {
-    
-  }
+  ): Promise<void> {}
 
-  public static async removeUser(
-    token: string
-  ): Promise<void> {
+  public static async removeUser(token: string): Promise<void> {}
 
-  }
-
-  public static async getUserPayments(
-    token: string,
-  ): Promise<Payment> {
+  public static async getPayments(token: string): Promise<Payment[]> {
     if (token) {
       return mockPayment;
     } else {
       // TODO: show message from server
-      throw new Error('invalid token');
+      throw new UserTokenError('invalid token');
     }
   }
 
-  public static async removeUserPayment(
+  public static async removePayment(
     token: string,
-    paymentID: number
-  ): Promise<void> {
+    paymentID: number,
+  ): Promise<void> {}
 
+  public static async getRules(
+    token: string,
+  ): Promise<UserLevelDiscountRule> {
+    if (!token)
+      throw new UserTokenError('user is unauthorized');
+    return mockRules;
   }
 }

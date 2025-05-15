@@ -13,10 +13,11 @@ export class BookingHandler {
   private static getAddBookingChain(): ValidationChain[] {
     return [
       getForeignKeyValidation("flight_id"),
-      getForeignKeyValidation("payment_id"),
       body("seats")
         .isInt({ min: 1 })
-        .withMessage("min seats to reserve is positive number from 1"),
+        .withMessage(
+          "min seats to reserve is positive number from 1"
+        ),
       body("baggage_weight")
         .isInt({ min: 0 })
         .withMessage("baggage weight is positive number"),
@@ -29,16 +30,17 @@ export class BookingHandler {
 
   private static async getBookingByID(
     req: Request,
-    res: Response,
+    res: Response
   ): Promise<void> {
     try {
       const bookingID = parseInt(req.params.id);
       const { role, id } = req.token_data;
-      const booking = await req.dependencies.bookingService.getBookingById(
-        id,
-        role,
-        bookingID,
-      );
+      const booking =
+        await req.dependencies.bookingService.getBookingById(
+          id,
+          role,
+          bookingID
+        );
       res.json(ResponseTypes.ok({ booking }));
     } catch (err) {
       processServiceError(res, err);
@@ -48,36 +50,48 @@ export class BookingHandler {
 
   private static async calculatePrice(
     req: Request,
-    res: Response,
+    res: Response
   ): Promise<void> {
     try {
       const { flight_id, seats, code, baggage_weight } = req.body;
       const { id: user_id } = req.token_data;
-      const { details } = await req.dependencies.bookingService.calculatePrice(
-        user_id,
-        flight_id,
-        baggage_weight,
-        seats,
-        code,
-      );
+      const { details } =
+        await req.dependencies.bookingService.calculatePrice(
+          user_id,
+          flight_id,
+          baggage_weight,
+          seats,
+          code
+        );
       res.json(ResponseTypes.ok({ details }));
     } catch (err) {
       processServiceError(res, err);
     }
   }
 
-  private static async addBooking(req: Request, res: Response): Promise<void> {
+  private static async addBooking(
+    req: Request,
+    res: Response
+  ): Promise<void> {
     if (!checkValidation(req, res)) return;
     try {
-      const { flight_id, seats, code, baggage_weight, payment_id } = req.body;
+      const {
+        flight_id,
+        seats,
+        code,
+        baggage_weight,
+        payment,
+        payment_id,
+      } = req.body;
       const { id: user_id } = req.token_data;
       await req.dependencies.bookingService.add({
         user_id,
         flight_id,
         seats,
         baggage_weight,
-        payment_id,
         code,
+        payment,
+        payment_id
       });
       res.status(201).send();
     } catch (err) {
@@ -88,7 +102,7 @@ export class BookingHandler {
 
   private static async getBookingsByToken(
     req: Request,
-    res: Response,
+    res: Response
   ): Promise<void> {
     try {
       const { id } = req.token_data;
@@ -107,7 +121,7 @@ export class BookingHandler {
       const page = parseInt(req.query.page as string);
       const bookings = req.dependencies.bookingService.getAllBookings(
         max,
-        page,
+        page
       );
       res.json(ResponseTypes.ok({ bookings }));
     } catch (err) {
@@ -118,12 +132,16 @@ export class BookingHandler {
 
   private static async deleteBooking(
     req: Request,
-    res: Response,
+    res: Response
   ): Promise<void> {
     try {
       const booking_id = parseInt(req.params.id);
       const { role, id } = req.token_data;
-      await req.dependencies.bookingService.deleteBooking(booking_id, id, role);
+      await req.dependencies.bookingService.deleteBooking(
+        booking_id,
+        id,
+        role
+      );
       res.status(204).send();
     } catch (err) {
       processServiceError(res, err);
@@ -133,7 +151,7 @@ export class BookingHandler {
 
   private static async updateBookingStatus(
     req: Request,
-    res: Response,
+    res: Response
   ): Promise<void> {
     try {
       const booking_id = parseInt(req.params.id);
@@ -143,7 +161,7 @@ export class BookingHandler {
         id,
         role,
         booking_id,
-        status,
+        status
       );
       res.status(204).send();
     } catch (err) {
@@ -154,11 +172,12 @@ export class BookingHandler {
 
   private static async getTrendingBookings(
     req: Request,
-    res: Response,
+    res: Response
   ): Promise<void> {
     try {
       const limit = parseInt(req.params.limit ?? 10);
-      const trending = await req.dependencies.bookingService.getTrending(limit);
+      const trending =
+        await req.dependencies.bookingService.getTrending(limit);
       res.json(ResponseTypes.ok({ trending }));
     } catch (err) {
       processServiceError(res, err);
@@ -177,29 +196,41 @@ export class BookingHandler {
     router.get(
       "/all",
       [authorizationMiddleware, roleMiddleware(Roles.Admin)],
-      this.getAllBookings,
+      this.getAllBookings
     );
-    router.post("/price", [authorizationMiddleware], this.calculatePrice);
+    router.post(
+      "/price",
+      [authorizationMiddleware],
+      this.calculatePrice
+    );
 
     // Auth routes
     router.post(
       "/",
       [authorizationMiddleware],
       this.getAddBookingChain(),
-      this.addBooking,
+      this.addBooking
     );
-    router.get("/", [authorizationMiddleware], this.getBookingsByToken);
-    router.get("/:id", [authorizationMiddleware], this.getBookingByID);
+    router.get(
+      "/",
+      [authorizationMiddleware],
+      this.getBookingsByToken
+    );
+    router.get(
+      "/:id",
+      [authorizationMiddleware],
+      this.getBookingByID
+    );
     router.put(
       "/:id/status",
       [authorizationMiddleware],
-      this.updateBookingStatus,
+      this.updateBookingStatus
     );
 
     router.delete(
       "/:id",
       [authorizationMiddleware, roleMiddleware(Roles.Admin)],
-      this.deleteBooking,
+      this.deleteBooking
     );
     return router;
   }

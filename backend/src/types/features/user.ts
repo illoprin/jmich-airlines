@@ -3,14 +3,12 @@ import { UserLevel } from "../repository/user";
 export interface UserDiscountRule {
   discount: number;
   trendingFlightBonus: number;
-  randomFlightBonus?: () => boolean;
 }
 
 export const UserLevelDiscountRule: Record<UserLevel, UserDiscountRule> = {
   [UserLevel.Basic]: {
-    discount: 0.04,
+    discount: 0.01,
     trendingFlightBonus: 0,
-    randomFlightBonus: () => Math.random() < 0.04, // Шанс что перепадёт скидка в 4%
   },
   [UserLevel.Silver]: {
     discount: 0.08,
@@ -27,6 +25,5 @@ export const UserLevelDiscountRule: Record<UserLevel, UserDiscountRule> = {
   [UserLevel.Platinum]: {
     discount: 0.21,
     trendingFlightBonus: 0.25,
-    randomFlightBonus: () => Math.random() < 0.2, // Шанс 20% что сервис вернёт деньги за билет
   },
 };

@@ -7,3 +7,7 @@ export const DISCOUNT_REGEX = /^[0-9a-zA-Z_-]+$/;
 export const SINGLE_UNICODE_WORD_REGEX = /^[\p{L}-]+$/u;
 export const SOME_WORDS_SINGLE_SPACE_REGEX =
   /^[\p{L}\p{M}]+(?:[\s][\p{L}\p{M}.\-']+)*$/u;
+
+export const CARD_NUMBER_REGEX = /^[0-9]{16}$/;
+export const CARD_EXPIRES_REGEX = /^[0-9]{4}$/;
+export const CARD_CVV_REGEX = /^[0-9]{4}$/;

@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import type { Option } from "@/types/ui/option.ts";
+import type { DefaultOption } from "@/types/ui/fancyRadio";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const props = defineProps<{
-  options: Option[],
-  onSelect: (selected: Option) => void,
+  options: DefaultOption[],
+  onSelect: (selected: DefaultOption) => void,
 }>();
 
-const selectedOption = ref<Option | null>(null);
+const selectedOption = ref<DefaultOption | null>(null);
 
 const isOpen = ref<boolean>(false);
 
 // needs to check click target
 const dropdownRef = ref<HTMLElement | null>(null);
 
-function handleSelect(selected: Option) {
+function handleSelect(selected: DefaultOption) {
   selectedOption.value = selected;
   props.onSelect(selected);
   isOpen.value = false;
@@ -50,15 +50,15 @@ onBeforeUnmount(() => {
     ref="dropdownRef"
   >
     <button
-      class="glass w-100 glass-border form-glass text-start"
+      class="w-100 form-glass glass small text-start"
       @click="() => isOpen = !isOpen"
     >
       <slot v-if="!selectedOption" />
-      <span v-else>{{ selectedOption.title }}</span>
+      <span v-else>{{ selectedOption.label }}</span>
     </button>
 
     <ul
-      class="glass glass-border glass-dropdown-list"
+      class="glass glass-border glass-panel glass-dropdown-list"
       v-if="isOpen"
     >
       <li
@@ -69,7 +69,7 @@ onBeforeUnmount(() => {
           index === 0 ? 'first' : '' "
         @click="handleSelect(option)"
       >
-        {{ option.title }}
+        {{ option.label }}
       </li>
     </ul>
 

@@ -9,7 +9,7 @@ export class BookingAPI{
   }
 
   public static async add(entry: CreateBookingPayload): Promise<void> {
-
+    
   }
 
   static async getByID(id: number): Promise<Booking> {

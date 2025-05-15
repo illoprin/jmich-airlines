@@ -163,7 +163,8 @@ h1 {
   font-size: 1.2rem;
 }
 
-.glass-button-sm:hover {
+.glass-button-sm[disabled="false"]:hover,
+.glass-button-sm:not([disabled]):hover {
   background-color: var(--glass-panel-hover);
 }
 

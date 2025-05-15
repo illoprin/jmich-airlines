@@ -135,7 +135,7 @@ const handleDropdownSelection = (option: Option) => {
       router.push({ name: GuestRoutes.Authorization.name });
       break;
     case AccountDropdownValues.Remove:
-      user.logout();
+      user.remove();
       router.push({ name: GuestRoutes.Authorization.name });
       break;
   }

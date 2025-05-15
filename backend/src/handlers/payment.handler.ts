@@ -5,18 +5,19 @@ import type { PaymentEntry } from "../types/repository/payment";
 import { processServiceError } from "../lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
 import { applyOptionalFlag } from "../lib/api/validation-chain";
+import { CARD_CVV_REGEX, CARD_EXPIRES_REGEX, CARD_NUMBER_REGEX } from "@/lib/service/const";
 
 export class PaymentHandler {
   private static getChain(optional: boolean = false): ValidationChain[] {
     const validators: ValidationChain[] = [
       body("number")
-        .matches(/^[0-9]{16}$/g)
+        .matches(CARD_NUMBER_REGEX)
         .withMessage("card number must be 16 digits string"),
       body("expires")
-        .matches(/^[0-9]{4}$/g)
+        .matches(CARD_EXPIRES_REGEX)
         .withMessage("expire date must be 4 digits string"),
       body("cvv")
-        .matches(/^[0-9]{3}$/g)
+        .matches(CARD_CVV_REGEX)
         .withMessage("card cvv must be 3 digits string"),
     ];
     return applyOptionalFlag(validators, optional);

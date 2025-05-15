@@ -1,15 +1,183 @@
+<script setup lang="ts">
+import type { Flight } from '@/api/types/entities/flight';
+import FlightRouteDetailed from '@/components/shared/FlightRouteDetailed.vue';
+import PurchaseTrigger from '@/components/shared/PurchaseTrigger.vue';
+import GlassLink from '@/components/UI/GlassLink.vue';
+import { useFetching } from '@/composable/useFetching';
+import { GuestRoutes } from '@/router/routes';
+import { FlightService } from '@/service/FlightService';
+import { BASE_API } from '@/store/store';
+import { computed, onMounted, onScopeDispose, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import StepperInput from '@/components/views/booking/StepperInput.vue';
+import GlassInput from '@/components/UI/GlassInput.vue';
+import GlassButtonSmall from '@/components/UI/GlassButtonSmall.vue';
+import BookingPaymentForm from '@/components/views/booking/BookingPaymentForm.vue';
+import { useBookingForm } from '@/store/bookingFormStore';
+import GlowButton from '@/components/UI/GlowButton.vue';
+import type { CreateBookingPayload } from '@/api/types/requests/booking';
+import type { Payment } from '@/api/types/entities/payment';
+import { PaymentService } from '@/service/PaymentService';
+import ModalBase from '@/components/shared/ModalBase.vue';
+import { DiscountService } from '@/service/DiscountService';
+import BookingTotalCost from '@/components/views/booking/BookingTotalCost.vue';
+import type { UserLevelDiscountRule } from '@/api/types/entities/discount';
+import { useUserStore } from '@/store/userStore';
+import { UserLevel } from '@/api/types/entities/user';
+import { UserAPI } from '@/api/UserAPI';
+
+const route = useRoute();
+const router = useRouter();
+const formStore = useBookingForm();
+const userStore = useUserStore();
+
+const flight = ref<Flight | undefined>(undefined);
+const userDiscountRules = ref<UserLevelDiscountRule>();
+const payments = ref<Payment[]>([]);
+
+// Message Modal
+const messageModalVisible = ref<boolean>(false);
+const messageModalTitle = ref<string>('');
+const messageModalContents = ref<string>('');
+
+// Fetch flight
+const flightId = parseInt(route.params.id as string);
+const {
+  fetchData: fetchFlight
+} = useFetching(async () => {
+  try {
+    flight.value = await FlightService.getByID(flightId);
+  } catch {
+    router.push({ name: GuestRoutes.Search.name });
+  }
+});
+
+// Fetch user payments
+const {
+  fetchData: fetchPayment,
+  isLoading: isLoadingPayment
+} = useFetching(async () => {
+  payments.value = await PaymentService.getPayments();
+});
+
+// Fetch discount code
+const {
+  fetchData: validateDiscount,
+  isLoading: isLoadingDiscount,
+  error: discountError
+} = useFetching(async () => {
+  const d = await DiscountService.validateCode(formStore.code);
+  formStore.discount = d;
+});
+
+// Fetch discount rules
+const {
+  fetchData: fetchDiscountRules,
+  isLoading: isLoadingDiscountRules,
+} = useFetching(async () => {
+  // WARN: you must not use API functions in components
+  userDiscountRules.value = await UserAPI.getRules(userStore.token);
+});
+
+onMounted(async () => {
+  formStore.baggageWeight = parseInt(route.query.bw as string) || 0;
+  formStore.flightId = flightId;
+  await userStore.fetchUser();
+  fetchFlight();
+  fetchPayment();
+  fetchDiscountRules();
+});
+
+onScopeDispose(() => {
+  formStore.clear();
+})
+
+const baseCost = computed<number>(() => {
+  if (!flight.value)
+    return 0;
+  return flight.value?.price * formStore.seats;
+})
+
+const baggagePrice = computed<number>(() => {
+  if (!flight.value)
+    return 0;
+  const mfw = flight.value.company.baggage_rule?.max_free_weight || 0;
+  const kg = flight.value.company.baggage_rule?.price_per_kg || 0;
+  return formStore.baggageWeight > mfw ? (formStore.baggageWeight - mfw) * kg : 0;
+});
+
+const discountAmount = computed<number>(() => {
+  if (!formStore.discount)
+    return 0;
+
+  return formStore.discount.amount;
+});
+
+const levelDiscount = computed<number>(() => {
+  if (!userStore.user || !userDiscountRules.value)
+    return 0;
+  return userDiscountRules.value[userStore.user.level].discount;
+});
+
+const totalCost = computed<number>(() => {
+  const tC = (baseCost.value + baggagePrice.value)
+    * (1 - discountAmount.value - levelDiscount.value);
+  return Math.ceil(tC);
+});
+
+const handleSubmit = () => {
+  if (!formStore.paymentId || !formStore.payment) {
+    messageModalVisible.value = true;
+    messageModalContents.value = 'Выберете способ оплаты или введите ваши платёжные данные'
+    messageModalTitle.value = 'Не можем провести оплату';
+  }
+
+  const formData: CreateBookingPayload = {
+    flight_id: flightId,
+    baggage_weight: formStore.baggageWeight,
+    payment_id: formStore.paymentId,
+    payment: formStore.payment,
+    seats: formStore.seats,
+    code: formStore.code || undefined,
+  }
+  // TODO: add booking and goto user tickets page
+};
+
+watch(discountError, (err) => {
+  if (discountError) {
+    console.log("invalid code");
+    messageModalVisible.value = true;
+    messageModalTitle.value = 'Не валидный промо-код';
+    messageModalContents.value = 'Вы ввели неверный промо-код!';
+    formStore.code = "";
+  }
+});
+
+const validateCode = async () => {
+  await validateDiscount();
+}
+
+</script>
+
 <template>
   <div class="container" v-if="flight !== undefined">
     <!-- Title -->
-    <h1 class="text-center fw-bold mb-5 mt-3">Давайте купим билет</h1>
+    <h1 class="text-center fw-bold mb-5 mt-3">
+      Давайте купим билет
+    </h1>
 
     <div class="glass glass-border section-base">
+
       <div class="section-link">
         <GlassLink @click="$router.go(-1)">
           Назад
         </GlassLink>
       </div>
-      <div class="glass glass-border light-shadow top-bar">
+
+      <!-- Route Details -->
+      <div
+        class="glass glass-border light-shadow top-bar"
+      >
         <div class="top-bar-left">
           <div class="d-flex gap-5">
             <img
@@ -29,12 +197,13 @@
               :flight="flight"
             />
           </div>
-
           <FlightRouteDetailed :flight="flight"/>
         </div>
+
+        <!-- Baggage and Seats Controls -->
         <div class="top-bar-right flex-fill">
           <StepperInput
-            v-model:value="baggageWeight"
+            v-model:value="formStore.baggageWeight"
             placeholder="Укажите число"
             :min="0"
             :max="40"
@@ -42,7 +211,7 @@
             Багаж
           </StepperInput>
           <StepperInput
-            v-model:value="seats"
+            v-model:value="formStore.seats"
             placeholder="Укажите число"
             :min="1"
             :max="flight.seats_available"
@@ -56,71 +225,70 @@
       
       <div class="bottom-bar">
         <div class="glass glass-border light-shadow bottom-bar-left">
-          <BookingPaymentForm />
 
+          <!-- Payment -->
+          <BookingPaymentForm
+            v-if="!isLoadingPayment"
+            :payments="payments"
+          />
+
+          <!-- Promo Code -->
           <div>
             <h3>
               Промокод
             </h3>
             <div class="d-flex gap-3 mt-3">
-                <GlassInput type="text" class="small w-75" placeholder="Промокод"/>
-                <GlassButtonSmall class="fs-5">
-                  Применить
-                </GlassButtonSmall>
-              </div>
+              <GlassInput
+                type="text"
+                class="small w-75"
+                placeholder="Промокод"
+                v-model:value="formStore.code"
+              />
+              <GlassButtonSmall
+                class="fs-5"
+                @click="validateCode"
+                :disabled="isLoadingDiscount || formStore.discount !== undefined"
+              >
+                {{formStore.discount === undefined ? 'Применить' : 'Применён'}}
+              </GlassButtonSmall>
+            </div>
           </div>
+
         </div>
+
+        <!-- Total Cost -->
         <div class="glass glass-border light-shadow bottom-bar-right">
-          
-        </div>      
+          <BookingTotalCost 
+            v-if="!isLoadingDiscountRules && flight"
+            :flight="flight"
+            :seats="formStore.seats"
+            :levelDiscount="levelDiscount"
+            :baseCost="baseCost"
+            :codeDiscount="discountAmount"
+            :baggagePrice="baggagePrice"
+            :userLevel="userStore.user?.level || UserLevel.Basic"
+            :totalCost="totalCost"
+          />
+
+          <GlowButton class="w-100" @click="handleSubmit">
+            Приобрести
+          </GlowButton>
+        </div>
+        
       </div>
     </div>
-
   </div>
+
+  <ModalBase v-model:visible="messageModalVisible">
+    <template v-slot:title>
+      {{ messageModalTitle }}
+    </template>
+    <template v-slot:contents>
+      {{ messageModalContents }}
+    </template>
+  </ModalBase>
 </template>
 
-<script setup lang="ts">
-import type { Flight } from '@/api/types/entities/flight';
-import FlightRouteDetailed from '@/components/shared/FlightRouteDetailed.vue';
-import PurchaseTrigger from '@/components/shared/PurchaseTrigger.vue';
-import GlassLink from '@/components/UI/GlassLink.vue';
-import { useFetching } from '@/composable/useFetching';
-import { GuestRoutes } from '@/router/routes';
-import { FlightService } from '@/service/FlightService';
-import { BASE_API } from '@/store/store';
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import StepperInput from '@/components/views/booking/StepperInput.vue';
-import MirIcon from '@/components/icons/MirIcon.vue';
-import GlassInput from '@/components/UI/GlassInput.vue';
-import GlassCheckbox from '@/components/UI/GlassCheckbox.vue';
-import GlassButtonSmall from '@/components/UI/GlassButtonSmall.vue';
-import BookingPaymentForm from '@/components/views/booking/BookingPaymentForm.vue';
-
-const route = useRoute();
-const router = useRouter();
-
-const flight = ref<Flight | undefined>(undefined);
-
-const baggageWeight = ref<number>(parseInt(route.query.bw as any) || 0);
-const seats = ref<number>(1);
-const saveCard = ref<boolean>(false);
-
-const flightId = parseInt(route.params.id as string);
-const {
-  fetchData: fetchFlight
-} = useFetching(async () => {
-  try {
-    flight.value = await FlightService.getByID(flightId);
-  } catch {
-    router.push({ name: GuestRoutes.Search.name });
-  }
-});
-
-onMounted(() => {
-  fetchFlight();
-});
-</script>
 
 <style scoped>
 @media screen and (max-width: 1080px) {
@@ -176,6 +344,4 @@ onMounted(() => {
   flex-grow: 1.5;
   padding: 1.6rem;
 }
-
-
 </style>

@@ -12,6 +12,7 @@ import { applyOptionalFlag } from "../lib/api/validation-chain";
 import { LOGIN_REGEX, SINGLE_UNICODE_WORD_REGEX } from "../lib/service/const";
 import { LikedFlightHandler } from "./liked-flight.handler";
 import { NotificationHandler } from "./notification.handler";
+import { UserLevelDiscountRule } from "@/types/features/user";
 
 export class UserHandler {
   private static getChain(optional: boolean = false): ValidationChain[] {
@@ -146,6 +147,10 @@ export class UserHandler {
     }
   }
 
+  private static getGeneralDiscountRule(req: Request, res: Response): void {
+    res.json(ResponseTypes.ok({ rule: UserLevelDiscountRule }));
+  }
+
   public static router(): Router {
     const router = Router();
     // Use payment routes
@@ -154,6 +159,13 @@ export class UserHandler {
     router.use("/liked", LikedFlightHandler.router());
     // User notification handler
     router.use("/notification", NotificationHandler.router());
+
+    router.get(
+      '/discount-rules',
+      authorizationMiddleware,
+      this.getGeneralDiscountRule
+    )
+
 
     // Guest routes
     // PERF

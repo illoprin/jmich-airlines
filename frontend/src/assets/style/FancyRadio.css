@@ -1,0 +1,40 @@
+.radio-container {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0px 7px 15px rgba(0, 0, 0, 0.12);
+}
+
+.radio-container.vertical {
+  flex-flow: column nowrap;
+}
+
+.option-button {
+  position: relative;
+  flex: 1;
+  padding: 1.1rem 2.8rem;
+  background: transparent;
+  color: white;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.2s ease;
+}
+
+.radio-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 16px;
+  z-index: 0;
+  transition: transform 0.3s, width 0.3s;
+}
+
+.radio-highlight.horizontal {
+  width: 100%;
+}
+
+.radio-highlight.vertical {
+  height: 100%;
+}

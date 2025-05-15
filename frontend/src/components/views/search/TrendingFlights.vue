@@ -12,7 +12,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="glass glass-border glass-panel" v-if="hotTours">
+  <div class="glass glass-border glass-padding" v-if="hotTours">
 
     <div class="row g-4">
       <!-- Hot Tour -->

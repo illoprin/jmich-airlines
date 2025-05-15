@@ -6,6 +6,7 @@ import '@/assets/style/Fonts.css'
 import '@/assets/style/FormControl.css';
 import '@/assets/style/Dropdown.css'
 import '@/assets/style/Flight.css'
+import '@/assets/style/FancyRadio.css'
 import { createPinia } from 'pinia';
 import piniaPluginPersistentState from 'pinia-plugin-persistedstate';
 

@@ -9,16 +9,30 @@ export interface DatesDelta {
 }
 
 /**
- * Calculates difference of two dates
+ * Calculates difference between two dates
+ * in milliseconds
  * @param a - a value ISO8601 date string
  * @param b - b value ISO8601 date string
- * @returns date delta value
+ * @returns difference in milliseconds
+ * value can be negative
  */
-export function deltaDate(a: string, b: string): DatesDelta | null {
+export function deltaTime(a: string, b: string): number | null {
   const aDate = parseISO8601(a);
   const bDate = parseISO8601(b);
   if (!aDate || !bDate) return null;
-  const millisecondsDelta = Math.abs(aDate.getTime() - bDate.getTime());
+  return aDate.getTime() - bDate.getTime();
+}
+
+/**
+ * Calculates difference between two dates
+ * @param a - a value ISO8601 date string
+ * @param b - b value ISO8601 date string
+ * @returns formatted date ABSOLUTE difference
+ */
+export function deltaDate(a: string, b: string): DatesDelta | null {
+  let millisecondsDelta = deltaTime(a, b);
+  if (!millisecondsDelta) return null;
+  millisecondsDelta = Math.abs(millisecondsDelta);
 
   let minutes = Math.ceil(millisecondsDelta / minuteMilliseconds);
   let hours = minutes / 60;

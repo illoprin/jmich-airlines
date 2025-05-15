@@ -1,4 +1,7 @@
 
 const BASE_API = import.meta.env.VITE_BASE_API;
+const MIN_SEATS = 15;
+const DEP_TIME_MIN_DIFFERENCE = 1000 * 60 * 60 * 24 * 2; // two days
+const HOUR_MILLISECONDS = 1000 * 60 * 60;
 
-export { BASE_API };
+export { BASE_API, MIN_SEATS, DEP_TIME_MIN_DIFFERENCE, HOUR_MILLISECONDS };

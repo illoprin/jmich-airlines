@@ -3,7 +3,7 @@ import JmichLogo from '@/assets/icons/jmich-logo.svg'
 </script>
 
 <template>
-  <div class="w-100 glass glass-border glass-panel mt-5">
+  <div class="w-100 glass glass-border glass-padding mt-5">
 
     <div class="row">
       <div class="col-lg-4 p-md-4 stroke-right text-center">

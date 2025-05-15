@@ -21,14 +21,14 @@ const delta = deltaDate(props.flight.departure_date, props.flight.arrival_date);
       <span class="fs-2 fw-bold">
         {{ departureDate.hours }}:{{ departureDate.minutes }}
       </span>
-      <span class="flight-snippet-details">
+      <span class="flight-route-details">
         {{ flight.departure_city.name }}
       </span>
-      <span class="flight-snippet-details">
+      <span class="flight-route-details">
         {{ departureDate.days }} {{ Months_RU[departureDate.month] }}
       </span>
     </div>
-    <div class="d-flex flex-column align-items-start flex-fill flight-snippet-view">
+    <div class="d-flex flex-column align-items-start flex-fill flight-route-view">
       <div class="d-flex justify-content-between align-items-end w-100 h-100">
         <div class="text-start">
           <FlightOff class="flight-icon" />
@@ -52,10 +52,10 @@ const delta = deltaDate(props.flight.departure_date, props.flight.arrival_date);
       <span class="fs-2 fw-bold">
         {{ arrivalDate.hours }}:{{ arrivalDate.minutes }}
       </span>
-      <span class="flight-snippet-details">
+      <span class="flight-route-details">
         {{ flight.arrival_city.name }}
       </span>
-      <span class="flight-snippet-details">
+      <span class="flight-route-details">
         {{ arrivalDate.days }} {{ Months_RU[arrivalDate.month] }}
       </span>
     </div>
@@ -68,10 +68,11 @@ const delta = deltaDate(props.flight.departure_date, props.flight.arrival_date);
   width: 2rem;
   fill: var(--glass-text-transparent);
 }
-.flight-snippet-details {
+.flight-route-details {
   font-size: 1.1rem;
+  color: var(--glass-text-transparent);
 }
-.flight-snippet-view {
+.flight-route-view {
   padding: 0 0.7rem;
 }
 </style>

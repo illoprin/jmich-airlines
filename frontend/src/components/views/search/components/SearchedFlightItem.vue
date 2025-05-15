@@ -1,5 +1,5 @@
 <template>
-  <div class="glass glass-border glass-panel flight-item">
+  <div class="glass glass-border glass-padding flight-item">
 
     <!-- Tag -->
     <div class="tag-block" v-if="tagField">
@@ -20,12 +20,13 @@
           {{ formatPrice(priceWithBaggage, "₽") }}
         </span>
 
-        <div>
+        <div class="mt-3">
           <label class="fs-5 text-start w-100 mb-2 text-white-50">
             Вес багажа
           </label>
           <GlassInput
             type="number"
+            class="small w-100"
             min="0"
             :max="flight.seats_available"
             placeholder="Укажите вес"
@@ -33,7 +34,10 @@
           />
         </div>
 
-        <GlowButton class="mt-3 w-100 p-3">
+        <GlowButton
+          class="mt-3 w-100 p-3"
+          @click="$router.push({name: AuthRoutes.BookingPage.name, params: { id: flight.id }, query: { bw: baggageWeight }})"
+        >
           Приобрести
         </GlowButton>
       </div>
@@ -47,8 +51,8 @@
           >
 
           <LikeBtnDynamic
-            :checked="liked"
-            @click="() => handleLikeButton()"
+            :checked="liked ?? false"
+            @click="handleLikeButton"
             class="float-end"
           />
         </div> 
@@ -66,21 +70,44 @@ import type { Flight } from '@/api/types/entities/flight';
 import CheckIco from '@/assets/icons/check.svg'
 import GlassInput from '@/components/UI/GlassInput.vue';
 import { formatPrice } from '@/lib/format/formatPrice';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import type { BaggageRule } from '@/api/types/entities/company';
 import GlowButton from '@/components/UI/GlowButton.vue';
-import FlightSnippet from '@/components/shared/FlightSnippet.vue';
+import FlightSnippet from '@/components/shared/FlightRouteCompact.vue';
 import { BASE_API } from '@/store/store';
 import LikeBtnDynamic from '@/components/icons/LikeBtnDynamic.vue';
+import { useLikedStore } from '@/store/likedFlightsStore';
+import { AuthRoutes } from '@/router/routes';
+
+const likedStore = useLikedStore();
 
 const props = defineProps<{
   flight: Flight,
-  likeCallback: (flight: Flight) => void;
-  dislikeCallback: (flight: Flight) => void;
-  isFlightLiked: (flight: Flight) => boolean;
 }>();
 const baggageWeight = ref<string>("");
-const liked = ref<boolean>(props.isFlightLiked(props.flight));
+const liked = ref<boolean>(false);
+
+const syncLike = async () => {
+  try {
+    await likedStore.fetchLikes();
+    liked.value = await likedStore.isFlightLiked(props.flight.id);
+  } catch {
+    console.log('user is unauthorized');
+  }
+}
+
+onMounted(async () => {
+  await syncLike();
+});
+
+const handleLikeButton = async () => {
+  if (!liked.value) {
+    await likedStore.like(props.flight);
+  } else {
+    await likedStore.dislike(props.flight);
+  }
+  liked.value = !liked.value;
+}
 
 const tagField = computed<string>(() => {
   if (props.flight.cheapest) {
@@ -102,22 +129,14 @@ const priceWithBaggage = computed<number>(() => {
   return 0;
 });
 
-const handleLikeButton = () => {
-  liked.value = !liked.value;
-  if (liked.value)
-    props.likeCallback(props.flight)
-  else
-    props.dislikeCallback(props.flight);
-}
-
 </script>
 
 <style scoped>
 
 .flight-item {
   position: relative;
-  background-color: rgba(255, 255, 255, 0.014) !important;
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.096) !important;
+  box-shadow: 0px 8px 40px rgba(0, 0, 0, 0.116);
 }
 .tag-block {
   position: absolute;

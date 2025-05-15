@@ -4,7 +4,7 @@ import { formatPrice } from '@/lib/format/formatPrice';
 import { Months_RU, parseDate } from '@/lib/date/parseDate';
 import { GuestRoutes } from '@/router/routes';
 import { BASE_API } from '@/store/store';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onMounted, onScopeDispose, ref } from 'vue';
 
 const props = defineProps<{
   flight: TrendingFlight
@@ -15,7 +15,7 @@ const arrivalTime = parseDate(props.flight.arrival_date);
 
 const currentImage = ref<string>(props.flight.departure_city_image);
 
-let interval: number | undefined = undefined;
+let interval: any = null;
 
 onMounted(() => {
   interval = setInterval(() => {
@@ -27,8 +27,12 @@ onMounted(() => {
   }, 4500);
 });
 
-onBeforeUnmount(() => {
-  interval = undefined;
+
+onScopeDispose(() => {
+  if (interval) {
+    clearInterval(interval);
+    interval = null;
+  }
 });
 
 </script>

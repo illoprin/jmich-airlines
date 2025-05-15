@@ -8,6 +8,7 @@ import SearchedFlights from "@/components/views/search/SearchedFlights.vue";
 import TrendingFlights from "@/components/views/search/TrendingFlights.vue";
 import { useFetching } from "@/composable/useFetching";
 import { BookingService } from "@/service/BookingService";
+import { useLikedStore } from "@/store/likedFlightsStore";
 import { computed, onMounted, ref } from "vue";
 
 async function searchSubmit(data: FlightSearchPayload) {
@@ -16,12 +17,9 @@ async function searchSubmit(data: FlightSearchPayload) {
 }
 
 const trendingFlights = ref<TrendingFlight[] | undefined>(undefined);
-const searchedFlights = ref<Flight[] | undefined>(undefined);
+const searchedFlights = ref<Flight[]>([]);
 const searchQuery = ref<FlightSearchPayload>({});
-const isAnyFlights = computed<boolean>(() => 
-  (searchedFlights.value !== undefined
-  && Object.keys(searchedFlights.value as any).length > 0)
-);
+const likes = useLikedStore();
 
 const {
   fetchData: fetchTrending,
@@ -56,12 +54,12 @@ onMounted(() => {
     <!-- Hot Tours -->
     <TrendingFlights
       :hotTours="trendingFlights"
-      v-if="trendingFlights && !isAnyFlights"
+      v-if="trendingFlights && searchedFlights.length <= 0"
     />
 
     <!-- Flights -->
     <SearchedFlights
-      v-if="searchedFlights && isAnyFlights"
+      v-if="searchedFlights.length > 0"
       :flights="searchedFlights"
     />
   </div>

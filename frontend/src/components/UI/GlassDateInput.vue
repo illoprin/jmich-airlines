@@ -37,7 +37,7 @@ function onSelect() {
 
 <template>
   <button 
-    class="glass glass-border glass-panel form-glass"
+    class="glass glass-border form-glass"
     style="text-align: left;"
     v-bind="$attrs"
     @click="showCalendar"

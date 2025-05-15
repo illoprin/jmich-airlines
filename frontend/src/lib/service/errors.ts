@@ -12,6 +12,13 @@ export class UserTokenError extends Error {
   }
 }
 
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NotFoundError";
+  }  
+}
+
 export class UserRegistrationError extends Error {
   constructor(message: string) {
     super(message);

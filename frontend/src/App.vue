@@ -2,27 +2,36 @@
 import AppHeader from "@/layouts/AppHeader.vue";
 import { useRoute } from "vue-router";
 import { computed } from "vue";
-import { GuestRoutes, NotFoundRoute } from "@/router/routes.ts";
+import { AuthRoutes, GuestRoutes, NotFoundRoute } from "@/router/routes.ts";
 import AppFooter from "@/layouts/AppFooter.vue";
 
 const route = useRoute();
 
-const isAuth = computed<boolean>(() =>
+const isAuthPage = computed<boolean>(() =>
   route.fullPath.includes(GuestRoutes.Authorization.path)
 );
 
-const isNotFound = computed<boolean>(() => 
+const isNotFoundPage = computed<boolean>(() => 
   route.fullPath.includes(NotFoundRoute.path)
+);
+
+const isBookingPage = computed<boolean>(() => 
+  route.fullPath.includes(AuthRoutes.BookingPage.name)
 );
 
 </script>
 
 <template>
-  <div class="container-lg m-auto">
-    <AppHeader v-if="!isAuth && !isNotFound" />
+  <div
+    class="container-lg m-auto"
+    v-if="!isAuthPage && !isNotFoundPage"
+  >
+    <AppHeader />
   </div>
   <RouterView />
-  <AppFooter v-if="!isAuth && !isNotFound"/>
+  <AppFooter
+    v-if="!isAuthPage && !isNotFoundPage && !isBookingPage"
+  />
 </template>
 
 <style scoped></style>

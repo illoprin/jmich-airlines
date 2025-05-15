@@ -47,7 +47,7 @@
       </div>
 
 
-      <div class="glass glass-border glass-panel w-100 text-center">
+      <div class="glass glass-border glass-padding w-100 text-center">
 
         <strong class="fs-4 d-block mb-4">
           {{ title }}

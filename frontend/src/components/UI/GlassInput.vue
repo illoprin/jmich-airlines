@@ -12,7 +12,7 @@ const handleInput = (e: Event) => {
 
 <template>
   <input
-    class="form-control form-glass glass glass-border"
+    class="form-glass glass glass-border"
     @input="handleInput"
     v-bind="$attrs"
   />

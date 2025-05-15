@@ -6,11 +6,11 @@ export class LikedFlightAPI {
 
   }
 
-  public static async unlike(flightID: number, token: string): Promise<void> {
+  public static async dislike(flightID: number, token: string): Promise<void> {
 
   }
 
-  public static async getLiked(token: string): Promise<Flight[]> {
+  public static async getLikes(token: string): Promise<Flight[]> {
     return likedFlightMock;
   }
 }

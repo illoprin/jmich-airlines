@@ -13,11 +13,17 @@
   --glass-panel: rgba(255, 255, 255, 0.123);
   --glass-panel-hover: rgba(255, 255, 255, 0.24);
   --glass-panel-active: rgba(255, 255, 255, 0.329);
-  --glass-stroke: rgba(255, 255, 255, 0.247);
-  --glass-stroke-light: rgba(255, 255, 255, 0.1);
+  --glass-stroke: rgba(255, 255, 255, 0.144);
+  --glass-stroke-light: rgba(255, 255, 255, 0.068);
   --glass-panel-shadow: rgba(0, 0, 0, 0.4);
+  --small-button-shadow: rgba(0, 0, 0, 0.11);
   
   --black-transparent: rgba(0, 0, 0, 0.8);
+
+  --base-padding: 1.5rem;
+
+  --glass-rounded-small: 10px;
+  --glass-rounded: 1.25rem;
 }
 
 #app {
@@ -63,7 +69,7 @@ hr {
 }
 
 .filter-shadow {
-  filter: drop-shadow( 3px 3px 10px rgba(0, 0, 0, 0.266));
+  filter: drop-shadow( 3px 3px 10px rgba(0, 0, 0, 0.185));
 }
 
 .img-border-round {
@@ -88,11 +94,18 @@ h1 {
 
 .glass-panel {
   backdrop-filter: blur(10px);
-  padding: 1.5rem;
 }
 
 .glass-border {
-  border-radius: 1.25rem;
+  border-radius: var(--glass-rounded);
+}
+
+.glass-padding {
+  padding: var(--base-padding);
+}
+
+.glass.light-shadow {
+  box-shadow: 0 8px 50px var(--small-button-shadow);
 }
 
 .glass {
@@ -133,15 +146,21 @@ h1 {
 .glass-button-sm {
   text-decoration: none;
   font-size: 0.95rem;
-  padding: 0.37em 2.1em;
+  padding: 0.37em 1.5em;
   border-radius: 10px;
   color: #fff;
 
-  box-shadow: 0px 10px 30px var(--glass-panel-shadow);
+  box-shadow: 0px 10px 30px var(--small-button-shadow);
   background-color: var(--glass-panel);
 
   will-change: background-color;
   transition: background-color 300ms;
+}
+
+.glass-button-sm.solo {
+  padding: 0.5rem 0.7rem;
+  box-shadow: 0 5px 30px var(--small-button-shadow);
+  font-size: 1.2rem;
 }
 
 .glass-button-sm:hover {
@@ -184,6 +203,13 @@ h1 {
 .sm-icon {
   width: 1rem;
   height: 1rem;
+}
+.sm-md-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+.transparent-icon {
+  fill: var(--glass-text-transparent);
 }
 
 .md-icon {

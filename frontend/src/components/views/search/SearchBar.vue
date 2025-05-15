@@ -49,7 +49,7 @@ function selectArrivalAirport(airport: Airport) {
 
 <template>
   <div
-    class="search-panel d-flex flex-wrap gap-2 justify-content-between align-items-center mb-5"
+    class="search-panel d-flex gap-2 justify-content-between align-items-center mb-5"
     v-if="!isLoadingCities"
   >
 
@@ -74,7 +74,7 @@ function selectArrivalAirport(airport: Airport) {
     </CityDropDown>
 
     <GlassDateInput 
-      class="flex-fill" 
+      class="w-auto flex-fill" 
       :min="new Date()" 
       v-model:input="formData.departure_date"
     />

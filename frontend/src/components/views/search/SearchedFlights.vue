@@ -2,15 +2,19 @@
 
   <div class="d-flex gap-3 flex-wrap align-items-baseline">
     <!-- Sort panel -->
-    <div class="glass glass-border glass-panel flex-fill">
+    <div class="glass glass-border glass-padding flex-fill">
       <GlassPanelHeader>
         <template v-slot:header>
           Сортировка
         </template>
       </GlassPanelHeader>
+      <div class="">
+        <GlassFancyRadioVertical :options="sortOptions" v-model:value="sortBy" />
+        <GlassFancyRadioHorizontal :options="orderOptions" v-model:value="order" class="mt-3"/>
+      </div>
     </div>
     <!-- Flights -->
-    <div class="flights-list glass glass-border glass-panel">
+    <div class="flights-list glass glass-border glass-padding">
       <GlassPanelHeader>
         <template v-slot:header>
           Мы нашли {{ flights.length }} рейсов
@@ -18,11 +22,9 @@
       </GlassPanelHeader>
       <div class="d-flex gap-3 flex-column">
         <SearchedFlightItem
-          v-for="flight in flights"
+          v-for="flight in sortedFlights"
+          :key="flight.id"
           :flight="flight"
-          :likeCallback="handleLike"
-          :dislikeCallback="handleDislike"
-          :isFlightLiked="isFlightLiked"
         />
       </div>
 
@@ -34,28 +36,94 @@
 <script setup lang="ts">
 import type { Flight } from '@/api/types/entities/flight';
 import GlassPanelHeader from '@/components/shared/GlassPanelHeader.vue';
+import GlassFancyRadioHorizontal from '@/components/UI/GlassFancyRadioHorizontal.vue';
+import GlassFancyRadioVertical from '@/components/UI/GlassFancyRadioVertical.vue';
 import SearchedFlightItem from '@/components/views/search/components/SearchedFlightItem.vue';
+import { useLikedStore } from '@/store/likedFlightsStore';
+import { FlightSortTypes } from '@/types/sort/flightSortTypes';
+import { OrderOptions } from '@/types/sort/order';
+import type { DefaultOption } from '@/types/ui/fancyRadio';
+import { computed, ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   flights: Flight[];
 }>();
 
-const sortedFlights = (): Flight[] => {
-  return [];
-};
+const likedStore = useLikedStore();
 
-const handleLike = (flight: Flight) => {
-  console.log("like", flight.id);
-}
+const sortBy = ref(FlightSortTypes.Price);
+const sortOptions = [
+  { label: 'Цена', value: FlightSortTypes.Price },
+  { label: 'Дата вылета', value: FlightSortTypes.Date },
+  { label: 'Продолжительность полёта', value: FlightSortTypes.Duration },
+  { label: 'Стоимость багажа', value: FlightSortTypes.Baggage }
+];
 
-const handleDislike = (flight: Flight) => {
-  console.log("dislike", flight.id);
-}
+const order = ref(OrderOptions.ASC);
+const orderOptions = computed<DefaultOption[]>(() => {
+  switch (sortBy.value) {
+    case FlightSortTypes.Price:
+      return [
+        { label: "Сначала дешёвые", value: OrderOptions.ASC },
+        { label: "Хочу подороже", value: OrderOptions.DESC },
+      ];
+    case FlightSortTypes.Date:
+      return [
+        { label: "Раньше", value: OrderOptions.ASC },
+        { label: "Позже", value: OrderOptions.DESC },
+      ];
+    case FlightSortTypes.Baggage:
+      return [
+        { label: "Сначала ниже", value: OrderOptions.ASC },
+        { label: "Сначала выше", value: OrderOptions.DESC },
+      ];
+    case FlightSortTypes.Duration:
+      return [
+        { label: "Оптимальные", value: OrderOptions.ASC },
+        { label: "Продолжительные", value: OrderOptions.DESC },
+      ];
+  }
+})
+const sortedFlights = computed<Flight[]>(() => {
+  const flightsCopy = [...props.flights];
 
-const isFlightLiked = (flight: Flight) => {
-  // TODO
-  return false;
-}
+  const getDuration = (flight: Flight): number => {
+    const dep = new Date(flight.departure_date);
+    const arr = new Date(flight.arrival_date);
+    return arr.getTime() - dep.getTime();
+  };
+
+  const getDepartureTime = (flight: Flight): number => {
+    return new Date(flight.departure_date).getTime();
+  };
+
+  const getBaggagePrice = (flight: Flight): number => {
+    return flight.company.baggage_rule?.price_per_kg ?? Infinity;
+  };
+
+  const compare = (a: Flight, b: Flight, getter: (f: Flight) => number) => {
+    const aValue = getter(a);
+    const bValue = getter(b);
+    return order.value === OrderOptions.ASC ? aValue - bValue : bValue - aValue;
+  };
+
+  switch (sortBy.value) {
+    case FlightSortTypes.Price:
+      return flightsCopy.sort((a, b) => compare(a, b, f => f.price));
+
+    case FlightSortTypes.Duration:
+      return flightsCopy.sort((a, b) => compare(a, b, getDuration));
+
+    case FlightSortTypes.Date:
+      return flightsCopy.sort((a, b) => compare(a, b, getDepartureTime));
+
+    case FlightSortTypes.Baggage:
+      return flightsCopy.sort((a, b) => compare(a, b, getBaggagePrice));
+
+    default:
+      return flightsCopy;
+  }
+});
 
 </script>
 

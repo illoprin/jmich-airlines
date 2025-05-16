@@ -19,6 +19,7 @@ export interface User {
   secondname: string;
   password?: string;
   email: string;
+  phone: string;
   avatarpath: string;
   role: UserRole;
   level: UserLevel;

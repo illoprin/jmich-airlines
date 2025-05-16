@@ -1,0 +1,5 @@
+.user-avatar {
+  max-width: calc(var(--index) * 8);
+  max-height: calc(var(--index) * 8);
+  object-fit: cover;
+}

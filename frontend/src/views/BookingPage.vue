@@ -289,7 +289,6 @@ const validateCode = async () => {
   </ModalBase>
 </template>
 
-
 <style scoped>
 @media screen and (max-width: 1080px) {
   .bottom-bar {

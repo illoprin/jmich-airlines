@@ -2,7 +2,7 @@
 
   <div class="d-flex gap-3 flex-wrap align-items-baseline">
     <!-- Sort panel -->
-    <div class="glass glass-border glass-padding flex-fill">
+    <div class="glass-convex glass-border glass-padding flex-fill">
       <GlassPanelHeader>
         <template v-slot:header>
           Сортировка
@@ -14,7 +14,7 @@
       </div>
     </div>
     <!-- Flights -->
-    <div class="flights-list glass glass-border glass-padding">
+    <div class="flights-list glass-convex glass-border glass-padding">
       <GlassPanelHeader>
         <template v-slot:header>
           Мы нашли {{ flights.length }} рейсов

@@ -1,4 +1,4 @@
-function format(raw: string, pattern: string): string {
+function formatString(raw: string, pattern: string): string {
   let new_str = '';
   let offset = 0;
   for (let i = 0; i < pattern.length; i++) {
@@ -13,4 +13,4 @@ function format(raw: string, pattern: string): string {
   return new_str;
 }
 
-export { format };
+export { formatString };

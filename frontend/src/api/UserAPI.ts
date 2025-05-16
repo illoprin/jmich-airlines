@@ -16,9 +16,9 @@ import type { UserLevelDiscountRule } from '@/api/types/entities/discount';
 export class UserAPI {
   public static async getCurrentUser(token: string): Promise<User> {
     if (token) {
-      return mockUsers[0];
+      return mockUsers.find(u => u.id === parseInt(token)) as any;
     } else {
-      throw new UserTokenError('Токен протух');
+      throw new UserTokenError('invalid token');
     }
   }
 
@@ -30,14 +30,14 @@ export class UserAPI {
   public static async loginUser(
     payload: UserLoginPayload,
   ): Promise<string> {
-    if (
-      mockUsers.find(
-        (user) =>
-          payload.login === user.login &&
-          payload.password === payload.password,
-      )
-    ) {
-      return mockToken;
+    const user = mockUsers.find(
+      (user) =>
+        payload.login === user.login &&
+        payload.password === user.password,
+    );
+
+    if (user !== undefined) {
+      return `${user.id}`;
     } else {
       // TODO: show message from server
       throw new Error('invalid fields');
@@ -56,10 +56,10 @@ export class UserAPI {
    * @return New access token
    */
   public static async verifyUser(token: string): Promise<string> {
-    if (!token || token === '')
+    if (!token || token === '' || !mockUsers.find(u => u.id === parseInt(token)) )
       throw new UserTokenError('user is unauthorized');
     // always verified
-    return mockToken;
+    return token;
   }
 
   public static async updateCurrentUser(
@@ -86,8 +86,7 @@ export class UserAPI {
   public static async getRules(
     token: string,
   ): Promise<UserLevelDiscountRule> {
-    if (!token)
-      throw new UserTokenError('user is unauthorized');
+    if (!token) throw new UserTokenError('user is unauthorized');
     return mockRules;
   }
 }

@@ -7,6 +7,8 @@ import '@/assets/style/FormControl.css';
 import '@/assets/style/Dropdown.css'
 import '@/assets/style/Flight.css'
 import '@/assets/style/FancyRadio.css'
+import '@/assets/style/Account.css'
+import '@/assets/style/Icons.css'
 import { createPinia } from 'pinia';
 import piniaPluginPersistentState from 'pinia-plugin-persistedstate';
 

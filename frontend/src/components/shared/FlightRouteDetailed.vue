@@ -2,7 +2,7 @@
 import type { Flight } from '@/api/types/entities/flight';
 import { Months_RU, parseDate } from '@/lib/date/parseDate';
 import { deltaDate } from '@/lib/date/deltaDates';
-import Plane from '@/components/icons/Plane.vue';
+import Plane from '@/components/icons/PlaneIcon.vue';
 
 const props = defineProps<{
   flight: Flight;

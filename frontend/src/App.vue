@@ -33,5 +33,3 @@ const isBookingPage = computed<boolean>(() =>
     v-if="!isAuthPage && !isNotFoundPage && !isBookingPage"
   />
 </template>
-
-<style scoped></style>

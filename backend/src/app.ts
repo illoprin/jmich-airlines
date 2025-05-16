@@ -33,7 +33,6 @@ export class App {
     this.app.use("/upload", express.static(`./${cfg.public_files_path}`));
     this.app.use(
       "/upload/protected",
-      authorizationMiddleware,
       express.static(`./${cfg.protected_files_path}`),
     );
     const uploadRouter = Router();
@@ -59,7 +58,7 @@ export class App {
     this.app.use("/api", router);
 
     this.app.get("/ping", (req, res) => {
-      res.json({ pong: `environment: ${req.dependencies.cfg.env}` });
+      res.json({ ping: "pong" });
     });
   }
 

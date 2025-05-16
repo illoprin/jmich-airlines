@@ -17,6 +17,7 @@ export const mockUsers: User[] = [
     role: UserRole.Customer,
     level: UserLevel.Premium,
     password: 'root',
+    phone: "9199009345",
   },
   {
     id: 1,
@@ -28,6 +29,7 @@ export const mockUsers: User[] = [
     role: UserRole.Admin,
     level: UserLevel.Platinum,
     password: '1234',
+    phone: "9199009345",
   },
   {
     id: 1,
@@ -39,6 +41,7 @@ export const mockUsers: User[] = [
     role: UserRole.Admin,
     level: UserLevel.Platinum,
     password: 'kulak',
+    phone: "9199009345",
   },
 ];
 

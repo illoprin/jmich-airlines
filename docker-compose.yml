@@ -1,0 +1,51 @@
+# version: '3.8'
+
+services:
+  redis:
+    image: redis:6
+    container_name: redis
+    ports:
+      - '9000:9000'
+    command: ["redis-server", "--save", "60", "3", "--loglevel", "warning", "--port", "9000"]
+    volumes:
+      - ./redis:/usr/local/etc/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "9000", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+    container_name: jmich-backend
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["npm", "run", "dev"]
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "localhost:8000/ping"]
+    #   interval: 2s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 5s
+
+  frontend:
+    profiles: ["frontend"]
+    build:
+      context: ./frontend
+    container_name: jmich-frontend
+    environment:
+      VITE_BASE_API: "http://backend:8000"
+    ports:
+      - '5000:5000'
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: ["npm", "run", "dev"]
+

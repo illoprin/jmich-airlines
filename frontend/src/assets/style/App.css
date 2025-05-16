@@ -13,8 +13,8 @@
   --glass-panel: rgba(255, 255, 255, 0.123);
   --glass-panel-hover: rgba(255, 255, 255, 0.24);
   --glass-panel-active: rgba(255, 255, 255, 0.329);
-  --glass-stroke: rgba(255, 255, 255, 0.144);
-  --glass-stroke-light: rgba(255, 255, 255, 0.068);
+  --glass-stroke: rgba(255, 255, 255, 0.194);
+  --glass-stroke-light: rgba(255, 255, 255, 0.118);
   --glass-panel-shadow: rgba(0, 0, 0, 0.4);
   --small-button-shadow: rgba(0, 0, 0, 0.11);
   
@@ -77,10 +77,6 @@ hr {
   border-radius: 1rem;
 }
 
-h1 {
-  letter-spacing: -2px;
-}
-
 .logo-row {
   width: 15rem;
   height: 15rem;
@@ -111,6 +107,13 @@ h1 {
 .glass {
   background-color: var(--glass-panel);
   border: 2px solid var(--glass-stroke);
+  box-shadow: 0px 18px 50px var(--glass-panel-shadow);
+}
+
+.glass-convex {
+  background-color: var(--glass-panel);
+  border-right: 3px solid var(--glass-stroke);
+  border-bottom: 3px solid var(--glass-stroke);
   box-shadow: 0px 18px 50px var(--glass-panel-shadow);
 }
 
@@ -182,6 +185,7 @@ h1 {
 }
 
 .tab-button {
+  display: block;
   box-shadow: 0px 10px 30px var(--glass-panel-shadow);
   width: 100%;
   border-radius: 10px;
@@ -199,23 +203,6 @@ h1 {
 }
 .tab-button.active {
   background-color: var(--glass-panel-active);
-}
-
-.sm-icon {
-  width: 1rem;
-  height: 1rem;
-}
-.sm-md-icon {
-  width: 1.35rem;
-  height: 1.35rem;
-}
-.transparent-icon {
-  fill: var(--glass-text-transparent);
-}
-
-.md-icon {
-  width: 1.75rem;
-  height: 1.75rem;
 }
 
 .badge-price {

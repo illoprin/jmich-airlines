@@ -42,7 +42,10 @@ onScopeDispose(() => {
     class="hot-tour-card mt-3 d-flex flex-column justify-content-between"
     @click="
       $router.push(
-        { name: GuestRoutes.TrendingFlight.name, params: { id: flight.flight_id } }
+        {
+          name: GuestRoutes.TrendingFlight.name,
+          params: { id: flight.flight_id }
+        }
       )
     "
   >
@@ -57,13 +60,13 @@ onScopeDispose(() => {
       :class="currentImage == flight.arrival_city_image ? 'visible' : ''"
     >
     <div class="hot-tour__gradient"></div>
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between" style="z-index: 2;">
       <span class="badge-price">
         от {{ formatPrice(flight.price, "₽") }}
       </span>
       <div class="text-white-50">Цена может быть выше</div>
     </div>
-    <div>
+    <div style="z-index: 2;">
       <div class="d-flex gap-3">
 
         <div class="calendar-badge">

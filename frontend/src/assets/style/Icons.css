@@ -1,0 +1,24 @@
+.sm-icon {
+  width: calc(var(--index) * .6);
+  height: calc(var(--index) * .6);
+}
+.sm-md-icon {
+  width: calc(var(--index) * 0.85);
+  height: calc(var(--index) * 0.85);
+}
+.transparent-icon {
+  fill: var(--glass-text-transparent);
+}
+.md-icon {
+  width: calc(var(--index) * 1.2);
+  height: calc(var(--index) * 1.2);
+}
+.btn-icon {
+  fill: #fff;
+  transition: fill 300ms;
+  will-change: fill;
+}
+.btn-icon:hover {
+  cursor: pointer;
+  fill: #cecece;
+}

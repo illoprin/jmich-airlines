@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Flight } from '@/api/types/entities/flight';
-import FlightOff from '@/components/icons/FlightOff.vue';
-import FlightLanding from '@/components/icons/FlightLanding.vue';
+import FlightOff from '@/components/icons/FlightOffIcon.vue';
+import FlightLanding from '@/components/icons/FlightLandingIcon.vue';
 import { Months_RU, parseDate } from '@/lib/date/parseDate';
 import { deltaDate } from '@/lib/date/deltaDates';
 

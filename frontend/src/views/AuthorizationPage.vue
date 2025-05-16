@@ -33,8 +33,8 @@
   <div class="container vh-100 auth-panel"
     :class="mode === AuthorizationPageModes.Registration ? 'mode-reg' : 'mode-auth'">
     <JmichLogo />
-    <div class="panel-tabs">
 
+    <div class="panel-tabs">
       <div class="tab-bar">
         <button class="glass tab-button" @click="switchToReg"
           :class="mode === AuthorizationPageModes.Registration ? 'active' : ''">
@@ -241,14 +241,12 @@ const handleSubmit = () => {
 
 const switchToReg = () => {
   router.push({
-    name: GuestRoutes.Authorization.name,
     hash: AuthorizationPageModes.Registration
   });
 };
 
 const switchToAuth = () => {
   router.push({
-    name: GuestRoutes.Authorization.name,
     hash: AuthorizationPageModes.Authorization
   });
 }

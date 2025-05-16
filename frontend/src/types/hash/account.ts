@@ -2,5 +2,6 @@ export enum AccountPageModes {
   Profile = "#profile",
   Liked = "#liked",
   Tickets = "#tickets",
-  Settings = "#settings"
+  Settings = "#settings",
+  Search = "#search"
 }

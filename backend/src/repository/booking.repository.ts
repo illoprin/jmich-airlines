@@ -237,6 +237,23 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
     return dtos;
   }
 
+  public getCountByUserID(
+    userID: number,
+    status: BookingStatus = BookingStatus.ACTIVE
+  ): number {
+    const sql = `--sql
+      SELECT COUNT(*) as count
+      FROM
+        ${this.getTableName()}
+      WHERE
+        user_id = ?
+      AND
+        status = ?
+    `;
+    const row = this.storage.get(sql, [userID, status]);
+    return parseInt(row.count);
+  }
+
   public getDTOByID(id: number): BookingDTO | null {
     const row = this.storage.get<any>(
       this.getDTOQuery(`WHERE ${this.getTableName()}.id = ?`, false),

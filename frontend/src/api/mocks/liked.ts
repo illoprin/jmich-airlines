@@ -1,5 +1,5 @@
 import { FlightStatus, type Flight } from '@/api/types/entities/flight';
-import { BASE_API } from '@/store/store';
+import { BASE_API } from '@/store/primaryStore';
 
 export const likedFlightMock: Flight[] = [
   {

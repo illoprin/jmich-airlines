@@ -10,4 +10,4 @@ export const SOME_WORDS_SINGLE_SPACE_REGEX =
 
 export const CARD_NUMBER_REGEX = /^[0-9]{16}$/;
 export const CARD_EXPIRES_REGEX = /^[0-9]{4}$/;
-export const CARD_CVV_REGEX = /^[0-9]{4}$/;
+export const CARD_CVV_REGEX = /^[0-9]{3}$/;

@@ -3,10 +3,14 @@
 
   --bg-body-primary-1: rgba(10, 115, 205, 1);
   --bg-body-primary-2: rgba(38, 183, 242, 1);
+
   --accent-1: #c3891e;
   --accent-2: #F9ED40;
   --red-accent-1: #F76B6E;
   --red-accent-2: #E46E20;
+  --green-accent-1: #4FF114;
+  --green-accent-2: #3ba726;
+  
   --selection-color: #0098f2;
 
   --glass-text-transparent: rgba(255, 255, 255, 0.61);

@@ -6,7 +6,7 @@
     </div>
     
     <div class="tab-bar">
-      <div class="glass-convex glass-border glass-padding flex-fill">
+      <div class="glass-convex glass-border glass-padding w-auto d-flex flex-column">
         <ProfileLevel />
       </div>
       <div class="glass-convex glass-border glass-padding flex-fill">

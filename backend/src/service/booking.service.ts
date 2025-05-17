@@ -42,7 +42,7 @@ import { FlightDTO } from "@/types/dto/flight";
 import { DiscountService } from "./discount.service";
 import { CompanyService } from "./company.service";
 import { UserPublicDTO } from "@/types/dto/user";
-import { UserLevelDiscountRule } from "@/types/features/user";
+import { UserLevelDiscountRules } from "@/types/features/user";
 import { CARD_CVV_REGEX, CARD_EXPIRES_REGEX, CARD_NUMBER_REGEX } from "@/lib/service/const";
 
 export class BookingService {
@@ -112,7 +112,7 @@ export class BookingService {
   }
 
   private calculateUserLevelDiscount(level: UserLevel): number {
-    const rule = UserLevelDiscountRule[level];
+    const rule = UserLevelDiscountRules[level];
 
     let totalDiscount = rule.discount;
 
@@ -129,7 +129,7 @@ export class BookingService {
     if (!isInTrending) {
       return 0.0;
     }
-    return UserLevelDiscountRule[level].trendingFlightBonus;
+    return UserLevelDiscountRules[level].trendingFlightBonus;
   }
 
   /**
@@ -357,6 +357,14 @@ export class BookingService {
       return bookings ?? [];
     }
     return bookingsCached;
+  }
+
+  public getCountForUser(userID: number, status: string) {
+    if (!Object.values(BookingStatus).includes(status as any)) {
+      throw new InvalidFieldError('invalid status');
+    }
+    const count = this.bookingRepo.getCountByUserID(userID, status as BookingStatus);
+    return count;
   }
 
   /**

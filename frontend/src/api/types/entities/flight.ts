@@ -4,7 +4,7 @@ import type { City } from "@/api/types/entities/city.ts";
 
 export enum FlightStatus {
   Active = 'ACTIVE',
-  Cancelled = 'CANCELED',
+  Canceled = 'CANCELED',
   Delayed = 'DELAYED',
   Completed = 'COMPLETED',
 }

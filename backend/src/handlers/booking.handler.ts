@@ -8,6 +8,8 @@ import { body, check, ValidationChain } from "express-validator";
 import { getForeignKeyValidation } from "../lib/api/validation-chain";
 import { DISCOUNT_REGEX } from "../lib/service/const";
 import { DiscountHandler } from "./discount.handler";
+import { BookingService } from "@/service/booking.service";
+import { BookingStatus } from "@/types/repository/booking";
 
 export class BookingHandler {
   private static getAddBookingChain(): ValidationChain[] {
@@ -91,7 +93,7 @@ export class BookingHandler {
         baggage_weight,
         code,
         payment,
-        payment_id
+        payment_id,
       });
       res.status(201).send();
     } catch (err) {
@@ -109,6 +111,41 @@ export class BookingHandler {
       const bookings =
         await req.dependencies.bookingService.getUserBookings(id);
       res.json(ResponseTypes.ok({ bookings }));
+    } catch (err) {
+      processServiceError(res, err);
+      return;
+    }
+  }
+
+  private static async getClosestByToken(
+    req: Request,
+    res: Response
+  ): Promise<void> {
+    // FIX!
+    try {
+      const { id } = req.token_data;
+      const bookings =
+        await req.dependencies.bookingService.getUserBookings(id);
+      res.json(ResponseTypes.ok({ booking: bookings[0] }));
+    } catch (err) {
+      processServiceError(res, err);
+      return;
+    }
+  }
+
+  private static async getCountByToken(
+    req: Request,
+    res: Response
+  ): Promise<void> {
+    try {
+      const { id } = req.token_data;
+      const status = req.params.status.toUpperCase();
+      const count =
+        await req.dependencies.bookingService.getCountForUser(
+          id,
+          status
+        );
+      res.json(ResponseTypes.ok({ count }));
     } catch (err) {
       processServiceError(res, err);
       return;
@@ -202,6 +239,16 @@ export class BookingHandler {
       "/price",
       [authorizationMiddleware],
       this.calculatePrice
+    );
+    router.get(
+      "/count/:status",
+      [authorizationMiddleware],
+      this.getCountByToken
+    );
+    router.get(
+      "/closest",
+      [authorizationMiddleware],
+      this.getClosestByToken
     );
 
     // Auth routes

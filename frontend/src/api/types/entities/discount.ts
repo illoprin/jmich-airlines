@@ -1,12 +1,13 @@
+import type { UserLevel } from "@/api/types/entities/user";
 
 
 export interface UserDiscountRule {
   discount: number;
   trendingFlightBonus: number;
-  randomFlightBonus?: () => boolean;
+  requiredFlights: number;
 }
 
-export type UserLevelDiscountRule = Record<string, UserDiscountRule>;
+export type UserLevelDiscountRules = Record<UserLevel, UserDiscountRule>;
 
 export interface Discount {
   id?: number

@@ -98,7 +98,7 @@ import { useValidation, type ValidationSchema } from "@/composable/useValidation
 import { emailRegex, generalLatinRegex, oneUnicodeWordRegex, phoneRegex } from "@/utils/regex";
 import { AccountPageModes } from "@/types/hash/account";
 import { useUserStore } from "@/store/userStore";
-import ModalBase from "@/components/shared/ModalBase.vue";
+import ModalBase from "@/components/UI/ModalBase.vue";
 
 
 const route = useRoute();

@@ -3,7 +3,7 @@ import type { TrendingFlight } from '@/api/types/entities/booking';
 import { formatPrice } from '@/lib/format/formatPrice';
 import { Months_RU, parseDate } from '@/lib/date/parseDate';
 import { GuestRoutes } from '@/router/routes';
-import { BASE_API } from '@/store/store';
+import { BASE_API } from '@/store/primaryStore';
 import { onMounted, onScopeDispose, ref } from 'vue';
 
 const props = defineProps<{

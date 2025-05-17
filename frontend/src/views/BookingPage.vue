@@ -4,9 +4,9 @@ import FlightRouteDetailed from '@/components/shared/FlightRouteDetailed.vue';
 import PurchaseTrigger from '@/components/shared/PurchaseTrigger.vue';
 import GlassLink from '@/components/UI/GlassLink.vue';
 import { useFetching } from '@/composable/useFetching';
-import { GuestRoutes } from '@/router/routes';
+import { AuthRoutes, GuestRoutes } from '@/router/routes';
 import { FlightService } from '@/service/FlightService';
-import { BASE_API } from '@/store/store';
+import { BASE_API } from '@/store/primaryStore';
 import { computed, onMounted, onScopeDispose, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import StepperInput from '@/components/views/booking/StepperInput.vue';
@@ -18,27 +18,26 @@ import GlowButton from '@/components/UI/GlowButton.vue';
 import type { CreateBookingPayload } from '@/api/types/requests/booking';
 import type { Payment } from '@/api/types/entities/payment';
 import { PaymentService } from '@/service/PaymentService';
-import ModalBase from '@/components/shared/ModalBase.vue';
+import ModalBase from '@/components/UI/ModalBase.vue';
 import { DiscountService } from '@/service/DiscountService';
 import BookingTotalCost from '@/components/views/booking/BookingTotalCost.vue';
-import type { UserLevelDiscountRule } from '@/api/types/entities/discount';
+import type { UserLevelDiscountRules } from '@/api/types/entities/discount';
 import { useUserStore } from '@/store/userStore';
 import { UserLevel } from '@/api/types/entities/user';
 import { UserAPI } from '@/api/UserAPI';
+import { useDialogueStore } from '@/store/dialogueStore';
+import { BookingAPI } from '@/api/BookingAPI';
+import { AccountPageModes } from '@/types/hash/account';
 
 const route = useRoute();
 const router = useRouter();
 const formStore = useBookingForm();
 const userStore = useUserStore();
+const dialogueStore = useDialogueStore();
 
 const flight = ref<Flight | undefined>(undefined);
-const userDiscountRules = ref<UserLevelDiscountRule>();
+const userDiscountRules = ref<UserLevelDiscountRules>();
 const payments = ref<Payment[]>([]);
-
-// Message Modal
-const messageModalVisible = ref<boolean>(false);
-const messageModalTitle = ref<string>('');
-const messageModalContents = ref<string>('');
 
 // Fetch flight
 const flightId = parseInt(route.params.id as string);
@@ -125,11 +124,11 @@ const totalCost = computed<number>(() => {
   return Math.ceil(tC);
 });
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!formStore.paymentId || !formStore.payment) {
-    messageModalVisible.value = true;
-    messageModalContents.value = 'Выберете способ оплаты или введите ваши платёжные данные'
-    messageModalTitle.value = 'Не можем провести оплату';
+    dialogueStore.isModalVisible = true;
+    dialogueStore.modalContents = 'Выберете способ оплаты или введите ваши платёжные данные'
+    dialogueStore.modalTitle = 'Не можем провести оплату';
   }
 
   const formData: CreateBookingPayload = {
@@ -140,15 +139,25 @@ const handleSubmit = () => {
     seats: formStore.seats,
     code: formStore.code || undefined,
   }
+  try {
+    await BookingAPI.add(userStore.token, formData);
+    router.push({
+      name: AuthRoutes.AccountPage.name,
+      hash: AccountPageModes.Tickets
+    });
+  } catch (err) {
+    dialogueStore.modalTitle = 'Не удалось оформить бронирование';
+    dialogueStore.modalTitle = `Ошибка на стороне сервера: ${(err as Error).message}`;
+  }
   // TODO: add booking and goto user tickets page
 };
 
 watch(discountError, (err) => {
   if (discountError) {
     console.log("invalid code");
-    messageModalVisible.value = true;
-    messageModalTitle.value = 'Не валидный промо-код';
-    messageModalContents.value = 'Вы ввели неверный промо-код!';
+    dialogueStore.isModalVisible = true;
+    dialogueStore.modalTitle = 'Не валидный промо-код';
+    dialogueStore.modalContents = 'Вы ввели неверный промо-код!';
     formStore.code = "";
   }
 });
@@ -279,12 +288,12 @@ const validateCode = async () => {
     </div>
   </div>
 
-  <ModalBase v-model:visible="messageModalVisible">
+  <ModalBase v-model:visible="dialogueStore.isModalVisible">
     <template v-slot:title>
-      {{ messageModalTitle }}
+      {{ dialogueStore.modalTitle }}
     </template>
     <template v-slot:contents>
-      {{ messageModalContents }}
+      {{ dialogueStore.modalContents }}
     </template>
   </ModalBase>
 </template>

@@ -1,4 +1,6 @@
-import type { User } from "@/api/types/entities/user";
+import { mockRules } from "@/api/mocks/user";
+import type { UserLevelDiscountRules } from "@/api/types/entities/discount";
+import { UserLevel, type User } from "@/api/types/entities/user";
 import type { UserLoginPayload, UserRegistrationPayload } from "@/api/types/requests/user";
 import { UserAPI } from "@/api/UserAPI";
 import { processAPIError } from "@/lib/service/processServerError";
@@ -8,13 +10,21 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     token: '' as string,
     user: null as null | User,
+    rules: null as UserLevelDiscountRules | null,
   }),
   persist: {
-    pick: ['token', 'user']
+    pick: ['token']
   },
 
   getters: {
-    isAuthenticated: (state) => !!state.token && !!state.user
+    isAuthenticated: (state) => !!state.token && !!state.user,
+    getUserDiscount: (state) => {
+      if (state.rules && state.user) {
+        return state.rules[state.user.level].discount;
+      } else {
+        return null;
+      }
+    },
   },
 
   actions: {
@@ -84,5 +94,22 @@ export const useUserStore = defineStore('user', {
         throw processAPIError(err);
       }
     },
+
+    async fetchRules() {
+      try {
+        this.rules = await UserAPI.getRules(this.token);
+      } catch (err) {
+        throw processAPIError(err);
+      }
+    },
+
+    getNextRule() {
+      if (this.rules && this.user) {
+        return Object.values(this.rules as UserLevelDiscountRules)[
+          Object.values(UserLevel).findIndex(e => e === this.user?.level) + 1
+        ] ?? null;
+      }
+      return null;
+    }
   },
 });

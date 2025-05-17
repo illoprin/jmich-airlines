@@ -12,8 +12,8 @@
 <script setup lang="ts">
 import type { Flight } from '@/api/types/entities/flight';
 import ClockIco from '@/assets/icons/clock.svg'
+import { DEP_TIME_MIN_DIFFERENCE, HOUR_MILLISECONDS, MIN_SEATS } from '@/store/primaryStore';
 import TicketIco from '@/assets/icons/ticket.svg'
-import { DEP_TIME_MIN_DIFFERENCE, HOUR_MILLISECONDS, MIN_SEATS } from '@/store/store';
 import { computed } from 'vue';
 
 const props =defineProps<{

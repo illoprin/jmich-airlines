@@ -58,7 +58,7 @@
         </div> 
 
         <!-- Flight snippet -->
-        <FlightSnippet :flight="flight" class="mt-3"/>
+        <FlightSnippet :flight="flight" :printDate="true" class="mt-3"/>
       </div>
     </div>
 
@@ -74,7 +74,7 @@ import { computed, onMounted, ref } from 'vue';
 import type { BaggageRule } from '@/api/types/entities/company';
 import GlowButton from '@/components/UI/GlowButton.vue';
 import FlightSnippet from '@/components/shared/FlightRouteCompact.vue';
-import { BASE_API } from '@/store/store';
+import { BASE_API } from '@/store/primaryStore';
 import LikeBtnDynamic from '@/components/icons/LikeBtnDynamicIcon.vue';
 import { useLikedStore } from '@/store/likedFlightsStore';
 import { AuthRoutes } from '@/router/routes';

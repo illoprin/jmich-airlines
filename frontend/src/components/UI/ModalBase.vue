@@ -6,7 +6,7 @@
   >
     
     <div
-      class="modal-dialogue glass glass-border"
+      class="modal-dialogue glass-convex glass-border"
       :class="cls"
       v-bind="$attrs"
       @click="(e) => e.stopPropagation()"
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 
 const props = defineProps({
@@ -47,8 +47,10 @@ const emit = defineEmits<{
 
 const cls = computed<string>(() => {
   if (props.visible) {
+    document.body.style.overflowY = 'hidden';
     return 'active';
   }
+  document.body.style.overflowY = 'scroll';
   return '';
 });
 
@@ -76,6 +78,7 @@ const handleClose = () => {
   bottom: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
 
   pointer-events: none;
   opacity: 0.0;

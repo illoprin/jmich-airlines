@@ -2,7 +2,7 @@
 import type { TrendingFlight } from '@/api/types/entities/booking';
 import { formatPrice } from '@/lib/format/formatPrice';
 import { GuestRoutes } from '@/router/routes';
-import { BASE_API } from '@/store/store';
+import { BASE_API } from '@/store/primaryStore';
 
 defineProps<{
   flight: TrendingFlight

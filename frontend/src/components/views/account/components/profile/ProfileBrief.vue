@@ -26,7 +26,7 @@ import LogoutBtnIcon from '@/components/icons/LogoutBtnIcon.vue';
 import TrashBtnIcon from '@/components/icons/TrashBtnIcon.vue';
 import { GuestRoutes } from '@/router/routes';
 import { useDialogueStore } from '@/store/dialogueStore';
-import { BASE_API } from '@/store/store';
+import { BASE_API } from '@/store/primaryStore';
 import { useUserStore } from '@/store/userStore';
 import { useRouter } from 'vue-router';
 

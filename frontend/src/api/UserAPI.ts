@@ -1,7 +1,6 @@
 import {
   mockPayment,
   mockRules,
-  mockToken,
   mockUsers,
 } from '@/api/mocks/user.ts';
 import type {
@@ -11,7 +10,7 @@ import type {
 import type { Payment } from '@/api/types/entities/payment.ts';
 import type { User } from '@/api/types/entities/user.ts';
 import { UserTokenError } from '@/lib/service/errors';
-import type { UserLevelDiscountRule } from '@/api/types/entities/discount';
+import type { UserLevelDiscountRules } from '@/api/types/entities/discount';
 
 export class UserAPI {
   public static async getCurrentUser(token: string): Promise<User> {
@@ -85,7 +84,7 @@ export class UserAPI {
 
   public static async getRules(
     token: string,
-  ): Promise<UserLevelDiscountRule> {
+  ): Promise<UserLevelDiscountRules> {
     if (!token) throw new UserTokenError('user is unauthorized');
     return mockRules;
   }

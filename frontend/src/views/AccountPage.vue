@@ -26,15 +26,21 @@
 
   </div>
 
+  <BookingDetailsModal />
+
 </template>
 
 <script setup lang="ts">
+import { BookingStatus } from '@/api/types/entities/booking';
+import { FlightStatus } from '@/api/types/entities/flight';
+import BookingDetailsModal from '@/components/shared/BookingDetailsModal.vue';
 import AccountLiked from '@/components/views/account/AccountLiked.vue';
 import AccountProfile from '@/components/views/account/AccountProfile.vue';
 import AccountSettings from '@/components/views/account/AccountSettings.vue';
 import AccountTickets from '@/components/views/account/AccountTickets.vue';
 import { useFetching } from '@/composable/useFetching';
 import { GuestRoutes } from '@/router/routes';
+import { useBookingStore } from '@/store/bookingStore';
 import { usePaymentStore } from '@/store/paymentStore';
 import { useUserStore } from '@/store/userStore';
 import { AccountPageModes } from '@/types/hash/account';
@@ -78,13 +84,17 @@ const tabs: TabItem<AccountPageModes>[] = [
 
 const paymentStore = usePaymentStore();
 const userStore = useUserStore();
+const bookingStore = useBookingStore();
 
 const {
-  fetchData: fetchUserAndPayment,
+  fetchData: fetchData,
   isLoading: isUserLoading
 } = useFetching(async () => {
   await userStore.fetchUser();
+  await userStore.fetchRules();
   await paymentStore.fetchPayment();
+  await bookingStore.getCount();
+  await bookingStore.fetchUserBookings();
 });
 
 const pageHeader = computed<string>(() => {
@@ -92,12 +102,23 @@ const pageHeader = computed<string>(() => {
     switch (mode.value) {
       case AccountPageModes.Profile:
         return `Добрый день, ${userStore.user?.firstname}`;
+
       case AccountPageModes.Liked:
         return `На X рейсов истекает срок регистрации`;
+
       case AccountPageModes.Tickets:
-        return `У вас X активных билетов`;
+        const activeBookings = bookingStore.bookings?.filter(b =>
+          b.status === BookingStatus.Active && b.flight.status === FlightStatus.Active);
+        if (activeBookings)
+          return `У вас ${activeBookings.length} активных билетов`;
+        else if (activeBookings && bookingStore.bookings?.length as any === 0)
+          return `Сделайте первый заказ!`;
+        else
+          return `Все перелёты завершены!`;
+
       case AccountPageModes.Settings:
         return `Здесь вы можете настроить ваш аккаунт`;
+
       default:
         return "Личный кабинет";
     }
@@ -106,7 +127,7 @@ const pageHeader = computed<string>(() => {
 })
 
 onMounted(() => {
-  fetchUserAndPayment();
+  fetchData();
 });
 
 </script>

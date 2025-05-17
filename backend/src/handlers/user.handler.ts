@@ -12,7 +12,7 @@ import { applyOptionalFlag } from "../lib/api/validation-chain";
 import { LOGIN_REGEX, SINGLE_UNICODE_WORD_REGEX } from "../lib/service/const";
 import { LikedFlightHandler } from "./liked-flight.handler";
 import { NotificationHandler } from "./notification.handler";
-import { UserLevelDiscountRule } from "@/types/features/user";
+import { UserLevelDiscountRules } from "@/types/features/user";
 
 export class UserHandler {
   private static getChain(optional: boolean = false): ValidationChain[] {
@@ -148,7 +148,7 @@ export class UserHandler {
   }
 
   private static getGeneralDiscountRule(req: Request, res: Response): void {
-    res.json(ResponseTypes.ok({ rule: UserLevelDiscountRule }));
+    res.json(ResponseTypes.ok({ rule: UserLevelDiscountRules }));
   }
 
   public static router(): Router {

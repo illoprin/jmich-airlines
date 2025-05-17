@@ -4,7 +4,7 @@ import {
   UserRole,
 } from '@/api/types/entities/user.ts';
 import type { Payment } from '@/api/types/entities/payment.ts';
-import type { UserLevelDiscountRule } from '@/api/types/entities/discount';
+import type { UserDiscountRule, UserLevelDiscountRules } from '@/api/types/entities/discount';
 
 export const mockUsers: User[] = [
   {
@@ -15,7 +15,7 @@ export const mockUsers: User[] = [
     firstname: 'Шалтай',
     secondname: 'Кунцевич',
     role: UserRole.Customer,
-    level: UserLevel.Premium,
+    level: UserLevel.Basic,
     password: 'root',
     phone: "9199009345",
   },
@@ -27,7 +27,7 @@ export const mockUsers: User[] = [
     firstname: 'Валерий',
     secondname: 'Жмышенко',
     role: UserRole.Admin,
-    level: UserLevel.Platinum,
+    level: UserLevel.Basic,
     password: '1234',
     phone: "9199009345",
   },
@@ -39,7 +39,7 @@ export const mockUsers: User[] = [
     firstname: 'Иван',
     secondname: 'Кулаков',
     role: UserRole.Admin,
-    level: UserLevel.Platinum,
+    level: UserLevel.Basic,
     password: 'kulak',
     phone: "9199009345",
   },
@@ -66,28 +66,34 @@ export const mockPayment: Payment[] = [
   },
 ];
 
-export const mockRules: UserLevelDiscountRule = {
-  Basic: {
-    discount: 0.04,
+export const mockRules: UserLevelDiscountRules = {
+  [UserLevel.Basic]: {
+    discount: 0.01,
     trendingFlightBonus: 0,
+    requiredFlights: 0,
   },
-  Silver: {
+  [UserLevel.Silver]: {
     discount: 0.08,
     trendingFlightBonus: 0.1,
+    requiredFlights: 12,
   },
-  Gold: {
+  [UserLevel.Gold]: {
     discount: 0.1,
     trendingFlightBonus: 0.13,
+    requiredFlights: 23,
   },
-  Premium: {
+  [UserLevel.Premium]: {
     discount: 0.15,
     trendingFlightBonus: 0.18,
+    requiredFlights: 45,
   },
-  Platinum: {
+  [UserLevel.Platinum]: {
     discount: 0.21,
     trendingFlightBonus: 0.25,
+    requiredFlights: 102,
   },
 };
+
 
 export const mockToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6MSwibG9naW4iOiJpbGxvcHJpbiIsImlhdCI6MTc0NzA3MjcwMiwiZXhwIjoxNzQ5NjY0NzAyfQ.H3_MuYJqYU7Fa5bXIkYEN239qCeHLxGUUiTMOB4ckVk';

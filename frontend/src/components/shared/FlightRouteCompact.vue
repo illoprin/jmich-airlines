@@ -7,6 +7,7 @@ import { deltaDate } from '@/lib/date/deltaDates';
 
 const props = defineProps<{
   flight: Flight;
+  printDate?: boolean,
 }>();
 
 const departureDate = parseDate(props.flight.departure_date);
@@ -24,7 +25,7 @@ const delta = deltaDate(props.flight.departure_date, props.flight.arrival_date);
       <span class="flight-route-details">
         {{ flight.departure_city.name }}
       </span>
-      <span class="flight-route-details">
+      <span class="flight-route-details" v-if="printDate !== undefined && printDate">
         {{ departureDate.days }} {{ Months_RU[departureDate.month] }}
       </span>
     </div>
@@ -55,7 +56,7 @@ const delta = deltaDate(props.flight.departure_date, props.flight.arrival_date);
       <span class="flight-route-details">
         {{ flight.arrival_city.name }}
       </span>
-      <span class="flight-route-details">
+      <span class="flight-route-details" v-if="printDate !== undefined && printDate">
         {{ arrivalDate.days }} {{ Months_RU[arrivalDate.month] }}
       </span>
     </div>

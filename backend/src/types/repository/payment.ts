@@ -1,4 +1,4 @@
-import type { Entry } from "../../lib/repository/base.repository";
+import type { Entry } from "@/lib/repository/base.repository";
 
 export interface PaymentEntry extends Entry {
   user_id: number;

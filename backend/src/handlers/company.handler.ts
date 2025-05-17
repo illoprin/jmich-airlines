@@ -1,10 +1,10 @@
 import { Request, Response, Router } from "express";
-import { checkValidation, ResponseTypes } from "../lib/api/response";
-import { processServiceError } from "../lib/api/process-error";
-import { BaggageRuleEntry, CompanyEntry } from "../types/repository/company";
-import { authorizationMiddleware } from "../middleware/authorization.middleware";
-import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/repository/user";
+import { checkValidation, ResponseTypes } from "@/lib/api/response";
+import { processServiceError } from "@/lib/api/process-error";
+import { BaggageRuleEntry, CompanyEntry } from "@/types/repository/company";
+import { authorizationMiddleware } from "@/middleware/authorization.middleware";
+import { roleMiddleware } from "@/middleware/role.middleware";
+import { Roles } from "@/types/repository/user";
 import { body, ValidationChain } from "express-validator";
 import {
   applyOptionalFlag,

@@ -1,11 +1,11 @@
 import { Request, Response, Router } from "express";
-import { checkValidation, ResponseTypes } from "../lib/api/response";
-import type { FlightEntry, FlightStatus } from "../types/repository/flight";
-import type { FlightSearchPayload } from "../types/handler/flight";
-import { authorizationMiddleware } from "../middleware/authorization.middleware";
-import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/repository/user";
-import { processServiceError } from "../lib/api/process-error";
+import { checkValidation, ResponseTypes } from "@/lib/api/response";
+import type { FlightEntry, FlightStatus } from "@/types/repository/flight";
+import type { FlightSearchPayload } from "@/types/handler/flight";
+import { authorizationMiddleware } from "@/middleware/authorization.middleware";
+import { roleMiddleware } from "@/middleware/role.middleware";
+import { Roles } from "@/types/repository/user";
+import { processServiceError } from "@/lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
 import {
   applyOptionalFlag,

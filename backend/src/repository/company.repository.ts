@@ -1,7 +1,7 @@
-import type { CompanyEntry } from "../types/repository/company";
-import type { CompanyDTO } from "../types/dto/company";
-import { BaseRepository } from "../lib/repository/base.repository";
-import { parseJSONArray } from "../lib/repository/parse";
+import type { CompanyEntry } from "@/types/repository/company";
+import type { CompanyDTO } from "@/types/dto/company";
+import { BaseRepository } from "@/lib/repository/base.repository";
+import { parseJSONArray } from "@/lib/repository/parse";
 
 export class CompanyRepository extends BaseRepository<CompanyEntry> {
   public getTableName(): string {

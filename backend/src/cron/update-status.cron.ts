@@ -1,6 +1,6 @@
 import cron from "node-cron";
-import { FlightService } from "../service/flight.service";
-import { BookingService } from "../service/booking.service";
+import { FlightService } from "@/service/flight.service";
+import { BookingService } from "@/service/booking.service";
 
 export function scheduleUpdateStatus(
   flightService: FlightService,

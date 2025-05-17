@@ -1,5 +1,5 @@
-import type { BaggageRuleEntry } from "../types/repository/company";
-import { BaseRepository } from "../lib/repository/base.repository";
+import type { BaggageRuleEntry } from "@/types/repository/company";
+import { BaseRepository } from "@/lib/repository/base.repository";
 
 export class BaggageRuleRepository extends BaseRepository<BaggageRuleEntry> {
   public getTableName(): string {

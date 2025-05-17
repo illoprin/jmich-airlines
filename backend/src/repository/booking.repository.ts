@@ -1,9 +1,9 @@
-import { type BookingEntry, BookingStatus } from "../types/repository/booking";
-import type { BookingDTO } from "../types/dto/booking";
-import { TrandingBookingsDTO } from "../types/features/booking";
-import { BaseRepository } from "../lib/repository/base.repository";
-import { parseJSONArray } from "../lib/repository/parse";
-import { FlightStatus } from "../types/repository/flight";
+import { type BookingEntry, BookingStatus } from "@/types/repository/booking";
+import type { BookingDTO } from "@/types/dto/booking";
+import { TrandingBookingsDTO } from "@/types/features/booking";
+import { BaseRepository } from "@/lib/repository/base.repository";
+import { parseJSONArray } from "@/lib/repository/parse";
+import { FlightStatus } from "@/types/repository/flight";
 
 export class BookingRepository extends BaseRepository<BookingEntry> {
   public getTableName(): string {

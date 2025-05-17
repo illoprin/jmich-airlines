@@ -1,10 +1,10 @@
 import { Request, Response, Router } from "express";
-import { checkValidation, ResponseTypes } from "../lib/api/response";
-import { authorizationMiddleware } from "../middleware/authorization.middleware";
-import type { PaymentEntry } from "../types/repository/payment";
-import { processServiceError } from "../lib/api/process-error";
+import { checkValidation, ResponseTypes } from "@/lib/api/response";
+import { authorizationMiddleware } from "@/middleware/authorization.middleware";
+import type { PaymentEntry } from "@/types/repository/payment";
+import { processServiceError } from "@/lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
-import { applyOptionalFlag } from "../lib/api/validation-chain";
+import { applyOptionalFlag } from "@/lib/api/validation-chain";
 import { CARD_CVV_REGEX, CARD_EXPIRES_REGEX, CARD_NUMBER_REGEX } from "@/lib/service/const";
 
 export class PaymentHandler {

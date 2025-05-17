@@ -1,4 +1,4 @@
-import type { BookingQRPayload } from "../../types/features/booking";
+import type { BookingQRPayload } from "@/types/features/booking";
 import QRCode from "qrcode";
 import { QRCodeGenerationError } from "./errors";
 

@@ -1,6 +1,6 @@
 import { Request } from "express";
-import { Roles } from "../../types/repository/user";
-import type { Entry } from "../repository/base.repository";
+import { Roles } from "@/types/repository/user";
+import type { Entry } from "@/lib/repository/base.repository";
 import { AuthorizationError, ForbiddenError, NotFoundError } from "./errors";
 
 export class AccessControl {

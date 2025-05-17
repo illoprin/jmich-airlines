@@ -1,22 +1,22 @@
-import type { FlightRepository } from "../repository/flight.repository";
+import type { FlightRepository } from "@/repository/flight.repository";
 import {
   StorageError,
   StorageErrorType,
-} from "../lib/repository/storage-error";
-import { type FlightEntry, FlightStatus } from "../types/repository/flight";
-import type { FlightDTO } from "../types/dto/flight";
+} from "@/lib/repository/storage-error";
+import { type FlightEntry, FlightStatus } from "@/types/repository/flight";
+import type { FlightDTO } from "@/types/dto/flight";
 import {
   RelatedDataError,
   InvalidFieldError,
   NotFoundError,
   NotUniqueError,
-} from "../lib/service/errors";
-import type { CompanyEntry } from "../types/repository/company";
-import type { AirportEntry } from "../types/repository/city";
-import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from "../lib/service/const";
-import { randomFlight } from "../lib/service/random-flight";
-import { FlightCache } from "../redis/flight.cache";
-import type { FlightSearchPayload } from "../types/handler/flight";
+} from "@/lib/service/errors";
+import type { CompanyEntry } from "@/types/repository/company";
+import type { AirportEntry } from "@/types/repository/city";
+import { DAY_MILLISECONDS, HOUR_MILLISECONDS } from "@/lib/service/const";
+import { randomFlight } from "@/lib/service/random-flight";
+import { FlightCache } from "@/redis/flight.cache";
+import type { FlightSearchPayload } from "@/types/handler/flight";
 
 export class FlightService {
   constructor(

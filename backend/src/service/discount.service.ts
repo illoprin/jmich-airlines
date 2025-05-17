@@ -1,10 +1,10 @@
-import { DiscountRepository } from "../repository/discount.repository";
-import { DiscountEntry } from "../types/repository/discount";
+import { DiscountRepository } from "@/repository/discount.repository";
+import { DiscountEntry } from "@/types/repository/discount";
 import {
   InvalidFieldError,
   NotFoundError,
   NotUniqueError,
-} from "../lib/service/errors";
+} from "@/lib/service/errors";
 import { StorageError, StorageErrorType } from "@/lib/repository/storage-error";
 
 export class DiscountService {

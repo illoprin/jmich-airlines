@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { ResponseTypes } from "../lib/api/response";
-import type { MiddlewareFunc } from "../types/internal/middleware";
+import { ResponseTypes } from "@/lib/api/response";
+import type { MiddlewareFunc } from "@/types/internal/middleware";
 
 export function roleMiddleware(roles: number): MiddlewareFunc {
   return (req: Request, res: Response, next: NextFunction): void => {

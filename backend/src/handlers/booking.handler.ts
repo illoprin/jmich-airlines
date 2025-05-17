@@ -1,15 +1,13 @@
 import { Request, Response, Router } from "express";
-import { processServiceError } from "../lib/api/process-error";
-import { checkValidation, ResponseTypes } from "../lib/api/response";
-import { authorizationMiddleware } from "../middleware/authorization.middleware";
-import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/repository/user";
+import { processServiceError } from "@/lib/api/process-error";
+import { checkValidation, ResponseTypes } from "@/lib/api/response";
+import { authorizationMiddleware } from "@/middleware/authorization.middleware";
+import { roleMiddleware } from "@/middleware/role.middleware";
+import { Roles } from "@/types/repository/user";
 import { body, check, ValidationChain } from "express-validator";
-import { getForeignKeyValidation } from "../lib/api/validation-chain";
-import { DISCOUNT_REGEX } from "../lib/service/const";
+import { getForeignKeyValidation } from "@/lib/api/validation-chain";
+import { DISCOUNT_REGEX } from "@/lib/service/const";
 import { DiscountHandler } from "./discount.handler";
-import { BookingService } from "@/service/booking.service";
-import { BookingStatus } from "@/types/repository/booking";
 
 export class BookingHandler {
   private static getAddBookingChain(): ValidationChain[] {

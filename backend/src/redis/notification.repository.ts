@@ -1,5 +1,5 @@
-import { HOUR_MILLISECONDS } from "../lib/service/const";
-import { NotificationEntry } from "../types/repository/notification";
+import { HOUR_MILLISECONDS } from "@/lib/service/const";
+import { NotificationEntry } from "@/types/repository/notification";
 import { RedisClient } from "./redis.client";
 
 export class NotificationRepository {

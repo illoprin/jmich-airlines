@@ -1,5 +1,5 @@
-import type { AirportEntry } from "../types/repository/city";
-import { BaseRepository } from "../lib/repository/base.repository";
+import type { AirportEntry } from "@/types/repository/city";
+import { BaseRepository } from "@/lib/repository/base.repository";
 
 export class AirportRepository extends BaseRepository<AirportEntry> {
   public getTableName(): string {

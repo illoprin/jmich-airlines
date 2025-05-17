@@ -1,20 +1,20 @@
 import {
   StorageError,
   StorageErrorType,
-} from "../lib/repository/storage-error";
-import type { BaggageRuleRepository } from "../repository/baggage-rule.repository";
-import type { CompanyRepository } from "../repository/company.repository";
+} from "@/lib/repository/storage-error";
+import type { BaggageRuleRepository } from "@/repository/baggage-rule.repository";
+import type { CompanyRepository } from "@/repository/company.repository";
 import type {
   BaggageRuleEntry,
   CompanyEntry,
-} from "../types/repository/company";
+} from "@/types/repository/company";
 import {
   InvalidFieldError,
   NotFoundError,
   NotUniqueError,
   RelatedDataError,
-} from "../lib/service/errors";
-import type { CompanyDTO } from "../types/dto/company";
+} from "@/lib/service/errors";
+import type { CompanyDTO } from "@/types/dto/company";
 
 export class CompanyService {
   constructor(

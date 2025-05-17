@@ -1,5 +1,5 @@
 import { RedisClient } from "./redis.client";
-import type { UserEntry } from "../types/repository/user";
+import type { UserEntry } from "@/types/repository/user";
 
 export class UserCache {
   private readonly ttl = 3600; // one hour

@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { DiscountService } from "../service/discount.service";
+import { DiscountService } from "@/service/discount.service";
 
 export function scheduleInvalidateDiscounts(discountService: DiscountService) {
   cron.schedule("0 3 * * *", () => {

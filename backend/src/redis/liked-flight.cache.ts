@@ -1,5 +1,5 @@
-import { HOUR_SECONDS } from "../lib/service/const";
-import type { FlightDTO } from "../types/dto/flight";
+import { HOUR_SECONDS } from "@/lib/service/const";
+import type { FlightDTO } from "@/types/dto/flight";
 import type { RedisClient } from "./redis.client";
 
 export class LikedFlightCache {

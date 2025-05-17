@@ -1,8 +1,8 @@
-import { BaseRepository } from "../lib/repository/base.repository";
-import { parseJSONArray } from "../lib/repository/parse";
-import type { FlightDTO } from "../types/dto/flight";
-import type { LikedFlightEventPayload } from "../types/features/notification";
-import type { LikedFlightEntry } from "../types/repository/liked-flight";
+import { BaseRepository } from "@/lib/repository/base.repository";
+import { parseJSONArray } from "@/lib/repository/parse";
+import type { FlightDTO } from "@/types/dto/flight";
+import type { LikedFlightEventPayload } from "@/types/features/notification";
+import type { LikedFlightEntry } from "@/types/repository/liked-flight";
 
 export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
   public getTableName(): string {

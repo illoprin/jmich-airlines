@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
-import type { Config } from "../types/internal/config";
+import type { Config } from "@/types/internal/config";
 
 export function readConfig(configPath: string): Config {
   try {

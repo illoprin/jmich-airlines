@@ -1,40 +1,40 @@
 import {
   generateQRCodeImageBuffer,
   getPayloadString,
-} from "../lib/service/generate-qr";
+} from "@/lib/service/generate-qr";
 import {
   StorageError,
   StorageErrorType,
-} from "../lib/repository/storage-error";
-import { AccessControl } from "../lib/service/access-control";
-import type { BookingRepository } from "../repository/booking.repository";
+} from "@/lib/repository/storage-error";
+import { AccessControl } from "@/lib/service/access-control";
+import type { BookingRepository } from "@/repository/booking.repository";
 import {
   BookingPriceDetails,
   CreateBookingPayload,
   type BookingDTO,
-} from "../types/dto/booking";
+} from "@/types/dto/booking";
 import type {
   TrandingBookingsDTO,
   BookingQRPayload,
-} from "../types/features/booking";
+} from "@/types/features/booking";
 import {
   BookingEntry,
   BookingStatus,
-} from "../types/repository/booking";
+} from "@/types/repository/booking";
 import {
   InvalidFieldError,
   RelatedDataError,
   NotFoundError,
   PaymentError,
   ForbiddenError,
-} from "../lib/service/errors";
-import { Roles, UserLevel } from "../types/repository/user";
-import { generateRandomGate } from "../lib/service/random";
-import { saveBufferToFile } from "../lib/service/save-file";
-import { Config } from "../types/internal/config";
-import { FlightStatus } from "../types/repository/flight";
-import { PaymentRepository } from "../repository/payment.repository";
-import { BookingCache } from "../redis/booking.cache";
+} from "@/lib/service/errors";
+import { Roles, UserLevel } from "@/types/repository/user";
+import { generateRandomGate } from "@/lib/service/random";
+import { saveBufferToFile } from "@/lib/service/save-file";
+import { Config } from "@/types/internal/config";
+import { FlightStatus } from "@/types/repository/flight";
+import { PaymentRepository } from "@/repository/payment.repository";
+import { BookingCache } from "@/redis/booking.cache";
 import { FlightService } from "./flight.service";
 import { UserService } from "./user.service";
 import { PaymentEntry } from "@/types/repository/payment";

@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
-import { processServiceError } from "../lib/api/process-error";
-import { ResponseTypes } from "../lib/api/response";
-import { NotificationEntry } from "../types/repository/notification";
+import { processServiceError } from "@/lib/api/process-error";
+import { ResponseTypes } from "@/lib/api/response";
+import { NotificationEntry } from "@/types/repository/notification";
 import { body, ValidationChain } from "express-validator";
 import {
   FILE_PATH_REGEX,

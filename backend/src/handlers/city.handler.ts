@@ -1,10 +1,10 @@
 import { checkValidation, ResponseTypes } from "../lib/api/response";
-import { authorizationMiddleware } from "../middleware/authorization.middleware";
-import { roleMiddleware } from "../middleware/role.middleware";
-import { Roles } from "../types/repository/user";
-import { AirportEntry, CityEntry } from "../types/repository/city";
+import { authorizationMiddleware } from "@/middleware/authorization.middleware";
+import { roleMiddleware } from "@/middleware/role.middleware";
+import { Roles } from "@/types/repository/user";
+import { AirportEntry, CityEntry } from "@/types/repository/city";
 import { Request, Response, Router } from "express";
-import { processServiceError } from "../lib/api/process-error";
+import { processServiceError } from "@/lib/api/process-error";
 import { body, ValidationChain } from "express-validator";
 import {
   SINGLE_UNICODE_WORD_REGEX,

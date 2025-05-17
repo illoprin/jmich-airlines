@@ -3,10 +3,10 @@ import {
   InvalidFieldError,
   NotFoundError,
   RelatedDataError,
-} from "../lib/service/errors";
-import { LikedFlightCache } from "../redis/liked-flight.cache";
-import { LikedFlightRepository } from "../repository/liked-flight.repository";
-import { FlightDTO } from "../types/dto/flight";
+} from "@/lib/service/errors";
+import { LikedFlightCache } from "@/redis/liked-flight.cache";
+import { LikedFlightRepository } from "@/repository/liked-flight.repository";
+import { FlightDTO } from "@/types/dto/flight";
 import { FlightStatus } from "@/types/repository/flight";
 import { StorageError, StorageErrorType } from "@/lib/repository/storage-error";
 

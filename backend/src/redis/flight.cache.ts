@@ -1,5 +1,5 @@
 import { RedisClient } from "./redis.client";
-import { FlightDTO } from "../types/dto/flight";
+import { FlightDTO } from "@/types/dto/flight";
 
 export class FlightCache {
   private readonly ttl = 3600;

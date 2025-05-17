@@ -1,12 +1,12 @@
 import { faker } from "@faker-js/faker/locale/ru";
-import { Storage } from "../lib/repository/storage";
-import { AirportRepository } from "../repository/airport.repository";
-import { BaggageRuleRepository } from "../repository/baggage-rule.repository";
-import { CityRepository } from "../repository/city.repository";
-import { CompanyRepository } from "../repository/company.repository";
-import { FlightRepository } from "../repository/flight.repository";
-import { UserRepository } from "../repository/user.repository";
-import { BookingEntry, BookingStatus } from "../types/booking.type";
+import { Storage } from "@/lib/repository/storage";
+import { AirportRepository } from "@/repository/airport.repository";
+import { BaggageRuleRepository } from "@/repository/baggage-rule.repository";
+import { CityRepository } from "@/repository/city.repository";
+import { CompanyRepository } from "@/repository/company.repository";
+import { FlightRepository } from "@/repository/flight.repository";
+import { UserRepository } from "@/repository/user.repository";
+import { BookingEntry, BookingStatus } from "@/types/repository/booking";
 import {
   getMockFlight,
   getMockUser,
@@ -15,11 +15,11 @@ import {
   mockCities,
   mockCompanies,
 } from "./mock/mock.data";
-import { BookingRepository } from "../repository/booking.repository";
+import { BookingRepository } from "@/repository/booking.repository";
 import {
   StorageError,
   StorageErrorType,
-} from "../lib/repository/storage-error";
+} from "@/lib/repository/storage-error";
 
 describe("booking.repository", () => {
   let storage: Storage;

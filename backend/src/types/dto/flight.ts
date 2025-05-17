@@ -1,6 +1,6 @@
-import type { Entry } from "../../lib/repository/base.repository";
-import type { AirportEntry } from "../repository/city";
-import type { FlightStatus } from "../repository/flight";
+import type { Entry } from "@/lib/repository/base.repository";
+import type { AirportEntry } from "@/types/repository/city";
+import type { FlightStatus } from "@/types/repository/flight";
 import type { CompanyDTO } from "./company";
 
 export interface FlightDTO extends Entry {

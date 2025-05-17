@@ -1,4 +1,4 @@
-import { Entry } from "../../lib/repository/base.repository";
+import { Entry } from "@/lib/repository/base.repository";
 
 export enum FlightStatus {
   ACTIVE = "ACTIVE",

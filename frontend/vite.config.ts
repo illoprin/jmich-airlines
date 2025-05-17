@@ -6,8 +6,6 @@ import path from 'node:path';
 export default defineConfig({
   plugins: [vue()],
   server: {
-    host: "localhost",
-    port: 5000,
     strictPort: true,
   },
   build: {

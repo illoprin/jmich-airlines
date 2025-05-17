@@ -1,5 +1,5 @@
 import { body, ValidationChain } from "express-validator";
-import { FILE_PATH_REGEX } from "../service/const";
+import { FILE_PATH_REGEX } from "@/lib/service/const";
 
 export function applyOptionalFlag(
   validators: ValidationChain[],

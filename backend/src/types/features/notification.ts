@@ -1,4 +1,4 @@
-import { NotificationEntry } from "../repository/notification";
+import { NotificationEntry } from "@/types/repository/notification";
 
 export interface LikedFlightEventPayload {
   user_id: number;

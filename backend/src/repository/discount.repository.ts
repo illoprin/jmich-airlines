@@ -1,5 +1,5 @@
-import { DiscountEntry } from "../types/repository/discount";
-import { BaseRepository } from "../lib/repository/base.repository";
+import { DiscountEntry } from "@/types/repository/discount";
+import { BaseRepository } from "@/lib/repository/base.repository";
 
 export class DiscountRepository extends BaseRepository<DiscountEntry> {
   public getTableName(): string {

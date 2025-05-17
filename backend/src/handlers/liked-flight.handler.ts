@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
-import { processServiceError } from "../lib/api/process-error";
-import { authorizationMiddleware } from "../middleware/authorization.middleware";
-import { ResponseTypes } from "../lib/api/response";
+import { processServiceError } from "@/lib/api/process-error";
+import { authorizationMiddleware } from "@/middleware/authorization.middleware";
+import { ResponseTypes } from "@/lib/api/response";
 
 export class LikedFlightHandler {
   private static async getUserLikedFlights(

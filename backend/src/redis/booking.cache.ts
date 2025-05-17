@@ -1,6 +1,6 @@
 import { RedisClient } from "./redis.client";
-import type { BookingDTO } from "../types/dto/booking";
-import type { TrandingBookingsDTO } from "../types/features/booking";
+import type { BookingDTO } from "@/types/dto/booking";
+import type { TrandingBookingsDTO } from "@/types/features/booking";
 
 export class BookingCache {
   private readonly ttl = 1800; // 30 минут

@@ -1,5 +1,5 @@
-import { NotificationRepository } from "../redis/notification.repository";
-import { NotificationEntry } from "../types/repository/notification";
+import { NotificationRepository } from "@/redis/notification.repository";
+import { NotificationEntry } from "@/types/repository/notification";
 
 export class NotificationService {
   constructor(private notificationRepo: NotificationRepository) {}

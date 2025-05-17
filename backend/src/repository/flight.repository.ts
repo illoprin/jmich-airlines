@@ -1,7 +1,7 @@
-import { BaseRepository } from "../lib/repository/base.repository";
-import { parseJSONArray } from "../lib/repository/parse";
-import { FlightEntry, FlightStatus } from "../types/repository/flight";
-import { FlightDTO } from "../types/dto/flight";
+import { BaseRepository } from "@/lib/repository/base.repository";
+import { parseJSONArray } from "@/lib/repository/parse";
+import { FlightEntry, FlightStatus } from "@/types/repository/flight";
+import { FlightDTO } from "@/types/dto/flight";
 
 export class FlightRepository extends BaseRepository<FlightEntry> {
   public getTableName(): string {

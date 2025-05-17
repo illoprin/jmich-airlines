@@ -1,5 +1,5 @@
 import type { CorsOptions } from "cors";
-import type { Config } from "../types/internal/config";
+import type { Config } from "@/types/internal/config";
 
 export function createCorsOptions(cfg: Config): CorsOptions {
   const allowedOrigins: string[] = [

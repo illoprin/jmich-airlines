@@ -1,24 +1,24 @@
 import bcrypt from "bcrypt";
-import { UserRepository } from "../repository/user.repository";
-import { type UserEntry, UserLevel, Roles } from "../types/repository/user";
-import type { UserPublicDTO } from "../types/dto/user";
-import { UserRegistrationPayload } from "../types/handler/user";
-import type { Config } from "../types/internal/config";
-import { createToken } from "../lib/api/token";
-import type { PaymentRepository } from "../repository/payment.repository";
-import type { PaymentEntry } from "../types/repository/payment";
+import { UserRepository } from "@/repository/user.repository";
+import { type UserEntry, UserLevel, Roles } from "@/types/repository/user";
+import type { UserPublicDTO } from "@/types/dto/user";
+import { UserRegistrationPayload } from "@/types/handler/user";
+import type { Config } from "@/types/internal/config";
+import { createToken } from "@/lib/api/token";
+import type { PaymentRepository } from "@/repository/payment.repository";
+import type { PaymentEntry } from "@/types/repository/payment";
 import {
   StorageError,
   StorageErrorType,
-} from "../lib/repository/storage-error";
+} from "@/lib/repository/storage-error";
 import {
   ForbiddenError,
   InvalidFieldError,
   NotFoundError,
   NotUniqueError,
-} from "../lib/service/errors";
-import { AccessControl } from "../lib/service/access-control";
-import { UserCache } from "../redis/user.cache";
+} from "@/lib/service/errors";
+import { AccessControl } from "@/lib/service/access-control";
+import { UserCache } from "@/redis/user.cache";
 
 export class UserService {
   constructor(

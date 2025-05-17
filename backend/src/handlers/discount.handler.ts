@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
-import { processServiceError } from "../lib/api/process-error";
-import { checkValidation, ResponseTypes } from "../lib/api/response";
-import { DiscountEntry } from "../types/repository/discount";
+import { processServiceError } from "@/lib/api/process-error";
+import { checkValidation, ResponseTypes } from "@/lib/api/response";
+import { DiscountEntry } from "@/types/repository/discount";
 import { authorizationMiddleware } from "@/middleware/authorization.middleware";
 import { roleMiddleware } from "@/middleware/role.middleware";
 import { Roles } from "@/types/repository/user";

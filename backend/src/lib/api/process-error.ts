@@ -7,7 +7,7 @@ import {
   NotUniqueError,
   PaymentError,
   RelatedDataError,
-} from "../service/errors";
+} from "@/lib/service/errors";
 import { ResponseTypes } from "./response";
 
 export function processServiceError(res: Response, error: any): void {

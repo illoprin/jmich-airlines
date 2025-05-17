@@ -1,4 +1,4 @@
-import type { Entry } from "../../lib/repository/base.repository";
+import type { Entry } from "@/lib/repository/base.repository";
 
 export interface CityEntry extends Entry {
   name: string;

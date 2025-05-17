@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { ResponseTypes } from "../lib/api/response";
-import type { TokenData } from "../types/features/token";
+import { ResponseTypes } from "@/lib/api/response";
+import type { TokenData } from "@/types/features/token";
 
 // Expand Request interface to add token data
 declare global {

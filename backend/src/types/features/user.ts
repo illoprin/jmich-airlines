@@ -1,4 +1,4 @@
-import { UserLevel } from "../repository/user";
+import { UserLevel } from "@/types/repository/user";
 
 export interface UserDiscountRule {
   discount: number;

@@ -1,6 +1,6 @@
-import type { UserEntry } from "../types/repository/user";
-import type { UserPublicDTO } from "../types/dto/user";
-import { BaseRepository } from "../lib/repository/base.repository";
+import type { UserEntry } from "@/types/repository/user";
+import type { UserPublicDTO } from "@/types/dto/user";
+import { BaseRepository } from "@/lib/repository/base.repository";
 
 export class UserRepository extends BaseRepository<UserEntry> {
   public getTableName(): string {

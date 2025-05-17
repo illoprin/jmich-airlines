@@ -1,7 +1,7 @@
-import type { CityEntry } from "../types/repository/city";
-import type { CityDTO } from "../types/dto/city";
-import { BaseRepository } from "../lib/repository/base.repository";
-import { parseJSONArray } from "../lib/repository/parse";
+import type { CityEntry } from "@/types/repository/city";
+import type { CityDTO } from "@/types/dto/city";
+import { BaseRepository } from "@/lib/repository/base.repository";
+import { parseJSONArray } from "@/lib/repository/parse";
 
 export class CityRepository extends BaseRepository<CityEntry> {
   public getTableName(): string {

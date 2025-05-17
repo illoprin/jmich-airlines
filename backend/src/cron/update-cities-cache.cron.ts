@@ -1,5 +1,5 @@
-import { CityCache } from "../redis/city.cache";
-import { CityService } from "../service/city.service";
+import { CityCache } from "@/redis/city.cache";
+import { CityService } from "@/service/city.service";
 import cron from "node-cron";
 
 export function scheduleRefreshCities(

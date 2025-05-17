@@ -28,24 +28,21 @@ services:
       redis:
         condition: service_healthy
     command: ["npm", "run", "dev"]
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "localhost:8000/ping"]
-    #   interval: 2s
-    #   timeout: 10s
-    #   retries: 5
-    #   start_period: 5s
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:8000/ping | grep pong"]
+      interval: 2s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
 
   frontend:
-    profiles: ["frontend"]
     build:
       context: ./frontend
     container_name: jmich-frontend
     environment:
-      VITE_BASE_API: "http://backend:8000"
+      VITE_BASE_API: "http://localhost:8000"
     ports:
-      - '5000:5000'
+      - '80:5000'
     depends_on:
-      backend:
-        condition: service_healthy
-    command: ["npm", "run", "dev"]
+      - backend
 

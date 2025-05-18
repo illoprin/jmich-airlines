@@ -21,11 +21,12 @@ export const useLikedStore = defineStore('liked', {
 
     async syncAllLikesToServer() {
       if (this.liked.length === 0) return;
+      const flightsToStore = [...this.liked];
+      this.liked = [];
       try {
         for (const flight of this.liked) {
           this.syncLikeToServer(flight.id);
         }
-        this.liked = [];
         this.isGuest = false;
       } catch (err) {
         throw await handleHttpError(err);

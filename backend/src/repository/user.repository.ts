@@ -40,6 +40,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
     secondname,
     email,
     password,
+    avatarpath,
     phone,
     role,
     level,
@@ -47,11 +48,11 @@ export class UserRepository extends BaseRepository<UserEntry> {
     const { lastID } = this.storage.run(
       `--sql
 				INSERT INTO ${this.getTableName()}
-					(login, firstname, secondname, email, password, phone, role, level)
+					(login, firstname, secondname, email, password, phone, role, level, avatarpath)
 				VALUES
-					(?, ?, ?, ?, ?, ?, ?, ?)
+					(?, ?, ?, ?, ?, ?, ?, ?, ?)
 			`,
-      [login, firstname, secondname, email, password, phone, role, level],
+      [login, firstname, secondname, email, password, phone, role, level, avatarpath],
     );
     return lastID as bigint;
   }

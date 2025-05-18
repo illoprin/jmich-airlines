@@ -1,6 +1,6 @@
 import { LikedFlightAPI } from "@/api/LikedFlightAPI";
 import type { Flight } from "@/api/types/entities/flight";
-import { UserTokenError } from "@/lib/service/errors";
+import { handleHttpError } from "@/lib/service/handleHTTPError";
 import { useUserStore } from "@/store/userStore";
 import { defineStore } from "pinia";
 
@@ -10,6 +10,10 @@ export const useLikedStore = defineStore('liked', {
     isGuest: true,
   }),
 
+  persist: {
+    pick: ['liked'],
+  },
+
   actions: {
     isFlightLiked(flightID: number): boolean {
       return this.liked.find(flight => flight.id === flightID) !== undefined;
@@ -17,29 +21,31 @@ export const useLikedStore = defineStore('liked', {
 
     async syncAllLikesToServer() {
       if (this.liked.length === 0) return;
-      for (const flight of this.liked) {
-        try {
+      try {
+        for (const flight of this.liked) {
           this.syncLikeToServer(flight.id);
-        } catch {
-          break;
         }
+        this.liked = [];
+        this.isGuest = false;
+      } catch (err) {
+        throw await handleHttpError(err);
       }
     },
 
     async syncLikeToServer(flightID: number) {
-      const { token } = useUserStore();
-      if (!token) {
-        throw new UserTokenError('user is unauthorized');
+      try {
+        await LikedFlightAPI.like(flightID);
+      } catch (err) {
+        throw await handleHttpError(err);
       }
-      await LikedFlightAPI.like(flightID, token);
     },
   
-    syncDislikeToServer(flightID: number) {
-      const { token } = useUserStore();
-      if (!token) {
-        throw new UserTokenError('user is unauthorized');
+    async syncDislikeToServer(flightID: number) {
+      try {
+        await LikedFlightAPI.dislike(flightID);
+      } catch (err) {
+        throw await handleHttpError(err);
       }
-      LikedFlightAPI.dislike(flightID, token);
     },
   
     async like(flight: Flight) {
@@ -62,9 +68,14 @@ export const useLikedStore = defineStore('liked', {
     async fetchLikes() {
       const { token } = useUserStore();
       if (!token) {
-        throw new UserTokenError('user is unauthorized');
+        this.isGuest = true;
+        return;
       }
-      this.liked = await LikedFlightAPI.getLikes(token);
+      try {
+        this.liked = await LikedFlightAPI.getLikes();
+      } catch (err) {
+        throw await handleHttpError(err);
+      }
     },
   },
 });

@@ -19,6 +19,7 @@ import {
 } from "@/lib/service/errors";
 import { AccessControl } from "@/lib/service/access-control";
 import { UserCache } from "@/redis/user.cache";
+import type { TokenData } from "@/types/features/token";
 
 export class UserService {
   constructor(
@@ -35,6 +36,7 @@ export class UserService {
       ...user,
       level: UserLevel.Basic,
       role: Roles.Customer,
+      avatarpath: '/upload/protected/avatar_default.jpg'
     };
     // NOTE: send email and wait for confirmation
     try {
@@ -80,6 +82,20 @@ export class UserService {
     await this.userCache.set(candidate.id as number, candidate);
 
     return token;
+  }
+
+  public async verify(tokenData: TokenData): Promise<string> {
+    const { id } = tokenData;
+    let user: UserEntry | null = null;
+    user = await this.userCache.get(id);
+    if (!user) {
+      user = this.userRepo.getByID(id);
+      if (!user) {
+        throw new NotFoundError('user not found');
+      }
+      await this.userCache.set(id, user);
+    }
+    return createToken(user, this.cfg.secret);
   }
 
   public async getByID(id: number): Promise<UserEntry> {

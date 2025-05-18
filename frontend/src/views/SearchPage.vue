@@ -1,40 +1,37 @@
 <script setup lang="ts">
-import { FlightAPI } from "@/api/FlightAPI";
-import type { TrendingFlight } from "@/api/types/entities/booking";
-import type { Flight } from "@/api/types/entities/flight";
-import type { FlightSearchPayload } from "@/api/types/requests/flight";
 import SearchBar from "@/components/views/search/SearchBar.vue";
 import SearchedFlights from "@/components/views/search/SearchedFlights.vue";
 import TrendingFlights from "@/components/views/search/TrendingFlights.vue";
 import { useFetching } from "@/composable/useFetching";
-import { BookingService } from "@/service/BookingService";
-import { useLikedStore } from "@/store/likedFlightsStore";
+import { useBookingStore } from "@/store/bookingStore";
+import { useSearchFlightStore } from "@/store/searchFlightStore";
 import { computed, onMounted, ref } from "vue";
 
-async function searchSubmit(data: FlightSearchPayload) {
-  searchQuery.value = data;
-  await searchFlights();
-}
-
-const trendingFlights = ref<TrendingFlight[] | undefined>(undefined);
-const searchedFlights = ref<Flight[]>([]);
-const searchQuery = ref<FlightSearchPayload>({});
-const likes = useLikedStore();
+const header = ref<string>("ЛЕТАЕМ С ОДНИМ КРЫЛОМ");
+const bookingStore = useBookingStore();
+const searchStore = useSearchFlightStore();
 
 const {
   fetchData: fetchTrending,
-  isLoading: isLoadingTrending
 } = useFetching(async () => {
-  trendingFlights.value = await BookingService.getTrendingFlights();
+  await bookingStore.fetchTrending();
 });
 
-const {
-  fetchData: searchFlights,
-  isLoading: isLoadingFlights,
-} = useFetching(async () => {
-  searchedFlights.value = await FlightAPI.searchFlights(
-    searchQuery.value
-  );
+const searchBarStyle = computed<string>(() => {
+  if ((!bookingStore.trending || bookingStore.trending.length === 0)
+  && searchStore.flights.length === 0) {
+    return `margin-bottom: 50dvh`;
+  }
+  return `margin-bottom: 2rem;`
+});
+
+const headerStyle = computed<string>(() => {
+  if ((!bookingStore.trending || bookingStore.trending.length === 0)
+    && searchStore.flights.length === 0
+  ) {
+    return `margin-top: 20dvh`;
+  }
+  return ``
 });
 
 onMounted(() => {
@@ -46,21 +43,29 @@ onMounted(() => {
 <template>
   <div class="container">
     <!-- Title -->
-    <h1 class="text-center fw-bold">ЛЕТАЕМ С ОДНИМ КРЫЛОМ</h1>
+    <h1
+      class="text-center fw-bold search-header"
+      :style="headerStyle"
+    >
+      {{ header }}
+    </h1>
 
     <!-- Search Bar -->
-    <SearchBar :on-submit="searchSubmit" />
+    <SearchBar
+      :style="searchBarStyle"
+    />
 
     <!-- Hot Tours -->
     <TrendingFlights
-      :hotTours="trendingFlights"
-      v-if="trendingFlights && searchedFlights.length <= 0"
+      v-if="bookingStore.trending
+      && searchStore.flights.length <= 0
+      && bookingStore.trending.length > 0"
+      :hotTours="bookingStore.trending"
     />
 
     <!-- Flights -->
     <SearchedFlights
-      v-if="searchedFlights.length > 0"
-      :flights="searchedFlights"
+      v-if="searchStore.flights.length > 0"
     />
   </div>
 </template>
@@ -82,5 +87,12 @@ onMounted(() => {
 
 .search-panel {
   margin-top: 5rem;
+  transition: margin-bottom 300ms;
+  will-change: margin-bottom;
+}
+
+.search-header {
+  transition: margin-top 300ms;
+  will-change: margin-top;
 }
 </style>

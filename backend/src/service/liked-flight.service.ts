@@ -54,7 +54,7 @@ export class LikedFlightService {
     }
   }
 
-  public async unlikeFlight(userID: number, flightID: number): Promise<void> {
+  public async dislikeFlight(userID: number, flightID: number): Promise<void> {
     const changes = this.likedFlightRepo.removeByUserAndFlight(
       userID,
       flightID,
@@ -63,5 +63,16 @@ export class LikedFlightService {
       throw new NotFoundError("flight is not in user's liked list");
     }
     await this.likedFlightCache.invalidate(userID);
+  }
+
+  public async dislikeExpiredFlights(): Promise<number> {
+    const likedFlights = this.likedFlightRepo.getExpiredLikedFlights();
+    console.log(likedFlights);
+    if (!likedFlights) return 0;
+    for (const flight of likedFlights) {
+      this.dislikeFlight(flight.user_id, flight.flight_id);
+      await this.likedFlightCache.invalidate(flight.user_id);
+    }
+    return likedFlights.length;
   }
 }

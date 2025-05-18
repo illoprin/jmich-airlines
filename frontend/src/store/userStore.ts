@@ -1,9 +1,9 @@
-import { mockRules } from "@/api/mocks/user";
 import type { UserLevelDiscountRules } from "@/api/types/entities/discount";
 import { UserLevel, type User } from "@/api/types/entities/user";
 import type { UserLoginPayload, UserRegistrationPayload } from "@/api/types/requests/user";
 import { UserAPI } from "@/api/UserAPI";
-import { processAPIError } from "@/lib/service/processServerError";
+import { handleHttpError } from "@/lib/service/handleHTTPError";
+import { useLikedStore } from "@/store/likedFlightsStore";
 import { defineStore } from "pinia";
 
 export const useUserStore = defineStore('user', {
@@ -11,13 +11,14 @@ export const useUserStore = defineStore('user', {
     token: '' as string,
     user: null as null | User,
     rules: null as UserLevelDiscountRules | null,
+    __needsFetching: false as boolean,
   }),
   persist: {
     pick: ['token']
   },
 
   getters: {
-    isAuthenticated: (state) => !!state.token && !!state.user,
+    isAuthenticated: (state) => !!state.token,
     getUserDiscount: (state) => {
       if (state.rules && state.user) {
         return state.rules[state.user.level].discount;
@@ -39,11 +40,16 @@ export const useUserStore = defineStore('user', {
 
     async login(payload: UserLoginPayload) {
       try {
+        // Login
         const token = await UserAPI.loginUser(payload);
         this.setToken(token);
-        this.user = await UserAPI.getCurrentUser(token);
+        this.user = await UserAPI.getCurrentUser();
+
+        // Sync liked flights to server
+        const likedFlightsStore = useLikedStore();
+        await likedFlightsStore.syncAllLikesToServer();
       } catch (err) {
-        throw processAPIError(err);
+        throw await handleHttpError(err);
       }
     },
 
@@ -51,13 +57,13 @@ export const useUserStore = defineStore('user', {
       try {
         await UserAPI.registerUser(payload);
       } catch (err) {
-        throw processAPIError(err);
+        throw await handleHttpError(err);
       }
     },
 
     async verify(): Promise<boolean> {
       try {
-        this.token = await UserAPI.verifyUser(this.token);
+        this.token = await UserAPI.verifyUser();
         return true;
       } catch {
         this.logout();
@@ -67,39 +73,37 @@ export const useUserStore = defineStore('user', {
 
     async fetchUser(): Promise<User> {
       try {
-        if (!this.user) {
-          this.user = await UserAPI.getCurrentUser(this.token);
-        }
+        this.user = await UserAPI.getCurrentUser();
         return this.user;
       } catch (err) {
-        throw processAPIError(err);
+        throw await handleHttpError(err);
       }
     },
 
     async update(payload: any) {
       try {
-        await UserAPI.updateCurrentUser(this.token, payload);
-        // WARN: two requests that we can merge in one
-        this.user = await UserAPI.getCurrentUser(this.token);
+        await UserAPI.updateCurrentUser(payload);
+        this.__needsFetching = true;
       } catch (err) {
-        throw processAPIError(err);
+        throw await handleHttpError(err);
       }
     },
 
     async remove() {
       try {
-        await UserAPI.removeUser(this.token);
+        await UserAPI.removeUser();
         this.logout();
       } catch (err) {
-        throw processAPIError(err);
+        throw await handleHttpError(err);
       }
     },
 
     async fetchRules() {
       try {
-        this.rules = await UserAPI.getRules(this.token);
+        if (!this.rules)
+          this.rules = await UserAPI.getRules();
       } catch (err) {
-        throw processAPIError(err);
+        throw await handleHttpError(err);
       }
     },
 

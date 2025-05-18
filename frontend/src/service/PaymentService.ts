@@ -1,6 +1,7 @@
 import { UserAPI } from "@/api/UserAPI";
 import { useUserStore } from "@/store/userStore";
 
+// FIX
 export class PaymentService {
   public static async getPayments() {
     const { token } = useUserStore();

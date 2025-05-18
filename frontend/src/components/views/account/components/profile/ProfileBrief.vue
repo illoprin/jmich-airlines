@@ -25,35 +25,21 @@
 import LogoutBtnIcon from '@/components/icons/LogoutBtnIcon.vue';
 import TrashBtnIcon from '@/components/icons/TrashBtnIcon.vue';
 import { GuestRoutes } from '@/router/routes';
-import { useDialogueStore } from '@/store/dialogueStore';
 import { BASE_API } from '@/store/primaryStore';
 import { useUserStore } from '@/store/userStore';
 import { useRouter } from 'vue-router';
 
 const userStore = useUserStore();
-const dialogueStore = useDialogueStore();
 const router = useRouter();
 
 const handleLogout = async () => {
-  try {
-    await userStore.logout();
-    router.push({ name: GuestRoutes.Authorization.name });
-  } catch (err) {
-    dialogueStore.isModalVisible = true;
-    dialogueStore.modalContents = `Ошибка на стороне сервера: ${(err as Error).message}`;
-    dialogueStore.modalTitle = `Не удалось выйти из аккаунта`;
-  }
+  await userStore.logout();
+  router.push({ name: GuestRoutes.Authorization.name });
 }
 
 const handleRemove = async () => {
-  try {
-    await userStore.remove();
-    router.push({ name: GuestRoutes.Authorization.name });
-  } catch (err) {
-    dialogueStore.isModalVisible = true;
-    dialogueStore.modalContents = `Ошибка на стороне сервера: ${(err as Error).message}`;
-    dialogueStore.modalTitle = `Не удалось выйти из аккаунта`;
-  }
+  await userStore.remove();
+  router.push({ name: GuestRoutes.Authorization.name })
 };
 
 </script>

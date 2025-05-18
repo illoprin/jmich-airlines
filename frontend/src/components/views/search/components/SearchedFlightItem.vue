@@ -78,8 +78,10 @@ import { BASE_API } from '@/store/primaryStore';
 import LikeBtnDynamic from '@/components/icons/LikeBtnDynamicIcon.vue';
 import { useLikedStore } from '@/store/likedFlightsStore';
 import { AuthRoutes } from '@/router/routes';
+import { useFetchingErrorModal } from '@/store/fetchingModalStore';
 
 const likedStore = useLikedStore();
+const fetchingErrorModal = useFetchingErrorModal();
 
 const props = defineProps<{
   flight: Flight,
@@ -101,12 +103,18 @@ onMounted(async () => {
 });
 
 const handleLikeButton = async () => {
-  if (!liked.value) {
-    await likedStore.like(props.flight);
-  } else {
-    await likedStore.dislike(props.flight);
+  try {
+    if (!liked.value) {
+      await likedStore.like(props.flight);
+    } else {
+      await likedStore.dislike(props.flight);
+    }
+    liked.value = !liked.value;
+  } catch (err) {
+    fetchingErrorModal.visible = true;
+    fetchingErrorModal.title = 'Не удалось выполнить запрос';
+    fetchingErrorModal.contents = (err as Error).message;
   }
-  liked.value = !liked.value;
 }
 
 const tagField = computed<string>(() => {

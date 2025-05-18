@@ -38,6 +38,7 @@ export class DiscountHandler {
     if (!checkValidation(req, res)) return;
     try {
       const discount: DiscountEntry = req.body;
+      // WARN: shit code
       discount.valid_until = new Date(discount.valid_until);
       req.dependencies.discountService.add(discount);
       res.status(201).send();

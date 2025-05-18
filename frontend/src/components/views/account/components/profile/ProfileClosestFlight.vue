@@ -17,6 +17,12 @@
       :flight="bookingStore.bookings[0].flight"
     />
   </div>
+
+  <div v-else>
+    <h3 class="m-0">
+      Нет активных перелётов
+    </h3>
+  </div>
   
   
 </template>

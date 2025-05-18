@@ -113,7 +113,7 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
 
   public getAllByUserID(userID: number): FlightDTO[] | null {
     const query = this.getFlightDTOQuery(
-      `WHERE ${this.getTableName()}.user_id = ?`,
+      `WHERE ${this.getTableName()}.user_id = ? AND flight.status = 'ACTIVE'`,
     );
     const params = [userID];
 
@@ -178,19 +178,27 @@ export class LikedFlightRepository extends BaseRepository<LikedFlightEntry> {
     | null {
     return this.storage.all<LikedFlightEventPayload>(
       `--sql
-		SELECT
-			l.user_id, f.route_code, dc.name AS departure_city_name, ac.name AS arrival_city_name, c.logo AS company_logo
-		FROM
-			liked_flight l
-		LEFT JOIN flight f ON l.flight_id = f.id
-		LEFT JOIN airport da ON f.departure_airport_id = da.id
-		LEFT JOIN city dc ON da.city_id = dc.id
-		LEFT JOIN airport aa ON f.arrival_airport_id = aa.id
-		LEFT JOIN city ac ON aa.city_id = ac.id
-		LEFT JOIN company c ON f.company_id = c.id
-		WHERE datetime(f.departure_date) <= datetime('now', '+12 hours')
-	`,
+				SELECT
+					l.user_id, f.route_code, dc.name AS departure_city_name, ac.name AS arrival_city_name, c.logo AS company_logo
+				FROM
+					liked_flight l
+				LEFT JOIN flight f ON l.flight_id = f.id
+				LEFT JOIN airport da ON f.departure_airport_id = da.id
+				LEFT JOIN city dc ON da.city_id = dc.id
+				LEFT JOIN airport aa ON f.arrival_airport_id = aa.id
+				LEFT JOIN city ac ON aa.city_id = ac.id
+				LEFT JOIN company c ON f.company_id = c.id
+				WHERE datetime(f.departure_date) <= datetime('now', '+12 hours')
+			`,
       [],
     );
   }
+
+	public getExpiredLikedFlights(): LikedFlightEntry[] | null {
+		return this.storage.all<LikedFlightEntry>(`--sql
+			SELECT * FROM ${this.getTableName()}
+			LEFT JOIN flight ON ${this.getTableName()}.flight_id = flight.id
+			WHERE date(flight.departure_date) < date('now')
+		`, []);
+	}
 }

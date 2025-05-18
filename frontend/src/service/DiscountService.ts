@@ -1,5 +1,6 @@
 import { DiscountAPI } from "@/api/DiscountAPI";
 import type { Discount } from "@/api/types/entities/discount";
+import { handleHttpError } from "@/lib/service/handleHTTPError";
 import { useUserStore } from "@/store/userStore";
 
 export class DiscountService {

@@ -39,6 +39,8 @@ services:
     build:
       context: ./frontend
     container_name: jmich-frontend
+    volumes:
+      - ./frontend/src:/app/src
     environment:
       VITE_BASE_API: "http://localhost:8000"
     ports:

@@ -1,20 +1,22 @@
-import { mockDiscount } from "@/api/mocks/discount";
+import { $authHost } from "@/api/httpClient";
 import type { Discount } from "@/api/types/entities/discount";
-import { NotFoundError, UserTokenError } from "@/lib/service/errors";
 
 export class DiscountAPI {
-  public static async validate(token: string, code: string) {
-    if (!token) {
-      throw new UserTokenError("user is unauthorized");
-    }
-    const discount = mockDiscount.find(d => d.code === code)
-    if (!discount) {
-      throw new NotFoundError('invalid discount');
-    }
-    return discount
+  public static async validate(code: string): Promise<Discount> {
+    const response = await $authHost.post(`booking/discount/validate/${code}`);
+    const { discount } = (await response.json() as any);
+    return discount;
   }
 
-  public static async add(token: string, discount: Discount) {
-    // Created
+  public static async add(discount: Discount) {
+    await $authHost.post('booking/discount', {
+      json: discount
+    });
   }
+
+  public static async remove(code: string) {
+    await $authHost.delete(`booking/discount/${code}`);
+  }
+
+
 }

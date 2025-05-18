@@ -131,18 +131,17 @@ export class BookingHandler {
     }
   }
 
-  private static async getCountByToken(
+  private static getCountByToken(
     req: Request,
     res: Response
-  ): Promise<void> {
+  ): void {
     try {
       const { id } = req.token_data;
       const status = req.params.status.toUpperCase();
-      const count =
-        await req.dependencies.bookingService.getCountForUser(
-          id,
-          status
-        );
+      const count = req.dependencies.bookingService.getCountForUser(
+        id,
+        status
+      );
       res.json(ResponseTypes.ok({ count }));
     } catch (err) {
       processServiceError(res, err);
@@ -226,7 +225,7 @@ export class BookingHandler {
     router.get("/trending", this.getTrendingBookings);
 
     // User discount handler
-    router.use("/discounts", DiscountHandler.router());
+    router.use("/discount", DiscountHandler.router());
 
     router.get(
       "/all",

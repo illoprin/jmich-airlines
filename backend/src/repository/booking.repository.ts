@@ -150,7 +150,7 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 				baggage_rule b on c.baggage_rule_id = b.id
 
 			${whereClause}
-			ORDER BY flight.departure_date DESC
+			ORDER BY flight.departure_date ASC
 			${usePagination ? "LIMIT ? OFFSET ?" : ""}
 		`;
   }
@@ -214,7 +214,7 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
     let params: any[] = [user_id];
 
     let pagination = false;
-    if (max && page) {
+    if (max != undefined && page != undefined) {
       pagination = true;
       params.push(max, page * max);
     }

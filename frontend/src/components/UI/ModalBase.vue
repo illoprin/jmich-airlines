@@ -16,7 +16,7 @@
         <div class="fs-5 modal-header-title fw-bold">
           <slot name="title" />
         </div>
-        <button type="button" class="btn-close" @click="handleClose"></button>
+        <img :src="CrossIco" class="sm-md-icon btn-icon" @click="handleClose">
       </div>
 
       <div class="p-3">
@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import CrossIco from '@/assets/icons/cross.svg'
 import { computed, watch } from 'vue';
 
 

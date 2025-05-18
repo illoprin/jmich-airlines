@@ -3,10 +3,10 @@ import type { Config } from "@/types/internal/config";
 
 export function createCorsOptions(cfg: Config): CorsOptions {
   const allowedOrigins: string[] = [
-    `http://${cfg.allow_origin.host}:${cfg.allow_origin.port}`,
+    `http://localhost`,
   ];
 
-  return {
+  return { // fuck cors
     origin: (
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,

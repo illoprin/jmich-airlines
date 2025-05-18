@@ -21,7 +21,7 @@ async function main() {
   const storage = initStorage(
     cfg.storage_path,
     cfg.redis_server.host,
-    cfg.redis_server.port,
+    cfg.redis_server.port
   );
   await storage.redisClient.init();
 
@@ -32,13 +32,20 @@ async function main() {
   const router = initRouter();
 
   // Schedule cron jobs (periodic execution of some task)
-  scheduleUpdateStatus(services.flightService, services.bookingService);
+  scheduleUpdateStatus(
+    services.flightService,
+    services.bookingService,
+    services.likedFlightService
+  );
   scheduleInvalidateDiscounts(services.discountService);
-  scheduleRefreshCities(storage.repositories.cityCache, services.cityService);
+  scheduleRefreshCities(
+    storage.repositories.cityCache,
+    services.cityService
+  );
   scheduleIncreasePrice(services.flightService);
   scheduleSendFlightNotifications(
     storage.repositories.likedFlightRepo,
-    services.notificationService,
+    services.notificationService
   );
 
   // Load swagger docs

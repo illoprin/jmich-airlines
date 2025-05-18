@@ -28,6 +28,10 @@ const paymentStore = usePaymentStore();
 const cardLabel = computed<string>(() => {
   if (!paymentStore.payments)
     return 'Не удалось загрузить';
+
+  if (paymentStore.payments.length === 0)
+    return 'Привяжите карту';
+  
   const count = paymentStore.payments?.length;
   let labelCard = '';
   if (count === 1)

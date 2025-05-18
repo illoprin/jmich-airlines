@@ -7,7 +7,7 @@ const props = defineProps({
 });
 
 const emits = defineEmits<{
-  (e: 'update:input', value: string): void
+  (e: 'update:value', value: string): void
 }>();
 
 const datepickerRef = ref<HTMLInputElement | undefined>(undefined);
@@ -28,7 +28,7 @@ function onSelect() {
       return;
     }
     invalidDate.value = false;
-    emits('update:input', datepickerRef.value.value);
+    emits('update:value', datepickerRef.value.value);
     selectedDate.value = datepickerRef.value.value;
   }
 }

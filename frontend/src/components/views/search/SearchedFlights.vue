@@ -15,11 +15,21 @@
     </div>
     <!-- Flights -->
     <div class="flights-list glass-convex glass-border glass-padding">
-      <GlassPanelHeader>
-        <template v-slot:header>
-          Мы нашли {{ flights.length }} рейсов
-        </template>
-      </GlassPanelHeader>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between mb-3">
+        <h4 class="fw-bold mb-2">
+          Мы нашли пару рейсов
+        </h4>
+        <PaginationController
+          v-if="flightStore.flights.length >= flightStore.limit
+          && flightStore.searched"
+          v-model:page="flightStore.page"
+          :callback="flightStore.fetchFlights"
+        />
+      </div>
+
+      <!-- Searched Flights -->
       <div class="d-flex gap-3 flex-column">
         <SearchedFlightItem
           v-for="flight in sortedFlights"
@@ -36,22 +46,21 @@
 <script setup lang="ts">
 import type { Flight } from '@/api/types/entities/flight';
 import GlassPanelHeader from '@/components/shared/GlassPanelHeader.vue';
+import PaginationController from '@/components/shared/PaginationController.vue';
 import GlassFancyRadioHorizontal from '@/components/UI/GlassFancyRadioHorizontal.vue';
 import GlassFancyRadioVertical from '@/components/UI/GlassFancyRadioVertical.vue';
 import SearchedFlightItem from '@/components/views/search/components/SearchedFlightItem.vue';
 import { useLikedStore } from '@/store/likedFlightsStore';
+import { useSearchFlightStore } from '@/store/searchFlightStore';
 import { FlightSortTypes } from '@/types/sort/flightSortTypes';
 import { OrderOptions } from '@/types/sort/order';
 import type { DefaultOption } from '@/types/ui/fancyRadio';
 import { computed, ref } from 'vue';
 
-const props = defineProps<{
-  flights: Flight[];
-}>();
-
 const likedStore = useLikedStore();
+const flightStore = useSearchFlightStore();
 
-const sortBy = ref(FlightSortTypes.Price);
+const sortBy = ref(FlightSortTypes.Date);
 const sortOptions = [
   { label: 'Цена', value: FlightSortTypes.Price },
   { label: 'Дата вылета', value: FlightSortTypes.Date },
@@ -85,7 +94,7 @@ const orderOptions = computed<DefaultOption[]>(() => {
   }
 })
 const sortedFlights = computed<Flight[]>(() => {
-  const flightsCopy = [...props.flights];
+  const flightsCopy = [ ...flightStore.flights ];
 
   const getDuration = (flight: Flight): number => {
     const dep = new Date(flight.departure_date);

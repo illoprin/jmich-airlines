@@ -1,17 +1,28 @@
 import type { Payment } from "@/api/types/entities/payment";
 import { UserAPI } from "@/api/UserAPI";
-import { useUserStore } from "@/store/userStore";
+import { handleHttpError } from "@/lib/service/handleHTTPError";
 import { defineStore } from "pinia";
 
 export const usePaymentStore = defineStore('payment', {
   state: () => ({
-    payments: null as Payment[] | null,
+    payments: [] as Payment[],
   }),
 
   actions: {
     async fetchPayment() {
-      const { token } = useUserStore();
-      this.payments = await UserAPI.getPayments(token);
+      try {
+        this.payments = await UserAPI.getPayments();
+      } catch (err) {
+        throw await handleHttpError(err);
+      }
+    },
+    
+    async addPayment(payment: Payment) {
+      try {
+        await UserAPI.addPayment(payment);
+      } catch (err) {
+        throw await handleHttpError(err);
+      }      
     }
   }
 });

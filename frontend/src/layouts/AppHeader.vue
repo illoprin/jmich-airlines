@@ -51,7 +51,7 @@ import { RouterLink, useRouter } from "vue-router";
 import { AuthRoutes, GuestRoutes } from "@/router/routes.ts";
 import UserIco from '@/assets/icons/person.svg';
 import { useUserStore } from "@/store/userStore";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import type { Option } from "@/types/ui/option";
 import GlassDropDown from '@/components/UI/GlassDropDown.vue';
 import { AccountPageModes } from '@/types/hash/account';
@@ -64,6 +64,11 @@ const accountDropdownRoot = ref<HTMLElement | undefined>(undefined);
 const accountDropdownVisible = ref<boolean>(false);
 
 const router = useRouter();
+
+onMounted(async () => {
+  if (user.isAuthenticated)
+    await user.fetchUser();
+})
 
 enum AccountDropdownValues {
   Profile = "profile",

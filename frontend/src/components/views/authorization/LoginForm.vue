@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { UserLoginPayload } from '@/api/types/requests/user';
-import GlassInput from '@/components/UI/GlassInput.vue';
 import GlassInputWithValidation from '@/components/UI/GlassInputWithValidation.vue';
 
 const props = defineProps<{

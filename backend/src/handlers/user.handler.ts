@@ -13,6 +13,7 @@ import { LOGIN_REGEX, SINGLE_UNICODE_WORD_REGEX } from "@/lib/service/const";
 import { LikedFlightHandler } from "./liked-flight.handler";
 import { NotificationHandler } from "./notification.handler";
 import { UserLevelDiscountRules } from "@/types/features/user";
+import { createToken } from "@/lib/api/token";
 
 export class UserHandler {
   private static getChain(optional: boolean = false): ValidationChain[] {
@@ -56,6 +57,16 @@ export class UserHandler {
   private static async login(req: Request, res: Response): Promise<void> {
     try {
       const token = await req.dependencies.userService.login(req.body);
+      res.json(ResponseTypes.ok({ token }));
+    } catch (err) {
+      processServiceError(res, err);
+      return;
+    }
+  }
+  
+  private static async verify(req: Request, res: Response): Promise<void> {
+    try {
+      const token = await req.dependencies.userService.verify(req.token_data);
       res.json(ResponseTypes.ok({ token }));
     } catch (err) {
       processServiceError(res, err);
@@ -161,7 +172,7 @@ export class UserHandler {
     router.use("/notification", NotificationHandler.router());
 
     router.get(
-      '/discount-rules',
+      '/rules',
       authorizationMiddleware,
       this.getGeneralDiscountRule
     )
@@ -172,6 +183,7 @@ export class UserHandler {
     router.post("/", this.getChain(), this.registerUser);
     // PERF
     router.post("/login", this.login);
+    router.post("/verify", [authorizationMiddleware], this.verify);
 
     // Admin routes
     // PERF

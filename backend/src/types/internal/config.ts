@@ -15,5 +15,4 @@ export interface Config {
   protected_files_path: string;
   redis_server: Server;
   http_server: Server;
-  allow_origin: Server;
 }

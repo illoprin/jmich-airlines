@@ -127,6 +127,13 @@ export class FlightHandler {
       payload.max = parseInt(req.query.limit as string);
       payload.page = parseInt(req.query.page as string);
 
+      if (isNaN(payload.max)) {
+        payload.max = 10;
+      }
+      if (isNaN(payload.page)) {
+        payload.page = 0;
+      }
+
       const flights = req.dependencies.flightService.search(payload);
       res.json(ResponseTypes.ok({ flights }));
     } catch (err) {

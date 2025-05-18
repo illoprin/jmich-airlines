@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import { computed } from "vue";
 import { AuthRoutes, GuestRoutes, NotFoundRoute } from "@/router/routes.ts";
 import AppFooter from "@/layouts/AppFooter.vue";
+import FetchingErrorModal from "@/components/shared/FetchingErrorModal.vue";
 
 const route = useRoute();
 
@@ -32,4 +33,5 @@ const isBookingPage = computed<boolean>(() =>
   <AppFooter
     v-if="!isAuthPage && !isNotFoundPage && !isBookingPage"
   />
+  <FetchingErrorModal />
 </template>

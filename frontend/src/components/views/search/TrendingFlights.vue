@@ -6,13 +6,13 @@ import '@/assets/style/Trending.css'
 import GlassPanelHeader from '@/components/shared/GlassPanelHeader.vue';
 
 const props = defineProps<{
-  hotTours: TrendingFlight[] | undefined
+  hotTours: TrendingFlight[]
 }>();
 
 </script>
 
 <template>
-  <div class="glass glass-border glass-padding" v-if="hotTours">
+  <div class="glass glass-border glass-padding">
 
     <div class="row g-4">
       <!-- Hot Tour -->

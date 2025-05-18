@@ -49,7 +49,7 @@ const levelMessage = computed<string>(() => {
     case UserLevel.Premium:
       return `Это даёт вам ${(userStore.getUserDiscount || 0) * 100}% экономии на всех билетах. Вы на шаг ближе к максимальной выгоде!`; 
     case UserLevel.Platinum:
-      return `Вы достигли наивысшего уровня, ваша скидка ${(userStore.getUserDiscount || 0) * 100} делает каждую поездку ещё выгоднее!`; 
+      return `Вы достигли наивысшего уровня, ваша скидка ${(userStore.getUserDiscount || 0) * 100}% делает каждую поездку ещё выгоднее!`;
   };
 });
 

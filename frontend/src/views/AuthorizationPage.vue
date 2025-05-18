@@ -71,17 +71,6 @@
     </div>
   </div>
 
-  <ModalBase v-model:visible="authErrorModal">
-    <template v-slot:title>
-      Ошибка авторизации
-    </template>
-    <template v-slot:contents>
-      <p>
-        {{ authErrorMessage }}
-      </p>
-    </template>
-  </ModalBase>
-
 </template>
 
 <script setup lang="ts">
@@ -98,20 +87,18 @@ import { useValidation, type ValidationSchema } from "@/composable/useValidation
 import { emailRegex, generalLatinRegex, oneUnicodeWordRegex, phoneRegex } from "@/utils/regex";
 import { AccountPageModes } from "@/types/hash/account";
 import { useUserStore } from "@/store/userStore";
-import ModalBase from "@/components/UI/ModalBase.vue";
+import { useFetchingErrorModal } from "@/store/fetchingModalStore";
 
 
 const route = useRoute();
 const router = useRouter();
 const user = useUserStore();
+const fetchingErrorModal = useFetchingErrorModal();
 
 const mode = computed<string>(() => {
   const hash = route.hash || AuthorizationPageModes.Registration;
   return hash;
 });
-
-const authErrorModal = ref<boolean>(false);
-const authErrorMessage = ref<string>("");
 
 const title = computed<string>(() => {
   switch (mode.value) {
@@ -204,9 +191,8 @@ const submitLoginForm = async () => {
       name: AuthRoutes.AccountPage.name,
       hash: AccountPageModes.Profile
     });
-  } catch(err) {
-    authErrorMessage.value = (err as Error).message;
-    authErrorModal.value = true;
+  } catch {
+    
   }
 }
 
@@ -223,9 +209,8 @@ const submitRegForm = async () => {
       name: GuestRoutes.Authorization.name,
       hash: AuthorizationPageModes.AuthAfterReg
     });
-  } catch (err) {
-    authErrorMessage.value = (err as Error).message;
-    authErrorModal.value = true;
+  } catch {
+    
   }
 }
 

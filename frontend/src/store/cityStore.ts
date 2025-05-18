@@ -1,6 +1,6 @@
 import { CityAPI } from "@/api/CityAPI";
 import type { City } from "@/api/types/entities/city";
-import { processAPIError } from "@/lib/service/processServerError";
+import { handleHttpError } from "@/lib/service/handleHTTPError";
 import { defineStore } from "pinia";
 
 export const useCities = defineStore('city', {
@@ -14,17 +14,17 @@ export const useCities = defineStore('city', {
         this.cities = await CityAPI.getAll();
         return this.cities;
       } catch (err) {
-        throw processAPIError(err);
+        throw await handleHttpError(err);
       }
     },
 
     async getByID(id: number): Promise<City> {
-      if (!this.cities || !this.cities.length) {
-        await this.fetchCities();
+      try {
+        const city = await CityAPI.getByID(id);
+        return city;
+      } catch (err) {
+        throw await handleHttpError(err);
       }
-      return this.cities?.find(
-        (city) => city.id === id
-      ) as City;
     }
   },
 })

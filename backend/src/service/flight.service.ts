@@ -175,6 +175,8 @@ export class FlightService {
       if (payload.departure_date <= new Date()) {
         throw new InvalidFieldError("departure date cannot be in past");
       }
+    } else {
+      payload.departure_date = new Date(Date.now() + DAY_MILLISECONDS);
     }
 
     let flights = this.flightRepo.searchActiveFlights(
@@ -182,8 +184,8 @@ export class FlightService {
       payload.arrival_airport_id,
       payload.departure_date,
       payload.seats,
-      isNaN(payload.max) ? 10 : payload.max,
-      isNaN(payload.page) ? 10 : payload.page
+      payload.max,
+      payload.page
     );
 
     return flights ? this.findCheapest(flights) : [];

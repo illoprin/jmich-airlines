@@ -27,11 +27,11 @@ defineProps<{
       <span class="fs-5 lh-sm">
         {{ flight.arrival_city_name }}
       </span>
-      <div class="">
-        <span class="text-white-50 lh-sm">
+      <div>
+        <span class="text-white-50 float-start">
           от
         </span>
-        <strong class="fs-5 lh-sm">
+        <strong class="fs-5 lh-sm float-start" style="margin-left: 0.3rem;">
           {{ formatPrice(flight.price, "₽") }}
         </strong>
       </div>

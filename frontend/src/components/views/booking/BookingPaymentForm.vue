@@ -16,7 +16,7 @@
           class="small"
           placeholder="Номер карты"
           max="16"
-          v-model="formStore.payment.number"
+          v-model:value="formStore.payment.number"
         />
         <div class="d-flex gap-3 mt-3">
           <GlassInput
@@ -24,14 +24,14 @@
             max="4"
             class="small w-75"
             placeholder="Срок действия"
-            v-model="formStore.payment.expires"
+            v-model:value="formStore.payment.expires"
           />
           <GlassInput
             type="text"
             max="3"
             class="small w-25"
             placeholder="CVV"
-            v-model="formStore.payment.cvv"
+            v-model:value="formStore.payment.cvv"
           />
         </div>
       </div>

@@ -16,7 +16,7 @@
         </button>
       </div>
 
-      <div v-if="!isUserLoading">
+      <div v-if="!isLoading">
         <AccountProfile v-if="mode === AccountPageModes.Profile" />
         <AccountLiked v-else-if="mode === AccountPageModes.Liked" />
         <AccountTickets v-else-if="mode === AccountPageModes.Tickets" />
@@ -88,7 +88,7 @@ const bookingStore = useBookingStore();
 
 const {
   fetchData: fetchData,
-  isLoading: isUserLoading
+  isLoading
 } = useFetching(async () => {
   await userStore.fetchUser();
   await userStore.fetchRules();
@@ -98,7 +98,7 @@ const {
 });
 
 const pageHeader = computed<string>(() => {
-  if (!isUserLoading.value) {
+  if (!isLoading.value) {
     switch (mode.value) {
       case AccountPageModes.Profile:
         return `Добрый день, ${userStore.user?.firstname}`;
@@ -107,14 +107,16 @@ const pageHeader = computed<string>(() => {
         return `На X рейсов истекает срок регистрации`;
 
       case AccountPageModes.Tickets:
-        const activeBookings = bookingStore.bookings?.filter(b =>
-          b.status === BookingStatus.Active && b.flight.status === FlightStatus.Active);
-        if (activeBookings)
-          return `У вас ${activeBookings.length} активных билетов`;
-        else if (activeBookings && bookingStore.bookings?.length as any === 0)
-          return `Сделайте первый заказ!`;
-        else
-          return `Все перелёты завершены!`;
+        if (bookingStore.bookings) {
+          if (bookingStore.count > 0) {
+            return `У вас ${bookingStore.count} активных билетов`
+          } else if (bookingStore.bookings.length > 0 && bookingStore.count == 0) {
+            return `Все перелёты завершены!`
+          } else {
+            return `Сделайте первый заказ!`
+          }
+        }
+        return '';
 
       case AccountPageModes.Settings:
         return `Здесь вы можете настроить ваш аккаунт`;

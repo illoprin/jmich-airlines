@@ -1,65 +1,60 @@
-import { mockTrendingFlights, mockUserBookings } from "@/api/mocks/booking";
-import type { Booking, TrendingFlight } from "@/api/types/entities/booking";
-import type { CreateBookingPayload } from "@/api/types/requests/booking";
-import { NotFoundError, UserTokenError } from "@/lib/service/errors";
+import { $authHost, $host } from '@/api/httpClient';
+import type {
+  Booking,
+  BookingStatus,
+  TrendingFlight,
+} from '@/api/types/entities/booking';
+import type { CreateBookingPayload } from '@/api/types/requests/booking';
 
-export class BookingAPI{
-  public static async getTrending(limit: number, page: number): Promise<TrendingFlight[]> {
-    page += 1;
-    return mockTrendingFlights;
+export class BookingAPI {
+  public static async getTrending(
+    limit: number,
+    page: number,
+  ): Promise<TrendingFlight[]> {
+    const response = await $host.get(`booking/trending`, {
+      searchParams: {
+        limit, page
+      }
+    });
+    const { trending } = (await response.json()) as any;
+    return trending;
   }
 
-  public static async add(token: string, entry: CreateBookingPayload): Promise<void> {
-    if (!token) {
-      throw new UserTokenError('user is unauthorized');
-    }
-    
+  public static async add(
+    payload: CreateBookingPayload,
+  ): Promise<void> {
+    await $authHost.post('booking', {
+      json: payload,
+    });
   }
 
-  static async getByID(token: string, id: number): Promise<Booking> {
-    if (!token) {
-      throw new UserTokenError('user is unauthorized');
-    }
-    const booking = mockUserBookings.find(b => b.id === id);
-    if (!booking) {
-      throw new NotFoundError('invalid id');
-    }
-
+  static async getByID(id: number): Promise<Booking> {
+    const response = await $authHost.get(`booking/${id}`);
+    const { booking } = (await response.json()) as any;
     return booking;
   }
 
-  static async getForUser(token: string): Promise<Booking[]> {
-    if (!token) {
-      throw new UserTokenError('user is unauthorized');
-    }
-    return mockUserBookings;
+  static async getForUser(): Promise<Booking[]> {
+    const response = await $authHost.get(`booking`);
+    const { bookings } = (await response.json()) as any;
+    return bookings;
   }
 
-  static async getClosestForUser(token: string): Promise<Booking> {
-    if (!token) {
-      throw new UserTokenError('user is unauthorized');
-    }
-    return mockUserBookings[0];
+  static async getClosestForUser(): Promise<Booking> {
+    const response = await $authHost.get(`booking/closest`);
+    const { booking } = (await response.json()) as any;
+    return booking;
   }
 
-  public static async updateByID(token: string, payload: any): Promise<void> {
-    if (!token) {
-      throw new UserTokenError('user is unauthorized');
-    }
-
+  public static async removeByID(id: number): Promise<void> {
+    await $authHost.delete(`booking/${id}`);
   }
 
-  public static async removeByID(token: string, id: number): Promise<void> {
-    if (!token) {
-      throw new UserTokenError('user is unauthorized');
-    }
-
+  public static async getCountForUser(
+    status: BookingStatus,
+  ): Promise<number> {
+    const response = await $authHost.get(`booking/count/${status}`)
+    const { count } = (await response.json()) as any;
+    return count;
   }
-
-  public static async getCountForUser(token: string): Promise<number> {
-    if (!token) {
-      throw new UserTokenError('user is unauthorized');
-    }
-    return mockUserBookings.length;
-  }  
 }

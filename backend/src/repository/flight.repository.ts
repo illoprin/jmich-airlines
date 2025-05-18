@@ -206,8 +206,8 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
     arrivalAirportId?: number,
     departureDate?: Date,
     minSeatsAvailable: number = 1,
-    max?: number,
-    page?: number,
+    max: number = 10,
+    page: number = 0,
   ): FlightDTO[] | null {
     // Build WHERE conditions dynamically based on provided parameters
     const conditions: string[] = [`${this.getTableName()}.status = 'ACTIVE'`];
@@ -235,13 +235,12 @@ export class FlightRepository extends BaseRepository<FlightEntry> {
     const whereClause =
       conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    let pagination = false;
-    if (max && page) {
-      pagination = true;
-      params.push(max, max * page);
-    }
+    // Pagination
+    params.push(max, max * page);
 
-    const query = this.getDTOQuery(whereClause, pagination);
+    console.log(params, whereClause);
+
+    const query = this.getDTOQuery(whereClause, true);
     const rows = this.storage.all<any>(query, params);
 
     if (!rows) {

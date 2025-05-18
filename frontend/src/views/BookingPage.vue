@@ -7,7 +7,7 @@ import { useFetching } from '@/composable/useFetching';
 import { AuthRoutes, GuestRoutes } from '@/router/routes';
 import { FlightService } from '@/service/FlightService';
 import { BASE_API } from '@/store/primaryStore';
-import { computed, onMounted, onScopeDispose, ref, watch } from 'vue';
+import { computed, onMounted, onScopeDispose, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import StepperInput from '@/components/views/booking/StepperInput.vue';
 import GlassInput from '@/components/UI/GlassInput.vue';
@@ -16,28 +16,25 @@ import BookingPaymentForm from '@/components/views/booking/BookingPaymentForm.vu
 import { useBookingForm } from '@/store/bookingFormStore';
 import GlowButton from '@/components/UI/GlowButton.vue';
 import type { CreateBookingPayload } from '@/api/types/requests/booking';
-import type { Payment } from '@/api/types/entities/payment';
-import { PaymentService } from '@/service/PaymentService';
-import ModalBase from '@/components/UI/ModalBase.vue';
 import { DiscountService } from '@/service/DiscountService';
 import BookingTotalCost from '@/components/views/booking/BookingTotalCost.vue';
-import type { UserLevelDiscountRules } from '@/api/types/entities/discount';
 import { useUserStore } from '@/store/userStore';
 import { UserLevel } from '@/api/types/entities/user';
-import { UserAPI } from '@/api/UserAPI';
-import { useDialogueStore } from '@/store/dialogueStore';
-import { BookingAPI } from '@/api/BookingAPI';
 import { AccountPageModes } from '@/types/hash/account';
+import { useFetchingErrorModal } from '@/store/fetchingModalStore';
+import { useBookingStore } from '@/store/bookingStore';
+import { usePaymentStore } from '@/store/paymentStore';
 
 const route = useRoute();
 const router = useRouter();
 const formStore = useBookingForm();
 const userStore = useUserStore();
-const dialogueStore = useDialogueStore();
+const fetchingErrorModal = useFetchingErrorModal();
+const bookingStore = useBookingStore();
+const paymentStore = usePaymentStore();
+
 
 const flight = ref<Flight | undefined>(undefined);
-const userDiscountRules = ref<UserLevelDiscountRules>();
-const payments = ref<Payment[]>([]);
 
 // Fetch flight
 const flightId = parseInt(route.params.id as string);
@@ -54,28 +51,33 @@ const {
 // Fetch user payments
 const {
   fetchData: fetchPayment,
-  isLoading: isLoadingPayment
+  isLoading: isPaymentLoading
 } = useFetching(async () => {
-  payments.value = await PaymentService.getPayments();
+  await paymentStore.fetchPayment();
 });
 
 // Fetch discount code
 const {
   fetchData: validateDiscount,
-  isLoading: isLoadingDiscount,
-  error: discountError
+  isLoading: isLoadingDiscount
 } = useFetching(async () => {
-  const d = await DiscountService.validateCode(formStore.code);
-  formStore.discount = d;
+  try {
+    const d = await DiscountService.validateCode(formStore.code);
+    formStore.discount = d;
+  } catch (err) {
+    fetchingErrorModal.visible = true;
+    fetchingErrorModal.title = 'Не валидный промо-код';
+    fetchingErrorModal.contents = 'Вы ввели неверный промо-код!';
+    formStore.code = "";
+  }
 });
 
 // Fetch discount rules
 const {
   fetchData: fetchDiscountRules,
-  isLoading: isLoadingDiscountRules,
+  isLoading: isLoadingRules
 } = useFetching(async () => {
-  // WARN: you must not use API functions in components
-  userDiscountRules.value = await UserAPI.getRules(userStore.token);
+  await userStore.fetchRules();
 });
 
 onMounted(async () => {
@@ -113,9 +115,9 @@ const discountAmount = computed<number>(() => {
 });
 
 const levelDiscount = computed<number>(() => {
-  if (!userStore.user || !userDiscountRules.value)
+  if (!userStore.user || !userStore.rules)
     return 0;
-  return userDiscountRules.value[userStore.user.level].discount;
+  return userStore.rules[userStore.user.level].discount;
 });
 
 const totalCost = computed<number>(() => {
@@ -125,10 +127,12 @@ const totalCost = computed<number>(() => {
 });
 
 const handleSubmit = async () => {
-  if (!formStore.paymentId || !formStore.payment) {
-    dialogueStore.isModalVisible = true;
-    dialogueStore.modalContents = 'Выберете способ оплаты или введите ваши платёжные данные'
-    dialogueStore.modalTitle = 'Не можем провести оплату';
+  if (formStore.paymentId === undefined
+  && Object.keys(formStore.payment).length < 3) {
+    fetchingErrorModal.visible = true;
+    fetchingErrorModal.contents = 'Выберете способ оплаты или введите ваши платёжные данные'
+    fetchingErrorModal.title = 'Не можем провести оплату';
+    return;
   }
 
   const formData: CreateBookingPayload = {
@@ -139,28 +143,19 @@ const handleSubmit = async () => {
     seats: formStore.seats,
     code: formStore.code || undefined,
   }
+
   try {
-    await BookingAPI.add(userStore.token, formData);
+    await bookingStore.add(formData);
     router.push({
       name: AuthRoutes.AccountPage.name,
       hash: AccountPageModes.Tickets
     });
-  } catch (err) {
-    dialogueStore.modalTitle = 'Не удалось оформить бронирование';
-    dialogueStore.modalTitle = `Ошибка на стороне сервера: ${(err as Error).message}`;
+    if (formStore.saveCard) {
+      await paymentStore.addPayment(formStore.payment);
+    }
+  } catch {
   }
-  // TODO: add booking and goto user tickets page
 };
-
-watch(discountError, (err) => {
-  if (discountError) {
-    console.log("invalid code");
-    dialogueStore.isModalVisible = true;
-    dialogueStore.modalTitle = 'Не валидный промо-код';
-    dialogueStore.modalContents = 'Вы ввели неверный промо-код!';
-    formStore.code = "";
-  }
-});
 
 const validateCode = async () => {
   await validateDiscount();
@@ -237,8 +232,8 @@ const validateCode = async () => {
 
           <!-- Payment -->
           <BookingPaymentForm
-            v-if="!isLoadingPayment"
-            :payments="payments"
+            v-if="!isPaymentLoading"
+            :payments="paymentStore.payments"
           />
 
           <!-- Promo Code -->
@@ -268,7 +263,7 @@ const validateCode = async () => {
         <!-- Total Cost -->
         <div class="glass glass-border light-shadow bottom-bar-right">
           <BookingTotalCost 
-            v-if="!isLoadingDiscountRules && flight"
+            v-if="!isLoadingRules && flight"
             :flight="flight"
             :seats="formStore.seats"
             :levelDiscount="levelDiscount"
@@ -287,15 +282,6 @@ const validateCode = async () => {
       </div>
     </div>
   </div>
-
-  <ModalBase v-model:visible="dialogueStore.isModalVisible">
-    <template v-slot:title>
-      {{ dialogueStore.modalTitle }}
-    </template>
-    <template v-slot:contents>
-      {{ dialogueStore.modalContents }}
-    </template>
-  </ModalBase>
 </template>
 
 <style scoped>

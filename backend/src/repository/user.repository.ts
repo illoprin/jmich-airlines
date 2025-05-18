@@ -18,7 +18,7 @@ export class UserRepository extends BaseRepository<UserEntry> {
 				phone TEXT NOT NULL CHECK(length(phone) == 10),
 				email TEXT NOT NULL UNIQUE,
 				password TEXT NOT NULL,
-				avatarpath TEXT DEFAULT '/upload/user/avatar_default.jpg',
+				avatarpath TEXT DEFAULT '/upload/protected/avatar_default.jpg',
 				role INTEGER DEFAULT 1,
 				level TEXT NOT NULL CHECK(level IN ('Basic', 'Silver', 'Gold', 'Premium', 'Platinum')) DEFAULT 'Basic'
 			);

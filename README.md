@@ -2,6 +2,8 @@
 
 ![Image](https://raw.githubusercontent.com/illoprin/jmich-airlines/refs/heads/master/img/promo.jpg)
 
+![Image](https://raw.githubusercontent.com/illoprin/jmich-airlines/refs/heads/master/img/main_page.jpg)
+
 Веб-приложение, позволяющее искать, бронировать и управлять авиабилетами с учётом пользовательских предпочтений. Поддерживает регистрацию, личный кабинет, сохранение билетов и платёжных данных.
 
 ## 🔧 Запуск проекта в режиме разработки

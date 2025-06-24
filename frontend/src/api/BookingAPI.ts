@@ -1,8 +1,8 @@
 import { $authHost, $host } from '@/api/httpClient';
-import type {
-  Booking,
+import {
   BookingStatus,
-  TrendingFlight,
+  type Booking,
+  type TrendingFlight,
 } from '@/api/types/entities/booking';
 import type { CreateBookingPayload } from '@/api/types/requests/booking';
 
@@ -48,6 +48,14 @@ export class BookingAPI {
 
   public static async removeByID(id: number): Promise<void> {
     await $authHost.delete(`booking/${id}`);
+  }
+
+  public static async updateStatus(id: number, status: BookingStatus): Promise<void> {
+    await $authHost.put(`booking/${id}/status`, {
+      json: {
+        status
+      }
+    })
   }
 
   public static async getCountForUser(

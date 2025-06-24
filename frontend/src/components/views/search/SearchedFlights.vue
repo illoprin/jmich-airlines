@@ -55,10 +55,14 @@ import { useSearchFlightStore } from '@/store/searchFlightStore';
 import { FlightSortTypes } from '@/types/sort/flightSortTypes';
 import { OrderOptions } from '@/types/sort/order';
 import type { DefaultOption } from '@/types/ui/fancyRadio';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const likedStore = useLikedStore();
 const flightStore = useSearchFlightStore();
+
+onMounted(async () => {
+  await likedStore.fetchLikes();
+})
 
 const sortBy = ref(FlightSortTypes.Date);
 const sortOptions = [

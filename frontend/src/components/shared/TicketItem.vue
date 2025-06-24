@@ -34,7 +34,7 @@
         <GlassButtonSmall class="flex-fill" @click="handleInfoButton(ticket)">
           <img :src="InfoIco" alt="info-ico" class="sm-md-icon">
         </GlassButtonSmall>
-        <GlassButtonSmall class="flex-fill">
+        <GlassButtonSmall class="flex-fill" @click="handleCancelButton(ticket)">
           <img :src="CrossIco" alt="info-ico" class="sm-md-icon">
         </GlassButtonSmall>
       </div>
@@ -43,12 +43,13 @@
     <!-- If ticket cancelled -->
     <div
       class="d-flex flex-column align-items-center"
-      v-if="ticket.flight.status === FlightStatus.Canceled
-      || ticket.flight.status === FlightStatus.Delayed"
+      v-if="(ticket.flight.status === FlightStatus.Canceled
+      || ticket.flight.status === FlightStatus.Delayed)
+      && ticket.status !== BookingStatus.Completed"
     >
-      <h1 class="mb-auto fw-bold">{{ formatPrice(ticket.cost, "₽") }}</h1>
+      <h1 class="mb-auto fw-bold fs-2">{{ formatPrice(ticket.cost, "₽") }}</h1>
       <div class="d-flex gap-3">
-        <GlassButtonSmall class="flex-fill fs-5">
+        <GlassButtonSmall class="flex-fill fs-5" @click="handleRefundButton(ticket)">
           Возврат средств
         </GlassButtonSmall>
         <GlassButtonSmall class="flex-fill" @click="handleInfoButton(ticket)">
@@ -72,24 +73,34 @@ import { BASE_API } from '@/store/primaryStore';
 import { FlightStatus } from '@/api/types/entities/flight';
 import { formatPrice } from '@/lib/format/formatPrice';
 import { useBookingModalStore } from '@/store/bookingModalStore';
+import { useBookingRefundStore } from '@/store/bookingRefundStore';
+import { BookingRefundTypes } from '@/types/sort/bookingRefundTypes';
 
-const bookingInfoModal = useBookingModalStore();
+const bookingModal = useBookingModalStore();
+const bookingRefundModal = useBookingRefundStore();
 
 const props = defineProps<{
   ticket: Booking
 }>();
 
 const handleInfoButton = (booking: Booking) => {
-  bookingInfoModal.visible = true;
-  bookingInfoModal.booking = booking;
+  bookingRefundModal.visible = false;
+  bookingModal.visible = true;
+  bookingModal.booking = booking;
 };
 
-const handleCancelIcon = () => {
-
+const handleCancelButton = (booking: Booking) => {
+  bookingModal.visible = false;
+  bookingRefundModal.type = BookingRefundTypes.Cancel;
+  bookingRefundModal.visible = true;
+  bookingRefundModal.booking = booking;
 };
 
-const handleRefund = () => {
-
+const handleRefundButton = (booking: Booking) => {
+  bookingModal.visible = false;
+  bookingRefundModal.type = BookingRefundTypes.Refund;
+  bookingRefundModal.visible = true;
+  bookingRefundModal.booking = booking;
 }
 
 </script>

@@ -150,7 +150,7 @@ export class BookingRepository extends BaseRepository<BookingEntry> {
 				baggage_rule b on c.baggage_rule_id = b.id
 
 			${whereClause}
-			ORDER BY flight.departure_date ASC
+			ORDER BY booking.created DESC
 			${usePagination ? "LIMIT ? OFFSET ?" : ""}
 		`;
   }

@@ -34,6 +34,7 @@ export const useUserStore = defineStore('user', {
     },
 
     logout() {
+      useLikedStore().liked = [];
       this.token = '';
       this.user = null;
     },
@@ -44,10 +45,6 @@ export const useUserStore = defineStore('user', {
         const token = await UserAPI.loginUser(payload);
         this.setToken(token);
         this.user = await UserAPI.getCurrentUser();
-
-        // Sync liked flights to server
-        const likedFlightsStore = useLikedStore();
-        await likedFlightsStore.syncAllLikesToServer();
       } catch (err) {
         throw await handleHttpError(err);
       }

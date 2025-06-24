@@ -2,7 +2,7 @@
 
 services:
   redis:
-    image: redis:6
+    image: redis:6.2
     container_name: redis
     ports:
       - '9000:9000'
@@ -19,6 +19,7 @@ services:
   backend:
     build:
       context: ./backend
+      network: host
     container_name: jmich-backend
     ports:
       - '8000:8000'
@@ -38,9 +39,10 @@ services:
   frontend:
     build:
       context: ./frontend
+      network: host
     container_name: jmich-frontend
     volumes:
-      - ./frontend/src:/app/src
+      - ./frontend:/app
     environment:
       VITE_BASE_API: "http://localhost:8000"
     ports:

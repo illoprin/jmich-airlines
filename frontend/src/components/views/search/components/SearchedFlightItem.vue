@@ -24,41 +24,30 @@
           <label class="fs-5 text-start w-100 mb-2 text-white-50">
             Вес багажа
           </label>
-          <GlassInput
-            type="number"
-            class="small w-100"
-            min="0"
-            :max="flight.seats_available"
-            placeholder="Укажите вес"
-            v-model:value="baggageWeight"
-          />
+          <GlassInput type="number" class="small w-100" min="0" :max="flight.seats_available" placeholder="Укажите вес"
+            v-model:value="baggageWeight" />
         </div>
 
-        <GlowButton
-          class="mt-3 w-100 p-3"
-          @click="$router.push({name: AuthRoutes.BookingPage.name, params: { id: flight.id }, query: { bw: baggageWeight }})"
-        >
+        <GlowButton class="mt-3 w-100 p-3"
+          @click="$router.push({ name: AuthRoutes.BookingPage.name, params: { id: flight.id }, query: { bw: baggageWeight } })">
           Приобрести
         </GlowButton>
       </div>
       <div class="col-lg-8 p-3 d-flex flex-column justify-content-between">
         <!-- Company Logo -->
         <div class="d-block">
-          <img
-            :src="`${BASE_API}${flight.company.logo}`"
-            :alt="flight.company.name"
-            class="company-logo float-start"
-          >
+          <img :src="`${BASE_API}${flight.company.logo}`" :alt="flight.company.name" class="company-logo float-start">
 
           <LikeBtnDynamic
             :checked="liked ?? false"
             @click="handleLikeButton"
             class="float-end"
+            v-if="userStore.token"
           />
-        </div> 
+        </div>
 
         <!-- Flight snippet -->
-        <FlightSnippet :flight="flight" :printDate="true" class="mt-3"/>
+        <FlightSnippet :flight="flight" :printDate="true" class="mt-3" />
       </div>
     </div>
 
@@ -78,10 +67,10 @@ import { BASE_API } from '@/store/primaryStore';
 import LikeBtnDynamic from '@/components/icons/LikeBtnDynamicIcon.vue';
 import { useLikedStore } from '@/store/likedFlightsStore';
 import { AuthRoutes } from '@/router/routes';
-import { useFetchingErrorModal } from '@/store/fetchingModalStore';
+import { useUserStore } from '@/store/userStore';
 
 const likedStore = useLikedStore();
-const fetchingErrorModal = useFetchingErrorModal();
+const userStore = useUserStore();
 
 const props = defineProps<{
   flight: Flight,
@@ -89,32 +78,18 @@ const props = defineProps<{
 const baggageWeight = ref<string>("");
 const liked = ref<boolean>(false);
 
-const syncLike = async () => {
-  try {
-    await likedStore.fetchLikes();
-    liked.value = await likedStore.isFlightLiked(props.flight.id);
-  } catch {
-    console.log('user is unauthorized');
-  }
-}
 
-onMounted(async () => {
-  await syncLike();
+onMounted(() => {
+  liked.value = likedStore.isFlightLiked(props.flight.id);
 });
 
 const handleLikeButton = async () => {
-  try {
-    if (!liked.value) {
-      await likedStore.like(props.flight);
-    } else {
-      await likedStore.dislike(props.flight);
-    }
-    liked.value = !liked.value;
-  } catch (err) {
-    fetchingErrorModal.visible = true;
-    fetchingErrorModal.title = 'Не удалось выполнить запрос';
-    fetchingErrorModal.contents = (err as Error).message;
+  if (!liked.value) {
+    await likedStore.like(props.flight);
+  } else {
+    await likedStore.dislike(props.flight);
   }
+  liked.value = !liked.value;
 }
 
 const tagField = computed<string>(() => {
@@ -140,12 +115,12 @@ const priceWithBaggage = computed<number>(() => {
 </script>
 
 <style scoped>
-
 .flight-item {
   position: relative;
   background-color: rgba(255, 255, 255, 0.096) !important;
   box-shadow: 0px 8px 40px rgba(0, 0, 0, 0.116);
 }
+
 .tag-block {
   position: absolute;
   left: 1rem;
@@ -153,12 +128,14 @@ const priceWithBaggage = computed<number>(() => {
   display: flex;
   gap: 0.75rem;
 }
+
 .price-baggage {
   display: block;
   opacity: 1;
   transition: opacity 200ms;
   will-change: opacity;
 }
+
 .price-baggage.invisible {
   position: absolute;
   opacity: 0;
@@ -169,10 +146,10 @@ const priceWithBaggage = computed<number>(() => {
   transition: font-size 200ms;
   will-change: font-size;
 }
+
 .price-base.small {
   font-size: 1rem !important;
   text-decoration: line-through;
   color: var(--glass-text-transparent);
 }
-
 </style>

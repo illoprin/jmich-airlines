@@ -87,13 +87,13 @@ import { useValidation, type ValidationSchema } from "@/composable/useValidation
 import { emailRegex, generalLatinRegex, oneUnicodeWordRegex, phoneRegex } from "@/utils/regex";
 import { AccountPageModes } from "@/types/hash/account";
 import { useUserStore } from "@/store/userStore";
-import { useFetchingErrorModal } from "@/store/fetchingModalStore";
+import { useLikedStore } from "@/store/likedFlightsStore";
 
 
 const route = useRoute();
 const router = useRouter();
 const user = useUserStore();
-const fetchingErrorModal = useFetchingErrorModal();
+const likedFlights = useLikedStore();
 
 const mode = computed<string>(() => {
   const hash = route.hash || AuthorizationPageModes.Registration;
@@ -131,14 +131,14 @@ const loginSchema: ValidationSchema<UserLoginPayload> = {
     minLength: 3,
     maxLength: 255,
     match: generalLatinRegex,
-    message: "Логин не может содержать спецсимволы кроме -_&$"
+    message: "Введите корректный логин"
   },
   password: {
     required: true,
     minLength: 3,
     maxLength: 255,
     match: generalLatinRegex,
-    message: "Пароль не может содержать спецсимволы кроме -_&$"
+    message: "Введите корректный пароль"
   },
 };
 const loginForm = ref<UserLoginPayload>({} as any);

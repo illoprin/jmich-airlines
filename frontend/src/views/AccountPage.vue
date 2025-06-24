@@ -9,9 +9,10 @@
     <div class="panel-tabs mt-5">
 
       <div class="tab-bar">
-        <button class="glass tab-button" v-for="tab in tabs" @click="tab.value !== AccountPageModes.Search
+        <button class="glass tab-button d-flex gap-2 align-items-center justify-content-center" v-for="tab in tabs" @click="tab.value !== AccountPageModes.Search
           ? $router.push({ hash: tab.value })
           : $router.push({ name: GuestRoutes.Search.name })" :class="mode === tab.value ? 'active' : ''">
+          <img :src="tab.icon" v-if="tab.icon" class="sm-md-icon">
           {{ tab.label }}
         </button>
       </div>
@@ -31,8 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { BookingStatus } from '@/api/types/entities/booking';
-import { FlightStatus } from '@/api/types/entities/flight';
 import BookingDetailsModal from '@/components/shared/BookingDetailsModal.vue';
 import AccountLiked from '@/components/views/account/AccountLiked.vue';
 import AccountProfile from '@/components/views/account/AccountProfile.vue';
@@ -47,6 +46,12 @@ import { AccountPageModes } from '@/types/hash/account';
 import type { TabItem } from '@/types/ui/tab';
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import ProfileIcon from '@/assets/icons/person.svg'
+import LikeIcon from '@/assets/icons/like.svg'
+import TicketIcon from '@/assets/icons/ticket.svg'
+import GearIcon from '@/assets/icons/gear.svg'
+import SearchIcon from '@/assets/icons/search.svg'
+import { useLikedStore } from '@/store/likedFlightsStore';
 
 const route = useRoute();
 
@@ -62,29 +67,35 @@ const mode = computed<AccountPageModes>(() => {
 const tabs: TabItem<AccountPageModes>[] = [
   {
     label: "Профиль",
-    value: AccountPageModes.Profile
+    value: AccountPageModes.Profile,
+    icon: ProfileIcon,
   },
   {
     label: "Понравившиеся",
-    value: AccountPageModes.Liked
+    value: AccountPageModes.Liked,
+    icon: LikeIcon,
   },
   {
     label: "Мои билеты",
-    value: AccountPageModes.Tickets
+    value: AccountPageModes.Tickets,
+    icon: TicketIcon,
   },
   {
     label: "Поиск авиабилетов",
-    value: AccountPageModes.Search
+    value: AccountPageModes.Search,
+    icon: SearchIcon,
   },
   {
     label: "Настройки",
-    value: AccountPageModes.Settings
+    value: AccountPageModes.Settings,
+    icon: GearIcon,
   },
 ];
 
 const paymentStore = usePaymentStore();
 const userStore = useUserStore();
 const bookingStore = useBookingStore();
+const likedFlightStore = useLikedStore();
 
 const {
   fetchData: fetchData,
@@ -92,6 +103,7 @@ const {
 } = useFetching(async () => {
   await userStore.fetchUser();
   await userStore.fetchRules();
+  await likedFlightStore.fetchLikes();
   await paymentStore.fetchPayment();
   await bookingStore.getCount();
   await bookingStore.fetchUserBookings();
@@ -104,7 +116,11 @@ const pageHeader = computed<string>(() => {
         return `Добрый день, ${userStore.user?.firstname}`;
 
       case AccountPageModes.Liked:
-        return `На X рейсов истекает срок регистрации`;
+        if (likedFlightStore.liked.length == 0) {
+          return `Здесь вы можете добавить рейс в понравившиеся!`
+        } else {
+          return `На несколько рейсов истекает срок регистрации`;
+        }
 
       case AccountPageModes.Tickets:
         if (bookingStore.bookings) {

@@ -17,4 +17,4 @@ frontend/dist
 frontend/.env.local
 frontend/.idea
 
-html.layout
+html

@@ -16,8 +16,8 @@ docker compose up -d
 
 После запуска:
 
-* Backend доступен по адресу: [http://localhost:3000](http://localhost:8000)
-* Frontend (Vite) доступен по адресу: [http://localhost:5173](http://localhost:80)
+* Backend доступен по адресу: [http://localhost:8000](http://localhost:8000)
+* Frontend (Vite) доступен по адресу: [http://localhost:80](http://localhost:80)
 
 > ⚡ Проект поддерживает **горячую перезагрузку** (hot reload) для frontend и backend во время разработки.
 

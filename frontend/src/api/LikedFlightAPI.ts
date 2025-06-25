@@ -1,5 +1,4 @@
 import { $authHost } from "@/api/httpClient";
-import { likedFlightMock } from "@/api/mocks/liked";
 import type { Flight } from "@/api/types/entities/flight";
 
 export class LikedFlightAPI {

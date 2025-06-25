@@ -87,13 +87,11 @@ import { useValidation, type ValidationSchema } from "@/composable/useValidation
 import { emailRegex, generalLatinRegex, oneUnicodeWordRegex, phoneRegex } from "@/utils/regex";
 import { AccountPageModes } from "@/types/hash/account";
 import { useUserStore } from "@/store/userStore";
-import { useLikedStore } from "@/store/likedFlightsStore";
 
 
 const route = useRoute();
 const router = useRouter();
 const user = useUserStore();
-const likedFlights = useLikedStore();
 
 const mode = computed<string>(() => {
   const hash = route.hash || AuthorizationPageModes.Registration;

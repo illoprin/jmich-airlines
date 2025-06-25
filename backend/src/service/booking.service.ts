@@ -273,7 +273,7 @@ export class BookingService {
       this.cfg.protected_files_path,
       "png"
     );
-    const qrCodeURL = `http://${this.cfg.http_server.host}:${this.cfg.http_server.port}/upload/protected/${filename}`;
+    const qrCodeURL = `/upload/protected/${filename}`;
 
     try {
       // Create booking entry

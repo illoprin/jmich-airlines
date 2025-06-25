@@ -28,7 +28,7 @@
       v-if="ticket.flight.status === FlightStatus.Active && ticket.status === BookingStatus.Active"
     >
       <div class="glass p-3 glass-border shadow">
-        <img :src="ticket.qr_code" alt="booking-qr" class="qr-code rounded">
+        <img :src="`${BASE_API}${ticket.qr_code}`" alt="booking-qr" class="qr-code rounded">
       </div>
       <div class="d-flex flex-column gap-3">
         <GlassButtonSmall class="flex-fill" @click="handleInfoButton(ticket)">
@@ -79,7 +79,7 @@ import { BookingRefundTypes } from '@/types/sort/bookingRefundTypes';
 const bookingModal = useBookingModalStore();
 const bookingRefundModal = useBookingRefundStore();
 
-const props = defineProps<{
+defineProps<{
   ticket: Booking
 }>();
 

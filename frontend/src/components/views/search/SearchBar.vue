@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import GlowButton from '@/components/UI/GlowButton.vue';
 import CityDropDown from '@/components/shared/CityDropDown.vue';
 import { useFetching } from '@/composable/useFetching';

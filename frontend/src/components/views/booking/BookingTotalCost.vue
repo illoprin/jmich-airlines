@@ -67,7 +67,7 @@ import type { Flight } from '@/api/types/entities/flight';
 import type { UserLevel } from '@/api/types/entities/user';
 import { formatPrice } from '@/lib/format/formatPrice';
 
-const props = defineProps<{
+defineProps<{
   levelDiscount: number;
   codeDiscount: number;
   baseCost: number;

@@ -86,6 +86,7 @@ onBeforeUnmount(() => {
         </li>
         <li
           class="glass-dropdown-element glass-dropdown-subelement"
+          v-if="city.airports"
           v-for="(airport, airportIndex) in city.airports"
           :class="
             airportIndex === city.airports?.length - 1

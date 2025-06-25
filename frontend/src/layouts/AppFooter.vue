@@ -42,7 +42,7 @@ import JmichLogo from '@/assets/icons/jmich-logo.svg'
         и личностями — случайны.
       </p>
       <h5 class="mb-4">
-        Loprin Branding Design 2025
+        IKulakov 2025
       </h5>
 
     </div>

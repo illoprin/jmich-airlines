@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import CrossIco from '@/assets/icons/cross.svg'
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 
 
 const props = defineProps({

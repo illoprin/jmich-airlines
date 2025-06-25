@@ -3,7 +3,10 @@ import type { Config } from "@/types/internal/config";
 
 export function createCorsOptions(cfg: Config): CorsOptions {
   const allowedOrigins: string[] = [
-    `http://localhost`, `http://localhost:5000`
+    `http://localhost`,
+    `http://localhost:5000`,
+    `http://jmichairlines.ru`,
+    `https://jmichairlines.ru`
   ];
 
   return { // fuck cors

@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     strictPort: true,
+    allowedHosts: ["jmichairlines.ru", "localhost"]
   },
   build: {
     assetsDir: path.resolve(process.cwd(), '/src/assets'),

@@ -5,7 +5,7 @@ import HotTourMain from '@/components/views/search/components/HotTourMain.vue';
 import '@/assets/style/Trending.css'
 import GlassPanelHeader from '@/components/shared/GlassPanelHeader.vue';
 
-const props = defineProps<{
+defineProps<{
   hotTours: TrendingFlight[]
 }>();
 

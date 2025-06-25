@@ -13,7 +13,11 @@
     <template v-slot:contents>
       <div class="w-100 d-flex flex-column align-items-center" v-if="bookingModalStore.booking">
         <h2 class="fs-5 fw-bold">Просто покажите QR-код на стойке регистрации</h2>
-        <img :src="`${bookingModalStore.booking.qr_code}`" alt="booking-qr" class="rounded-3 shadow">
+        <img
+          :src="`${BASE_API}${bookingModalStore.booking.qr_code}`"
+          alt="booking-qr"
+          class="rounded-3 shadow"
+        />
         <div class="row mt-4">
 
           <div class="col-md-6">
@@ -66,6 +70,7 @@
 import ModalBase from '@/components/UI/ModalBase.vue';
 import { formatPrice } from '@/lib/format/formatPrice';
 import { useBookingModalStore } from '@/store/bookingModalStore';
+import { BASE_API } from '@/store/primaryStore';
 
 const bookingModalStore = useBookingModalStore();
 </script>

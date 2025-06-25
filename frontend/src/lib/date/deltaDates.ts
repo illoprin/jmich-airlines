@@ -1,4 +1,4 @@
-import { parseDate, parseISO8601, type DateParsed } from "@/lib/date/parseDate";
+import { parseISO8601 } from "@/lib/date/parseDate";
 
 const minuteMilliseconds = 1000 * 60;
 

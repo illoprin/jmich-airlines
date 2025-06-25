@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import GlassInput from '@/components/UI/GlassInput.vue';
 
-const props = defineProps({
+defineProps({
   error: {
     type: String,
     default: null,

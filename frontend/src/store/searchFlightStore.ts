@@ -3,7 +3,6 @@ import type { Flight } from '@/api/types/entities/flight';
 import type { FlightSearchPayload } from '@/api/types/requests/flight';
 import { handleHttpError } from '@/lib/service/handleHTTPError';
 import { defineStore } from 'pinia';
-import { HighlightSpanKind } from 'typescript';
 
 export const useSearchFlightStore = defineStore('search-flight', {
   state: () => ({

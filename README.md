@@ -1,95 +1,43 @@
-# ✈️ ЖМЫХ Airlines - Сервис для покупки дешёвых авиабилетов
+[Russian version](README.ru.md) | [English version](README.md)
+
+# ✈️ JMICH Airlines - Cheap Flight Booking Service
 
 ![Image](https://raw.githubusercontent.com/illoprin/jmich-airlines/refs/heads/master/img/promo.jpg)
 
-Веб-приложение, позволяющее искать, бронировать и управлять авиабилетами с учётом пользовательских предпочтений. Поддерживает регистрацию, личный кабинет, сохранение билетов и платёжных данных.
+![Image](https://raw.githubusercontent.com/illoprin/jmich-airlines/refs/heads/master/img/main_page.jpg)
 
-## 🔧 Запуск проекта в режиме разработки
+A web application for searching, booking, and managing flight tickets based on user preferences. Supports registration, personal accounts, ticket storage, and payment details.
 
-Убедитесь, что установлен [Docker](https://www.docker.com/) и [Docker Compose](https://docs.docker.com/compose/).
+## 🔧 Running the Project in Development Mode
+
+Make sure you have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
 
 ```bash
 git clone https://github.com/illoprin/jmich-airlines.git
 cd jmich-airlines
 docker compose up -d
-````
-
-После запуска:
-
-* Backend доступен по адресу: [http://localhost:8000](http://localhost:8000)
-* Frontend (Vite) доступен по адресу: [http://localhost:80](http://localhost:80)
-
-> ⚡ Проект поддерживает **горячую перезагрузку** (hot reload) для frontend и backend во время разработки.
-
-## ⚙️ Стек
-
-- **Node.js** - платформа для разработки на JS/TS
-- **Nginx** - простой веб-сервер
-- **Express** - **backend** фреймворк
-- **Redis** - система кеширования
-- **SQlite** - основная СУБД
-- **Vue.js** - **frontend** фреймворк
-- **Docker** - dev/prod развёртывание
-
----
-
-## ✅ TODO
-
-### 🔍 Страница поиска авиабилетов
-
-- [x] Сортировка рейсов
-- [ ] Вывод доступных городов по запросу
-- [x] Пагинация и lazy loading
-
-### 👤 Регистрация / авторизация
-
-- [x] Регистрация и вход
-- [ ] Форматирование полей ввода (ввод email, пароля и пр.)
-
-### 🧳 Личный кабинет
-
-- [x] Профиль пользователя
-- [ ] Понравившиеся рейсы
-  - [ ] Сортировка
-- [x] Мои билеты
-  - [ ] Сортировка билетов
-  - [ ] Диалоговое окно — Возврат средств
-  - [ ] Диалоговое окно — Отмена билета
-  - [ ] Вкладки: Активные, Завершённые, Отменённые
-- [ ] Конфигурация профиля
-  - [ ] Изменение личных данных
-  - [ ] Управление привязанными картами
-  - [ ] Параметры конфиденциальности
-
-### 💳 Страница покупки авиабилета
-
-- [x] Сохранение введённой карты в профиле
-- [ ] Форматирование полей ввода платёжных данных
-
-### 🔔 Меню уведомлений
-
-- [ ] Удаление всех уведомлений
-
-### 🛠️ Админ-панель
-
-- [ ] Управление билетами пользователей
-- [ ] Управление перелётами
-- [ ] Управление статичными данными
-
----
-
-## 📁 Структура проекта
-
-```
-/backend      — серверная логика (Node.js, Express, TypeScript)
-/frontend     — клиентская часть (Vue 3, Vite)
-/e2e          — сквозные тесты (Python)
 ```
 
----
+After launching:
 
-## 📌 Примечания
+* Backend is available at: [http://localhost:8000](http://localhost:8000)
+* Frontend (Vite) is available at: [http://localhost:80](http://localhost:80)
 
-* Проект в стадии активной разработки — возможны нестабильности.
-* Все данные временные и могут быть удалены.
-* Используется SQLite и Redis в dev-режиме, легко заменить на прод-сервисы.
+> ⚡ The project supports **hot reload** for both frontend and backend during development.
+
+
+## ⚙️ Tech Stack
+
+- **Node.js** - JS/TS development platform  
+- **Express** - **backend** framework  
+- **Redis** - caching system  
+- **SQLite** - primary database  
+- **Vue.js** - **frontend** framework  
+- **Docker** - dev/prod deployment  
+
+
+## 📌 Notes
+
+* The project is under active development — instability may occur.  
+* All data is temporary and may be deleted.  
+* SQLite and Redis are used in dev mode, easily replaceable with production services.  

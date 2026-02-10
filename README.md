@@ -10,9 +10,15 @@ A web application for searching, booking, and managing flight tickets based on u
 
 ## 🖼️ Screenshots
 
+**Route search**
+
 ![Image](https://github.com/user-attachments/assets/faf1e7c2-4b5a-40cb-b896-be8f91212622)
 
+**Purchase form**
+
 ![Image](https://github.com/user-attachments/assets/b6a4604b-b29d-4e1f-a9cb-1ef5ff322977)
+
+**Tickets in personal account**
 
 ![Image](https://github.com/user-attachments/assets/0ac4a1d7-0527-4ebe-8c01-21a2a2569218)
 

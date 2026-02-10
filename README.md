@@ -8,6 +8,14 @@
 
 A web application for searching, booking, and managing flight tickets based on user preferences. Supports registration, personal accounts, ticket storage, and payment details.
 
+## 🖼️ Screenshots
+
+![Image](https://github.com/user-attachments/assets/faf1e7c2-4b5a-40cb-b896-be8f91212622)
+
+![Image](https://github.com/user-attachments/assets/b6a4604b-b29d-4e1f-a9cb-1ef5ff322977)
+
+![Image](https://github.com/user-attachments/assets/0ac4a1d7-0527-4ebe-8c01-21a2a2569218)
+
 ## 🔧 Running the Project in Development Mode
 
 Make sure you have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
